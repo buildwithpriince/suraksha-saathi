@@ -19,13 +19,15 @@ is a pure function. Same inputs, same output. No clocks, no randomness, no Unity
 | `completed` | `step`, optional `where` (data key = value) | full if a `step_completed` for step exists (and `where` matches), else 0 |
 | `order` | `before`, `after` | full if `before` completed and its completion `t` < `after`'s `step_started` `t`; 0 otherwise |
 | `time_limit` | `step`, `seconds` | full if completed within `seconds` of its `step_started` |
-| `correct_choice` | `step`, `correct` (list or per-variant map), `partial` (bool) | single: full if first choice in `correct`. `partial`: `points × max(0, rightPicked − wrongPicked) / correct.count`, rounded down |
+| `correct_choice` | `step`, `correct` (list or per-variant map), `partial` (bool) | single: full if first choice in `correct`. `partial`: `points × max(0, rightPicked − wrongPicked) / correct.count`, rounded down. Multi-select steps (`choose_many`, `checklist`) without `partial`: full only if the picked set equals `correct` (D-017) |
 | `no_forbidden` | `tag` | full if no `forbidden_action` with that tag |
 | `hold` | `step`, `minOnTargetSec`, `maxOffTargetRatio` | full if both met; half if only on-target met; else 0 |
-| `zone_accuracy` | `step`, `toleranceM` (true radius from variant params) | full if abs error ≤ tol; half if ≤ 2×tol; else 0 |
+| `zone_accuracy` | `step`, `toleranceM` (true radius = the step's `trueRadiusM` after `$` variant substitution) | full if abs error ≤ tol; half if ≤ 2×tol; else 0 |
 
 Critical rules:
 - A `critical` rule "fails" if it earns 0 **or** if any `forbidden_action` occurred in its step.
+- With `"criticalOn": "forbidden"` it fails critically **only** if a `forbidden_action` occurred in
+  its step; earning 0 alone is then just lost points (docs/02 "critical if forbidden picked", D-017).
 - Rules scoped to a variant (`"variants": ["major"]`) are skipped for other variants; skipped rules
   are removed from both earned and max (they never help or hurt).
 

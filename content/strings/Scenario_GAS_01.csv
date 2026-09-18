@@ -1,0 +1,52 @@
+key,en,hi,sat,needsReview,notes
+gas01.title,Gas leak and confined space,,,true,scenario title
+gas01.brief.instruction,You and your buddy will work in a confined area.,,,true,step caption
+gas01.brief.audio,You and your buddy are about to enter a confined work area.,,,true,narration script
+gas01.place_area.instruction,Tap the floor to place the work area.,,,true,step caption
+gas01.place_area.audio,Point your camera at the floor. Tap to place the work area.,,,true,narration script
+gas01.ppe.instruction,Pick the equipment you need before you go in.,,,true,step caption
+gas01.ppe.audio,Pick everything you need to take in. Then press Done.,,,true,narration script
+gas01.ppe.option.self_rescuer,Self-rescuer,,,true,option label
+gas01.ppe.option.gas_detector,Gas detector,,,true,option label
+gas01.ppe.option.helmet_cap_lamp,Helmet with cap lamp,,,true,option label
+gas01.ppe.option.dust_mask,Dust mask,,,true,option label
+gas01.ppe.option.matches_lighter,Matches or lighter,,,true,option label
+gas01.buddy_check.instruction,Check your buddy. Tap each item.,,,true,step caption
+gas01.buddy_check.audio,Check your buddy before you go in. Tap each item.,,,true,narration script
+gas01.buddy_check.option.detector_on,Gas detector is on,,,true,checklist item
+gas01.buddy_check.option.self_rescuer_carried,Self-rescuer is carried,,,true,checklist item
+gas01.buddy_check.option.lamp_working,Cap lamp is working,,,true,checklist item
+gas01.buddy_check.option.hand_signals_agreed,Hand signals are agreed,,,true,checklist item
+gas01.detect.instruction,Walk toward the area. Watch the gas detector.,,,true,step caption
+gas01.detect.audio,Walk toward the area and watch the gas detector reading.,,,true,narration script
+gas01.mark_zone.instruction,Place cones where the detector reaches alert level.,,,true,step caption
+gas01.mark_zone.audio,The detector shows alert level here. Tap the floor to place cones.,,,true,narration script
+gas01.ignition_trap.instruction,Should you switch on the fan or light here?,,,true,step caption
+gas01.ignition_trap.audio,Should you switch on the fan or the light here?,,,true,narration script
+gas01.ignition_trap.option.operate_switch,Operate the switch,,,true,option label
+gas01.ignition_trap.option.do_not_touch,Do not touch it and move away,,,true,option label
+gas01.self_rescuer.instruction,The detector shows danger level. What do you do?,,,true,step caption (major variant only)
+gas01.self_rescuer.audio,The detector shows danger level. What do you do now?,,,true,narration script (major variant only)
+gas01.self_rescuer.option.don_now,Put on the self-rescuer now,,,true,option label
+gas01.self_rescuer.option.continue_without,Continue without it,,,true,option label
+gas01.enter_or_retreat.instruction,There is gas in the area. What do you do?,,,true,step caption
+gas01.enter_or_retreat.audio,There is gas in the area. What do you do now?,,,true,narration script
+gas01.enter_or_retreat.option.retreat_signal,Retreat to fresh air and signal your buddy,,,true,option label
+gas01.enter_or_retreat.option.enter_alone,Enter alone to fix it quickly,,,true,option label
+gas01.enter_or_retreat.option.hold_breath,Hold your breath and continue,,,true,option label
+gas01.retreat.instruction,Move to the fresh-air point with your buddy.,,,true,step caption
+gas01.retreat.audio,Go to the fresh-air point now. Take your buddy with you.,,,true,narration script
+gas01.report.instruction,You are in fresh air. What do you do next?,,,true,step caption
+gas01.report.audio,You and your buddy are in fresh air. What do you do next?,,,true,narration script
+gas01.report.option.report_barricade,Report it and keep the area barricaded,,,true,option label
+gas01.report.option.reenter_after_5min,Go back in after 5 minutes,,,true,option label
+gas01.report.option.tell_no_one,Tell no one,,,true,option label
+gas01.rule.ppe,"Take a self-rescuer, gas detector and cap lamp. Never carry matches.",,,true,rule feedback
+gas01.rule.buddy_check,Check all four items on your buddy.,,,true,rule feedback
+gas01.rule.zone_accuracy,Mark the zone where the detector reaches alert level.,,,true,rule feedback
+gas01.rule.no_ignition,Never operate a switch near a gas leak.,,,true,rule feedback
+gas01.rule.self_rescuer,"At danger level, put on your self-rescuer at once.",,,true,rule feedback
+gas01.rule.order_rescuer_retreat,Put on the self-rescuer before you retreat.,,,true,rule feedback
+gas01.rule.retreat_decision,Retreat to fresh air and signal your buddy. Never enter alone.,,,true,rule feedback
+gas01.rule.retreat_time,Retreat to fresh air quickly.,,,true,rule feedback
+gas01.rule.report,Report the leak and keep the area barricaded.,,,true,rule feedback

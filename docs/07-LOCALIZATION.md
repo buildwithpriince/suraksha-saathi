@@ -30,6 +30,8 @@ Default locale on first launch: `hi`. Worker profile stores `preferred_lang`; ki
 
 Source of truth for strings during development: `content/strings/<table>.csv` with columns
 `key,en,hi,sat,needsReview,notes`. An Editor script imports CSV -> Unity tables. Never edit tables by hand.
+`*.audio` rows hold the narration script (what the recording says; may differ from the caption in
+`*.instruction`). Recorded clips use the same key in the `Narration` asset table.
 
 ## Translation workflow
 1. Write `en` (short sentences, ≤ 12 words, concrete verbs, no idioms).

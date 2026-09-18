@@ -1,0 +1,206 @@
+{
+  "id": "FIRE_01",
+  "version": 1,
+  "domain": "fire_explosion",
+  "titleKey": "fire01.title",
+  "needsReview": true,
+  "passThresholdPercent": 70,
+  "validityDays": 365,
+  "timeLimitSec": 420,
+  "setup": { "requiresPlane": true, "markers": ["EXIT_A"] },
+  "variants": [
+    { "id": "ordinary", "params": { "fireType": "ordinary_combustibles" } },
+    { "id": "oil", "params": { "fireType": "oil" } }
+  ],
+  "steps": [
+    {
+      "id": "brief",
+      "interaction": "narration",
+      "instructionKey": "fire01.brief.instruction",
+      "audioKey": "fire01.brief.audio",
+      "params": {}
+    },
+    {
+      "id": "place_fire",
+      "interaction": "place_on_plane",
+      "instructionKey": "fire01.place_fire.instruction",
+      "audioKey": "fire01.place_fire.audio",
+      "params": { "prefab": "WorkshopFire", "fireType": "$fireType" }
+    },
+    {
+      "id": "raise_alarm",
+      "interaction": "tap_target",
+      "instructionKey": "fire01.raise_alarm.instruction",
+      "audioKey": "fire01.raise_alarm.audio",
+      "params": { "target": "AlarmCallPoint" },
+      "timeLimitSec": 20
+    },
+    {
+      "id": "find_exit",
+      "interaction": "find_marker",
+      "instructionKey": "fire01.find_exit.instruction",
+      "audioKey": "fire01.find_exit.audio",
+      "params": { "marker": "EXIT_A" }
+    },
+    {
+      "id": "pick_extinguisher",
+      "interaction": "choose_one",
+      "instructionKey": "fire01.pick_extinguisher.instruction",
+      "audioKey": "fire01.pick_extinguisher.audio",
+      "params": {
+        "options": [
+          {
+            "id": "water",
+            "labelKey": "fire01.pick_extinguisher.option.water",
+            "forbidden": true,
+            "forbiddenVariants": ["oil"],
+            "tag": "water_on_oil"
+          },
+          { "id": "dcp", "labelKey": "fire01.pick_extinguisher.option.dcp" },
+          { "id": "co2", "labelKey": "fire01.pick_extinguisher.option.co2" }
+        ]
+      }
+    },
+    {
+      "id": "approach",
+      "interaction": "move_to",
+      "instructionKey": "fire01.approach.instruction",
+      "audioKey": "fire01.approach.audio",
+      "params": {
+        "anchor": "AttackSpot",
+        "radiusM": 1.0,
+        "exitBehind": { "marker": "EXIT_A", "minAngleDeg": 120 }
+      }
+    },
+    {
+      "id": "extinguish",
+      "interaction": "aim_and_hold",
+      "instructionKey": "fire01.extinguish.instruction",
+      "audioKey": "fire01.extinguish.audio",
+      "params": { "targetZone": "FireBase", "offTargetZones": ["FlameTop"], "durationSec": 10 }
+    },
+    {
+      "id": "escalation",
+      "interaction": "decision",
+      "instructionKey": "fire01.escalation.instruction",
+      "audioKey": "fire01.escalation.audio",
+      "params": {
+        "options": [
+          {
+            "id": "keep_fighting",
+            "labelKey": "fire01.escalation.option.keep_fighting",
+            "forbidden": true,
+            "tag": "keep_fighting"
+          },
+          { "id": "evacuate_alert", "labelKey": "fire01.escalation.option.evacuate_alert" },
+          {
+            "id": "collect_belongings",
+            "labelKey": "fire01.escalation.option.collect_belongings",
+            "forbidden": true,
+            "tag": "collect_belongings"
+          }
+        ]
+      }
+    },
+    {
+      "id": "evacuate",
+      "interaction": "move_to",
+      "instructionKey": "fire01.evacuate.instruction",
+      "audioKey": "fire01.evacuate.audio",
+      "params": { "anchor": "EXIT_A", "radiusM": 1.5, "showRoute": true },
+      "timeLimitSec": 60
+    },
+    {
+      "id": "assembly",
+      "interaction": "decision",
+      "instructionKey": "fire01.assembly.instruction",
+      "audioKey": "fire01.assembly.audio",
+      "params": {
+        "options": [
+          { "id": "report_headcount", "labelKey": "fire01.assembly.option.report_headcount" },
+          { "id": "go_back_inside", "labelKey": "fire01.assembly.option.go_back_inside" },
+          { "id": "leave_site", "labelKey": "fire01.assembly.option.leave_site" }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "R_ALARM_BEFORE_FIGHT",
+      "type": "order",
+      "params": { "before": "raise_alarm", "after": "extinguish" },
+      "points": 10,
+      "critical": true,
+      "feedbackKey": "fire01.rule.alarm_before_fight"
+    },
+    {
+      "id": "R_ALARM_FAST",
+      "type": "time_limit",
+      "params": { "step": "raise_alarm", "seconds": 20 },
+      "points": 5,
+      "critical": false,
+      "feedbackKey": "fire01.rule.alarm_fast"
+    },
+    {
+      "id": "R_EXIT_FOUND",
+      "type": "completed",
+      "params": { "step": "find_exit" },
+      "points": 10,
+      "critical": false,
+      "feedbackKey": "fire01.rule.exit_found"
+    },
+    {
+      "id": "R_RIGHT_EXTINGUISHER",
+      "type": "correct_choice",
+      "params": {
+        "step": "pick_extinguisher",
+        "correct": { "ordinary": ["water"], "oil": ["dcp"] }
+      },
+      "points": 15,
+      "critical": true,
+      "criticalOn": "forbidden",
+      "needsReview": true,
+      "feedbackKey": "fire01.rule.right_extinguisher"
+    },
+    {
+      "id": "R_EXIT_BEHIND",
+      "type": "completed",
+      "params": { "step": "approach", "where": { "exitBehind": true } },
+      "points": 10,
+      "critical": false,
+      "feedbackKey": "fire01.rule.exit_behind"
+    },
+    {
+      "id": "R_AIM_BASE",
+      "type": "hold",
+      "params": { "step": "extinguish", "minOnTargetSec": 4, "maxOffTargetRatio": 0.4 },
+      "points": 15,
+      "critical": false,
+      "feedbackKey": "fire01.rule.aim_base"
+    },
+    {
+      "id": "R_EVACUATE_DECISION",
+      "type": "correct_choice",
+      "params": { "step": "escalation", "correct": ["evacuate_alert"] },
+      "points": 15,
+      "critical": true,
+      "feedbackKey": "fire01.rule.evacuate_decision"
+    },
+    {
+      "id": "R_EVACUATE_TIME",
+      "type": "time_limit",
+      "params": { "step": "evacuate", "seconds": 60 },
+      "points": 10,
+      "critical": false,
+      "feedbackKey": "fire01.rule.evacuate_time"
+    },
+    {
+      "id": "R_ASSEMBLY_REPORT",
+      "type": "correct_choice",
+      "params": { "step": "assembly", "correct": ["report_headcount"] },
+      "points": 10,
+      "critical": false,
+      "feedbackKey": "fire01.rule.assembly_report"
+    }
+  ]
+}

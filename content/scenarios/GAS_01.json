@@ -1,0 +1,255 @@
+{
+  "id": "GAS_01",
+  "version": 1,
+  "domain": "gas_confined_space",
+  "titleKey": "gas01.title",
+  "needsReview": true,
+  "passThresholdPercent": 70,
+  "validityDays": 365,
+  "timeLimitSec": 420,
+  "setup": { "requiresPlane": true, "markers": [] },
+  "variants": [
+    {
+      "id": "minor",
+      "needsReview": true,
+      "params": { "alertLevel": 40, "dangerLevel": 80, "peakReading": 60, "alertRadiusM": 1.5 }
+    },
+    {
+      "id": "major",
+      "needsReview": true,
+      "params": { "alertLevel": 40, "dangerLevel": 80, "peakReading": 100, "alertRadiusM": 2.5 }
+    }
+  ],
+  "steps": [
+    {
+      "id": "brief",
+      "interaction": "narration",
+      "instructionKey": "gas01.brief.instruction",
+      "audioKey": "gas01.brief.audio",
+      "params": {}
+    },
+    {
+      "id": "place_area",
+      "interaction": "place_on_plane",
+      "instructionKey": "gas01.place_area.instruction",
+      "audioKey": "gas01.place_area.audio",
+      "params": { "prefab": "ConfinedAreaEntrance" }
+    },
+    {
+      "id": "ppe",
+      "interaction": "choose_many",
+      "instructionKey": "gas01.ppe.instruction",
+      "audioKey": "gas01.ppe.audio",
+      "params": {
+        "options": [
+          { "id": "self_rescuer", "labelKey": "gas01.ppe.option.self_rescuer" },
+          { "id": "gas_detector", "labelKey": "gas01.ppe.option.gas_detector" },
+          { "id": "helmet_cap_lamp", "labelKey": "gas01.ppe.option.helmet_cap_lamp" },
+          { "id": "dust_mask", "labelKey": "gas01.ppe.option.dust_mask" },
+          {
+            "id": "matches_lighter",
+            "labelKey": "gas01.ppe.option.matches_lighter",
+            "forbidden": true,
+            "tag": "contraband",
+            "needsReview": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "buddy_check",
+      "interaction": "checklist",
+      "instructionKey": "gas01.buddy_check.instruction",
+      "audioKey": "gas01.buddy_check.audio",
+      "params": {
+        "options": [
+          { "id": "detector_on", "labelKey": "gas01.buddy_check.option.detector_on" },
+          {
+            "id": "self_rescuer_carried",
+            "labelKey": "gas01.buddy_check.option.self_rescuer_carried"
+          },
+          { "id": "lamp_working", "labelKey": "gas01.buddy_check.option.lamp_working" },
+          {
+            "id": "hand_signals_agreed",
+            "labelKey": "gas01.buddy_check.option.hand_signals_agreed"
+          }
+        ]
+      }
+    },
+    {
+      "id": "detect",
+      "interaction": "move_to",
+      "instructionKey": "gas01.detect.instruction",
+      "audioKey": "gas01.detect.audio",
+      "params": {
+        "anchor": "LeakSource",
+        "radiusM": "$alertRadiusM",
+        "detector": {
+          "peakReading": "$peakReading",
+          "alertLevel": "$alertLevel",
+          "dangerLevel": "$dangerLevel"
+        }
+      }
+    },
+    {
+      "id": "mark_zone",
+      "interaction": "mark_zone",
+      "instructionKey": "gas01.mark_zone.instruction",
+      "audioKey": "gas01.mark_zone.audio",
+      "params": { "hazard": "LeakSource", "trueRadiusM": "$alertRadiusM", "minCones": 3 }
+    },
+    {
+      "id": "ignition_trap",
+      "interaction": "decision",
+      "instructionKey": "gas01.ignition_trap.instruction",
+      "audioKey": "gas01.ignition_trap.audio",
+      "params": {
+        "options": [
+          {
+            "id": "operate_switch",
+            "labelKey": "gas01.ignition_trap.option.operate_switch",
+            "forbidden": true,
+            "tag": "ignition_source"
+          },
+          { "id": "do_not_touch", "labelKey": "gas01.ignition_trap.option.do_not_touch" }
+        ]
+      }
+    },
+    {
+      "id": "self_rescuer",
+      "interaction": "decision",
+      "instructionKey": "gas01.self_rescuer.instruction",
+      "audioKey": "gas01.self_rescuer.audio",
+      "variants": ["major"],
+      "params": {
+        "options": [
+          { "id": "don_now", "labelKey": "gas01.self_rescuer.option.don_now" },
+          { "id": "continue_without", "labelKey": "gas01.self_rescuer.option.continue_without" }
+        ]
+      }
+    },
+    {
+      "id": "enter_or_retreat",
+      "interaction": "decision",
+      "instructionKey": "gas01.enter_or_retreat.instruction",
+      "audioKey": "gas01.enter_or_retreat.audio",
+      "params": {
+        "options": [
+          { "id": "retreat_signal", "labelKey": "gas01.enter_or_retreat.option.retreat_signal" },
+          {
+            "id": "enter_alone",
+            "labelKey": "gas01.enter_or_retreat.option.enter_alone",
+            "forbidden": true,
+            "tag": "enter_alone"
+          },
+          { "id": "hold_breath", "labelKey": "gas01.enter_or_retreat.option.hold_breath" }
+        ]
+      }
+    },
+    {
+      "id": "retreat",
+      "interaction": "move_to",
+      "instructionKey": "gas01.retreat.instruction",
+      "audioKey": "gas01.retreat.audio",
+      "params": { "anchor": "FreshAirPoint", "radiusM": 1.5, "showRoute": true },
+      "timeLimitSec": 45
+    },
+    {
+      "id": "report",
+      "interaction": "decision",
+      "instructionKey": "gas01.report.instruction",
+      "audioKey": "gas01.report.audio",
+      "params": {
+        "options": [
+          { "id": "report_barricade", "labelKey": "gas01.report.option.report_barricade" },
+          { "id": "reenter_after_5min", "labelKey": "gas01.report.option.reenter_after_5min" },
+          { "id": "tell_no_one", "labelKey": "gas01.report.option.tell_no_one" }
+        ]
+      }
+    }
+  ],
+  "rules": [
+    {
+      "id": "R_PPE",
+      "type": "correct_choice",
+      "params": {
+        "step": "ppe",
+        "correct": ["self_rescuer", "gas_detector", "helmet_cap_lamp"],
+        "partial": true
+      },
+      "points": 15,
+      "critical": true,
+      "criticalOn": "forbidden",
+      "feedbackKey": "gas01.rule.ppe"
+    },
+    {
+      "id": "R_BUDDY_CHECK",
+      "type": "correct_choice",
+      "params": {
+        "step": "buddy_check",
+        "correct": ["detector_on", "self_rescuer_carried", "lamp_working", "hand_signals_agreed"]
+      },
+      "points": 15,
+      "critical": false,
+      "feedbackKey": "gas01.rule.buddy_check"
+    },
+    {
+      "id": "R_ZONE_ACCURACY",
+      "type": "zone_accuracy",
+      "params": { "step": "mark_zone", "toleranceM": 0.5 },
+      "points": 15,
+      "critical": false,
+      "feedbackKey": "gas01.rule.zone_accuracy"
+    },
+    {
+      "id": "R_NO_IGNITION",
+      "type": "no_forbidden",
+      "params": { "tag": "ignition_source" },
+      "points": 10,
+      "critical": true,
+      "feedbackKey": "gas01.rule.no_ignition"
+    },
+    {
+      "id": "R_SELF_RESCUER",
+      "type": "correct_choice",
+      "params": { "step": "self_rescuer", "correct": ["don_now"] },
+      "points": 10,
+      "critical": true,
+      "variants": ["major"],
+      "feedbackKey": "gas01.rule.self_rescuer"
+    },
+    {
+      "id": "R_ORDER_RESCUER_RETREAT",
+      "type": "order",
+      "params": { "before": "self_rescuer", "after": "retreat" },
+      "points": 5,
+      "critical": false,
+      "variants": ["major"],
+      "feedbackKey": "gas01.rule.order_rescuer_retreat"
+    },
+    {
+      "id": "R_RETREAT_DECISION",
+      "type": "correct_choice",
+      "params": { "step": "enter_or_retreat", "correct": ["retreat_signal"] },
+      "points": 15,
+      "critical": true,
+      "feedbackKey": "gas01.rule.retreat_decision"
+    },
+    {
+      "id": "R_RETREAT_TIME",
+      "type": "time_limit",
+      "params": { "step": "retreat", "seconds": 45 },
+      "points": 5,
+      "critical": false,
+      "feedbackKey": "gas01.rule.retreat_time"
+    },
+    {
+      "id": "R_REPORT",
+      "type": "correct_choice",
+      "params": { "step": "report", "correct": ["report_barricade"] },
+      "points": 10,
+      "critical": false,
+      "feedbackKey": "gas01.rule.report"
+    }
+  ]
+}

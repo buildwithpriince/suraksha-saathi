@@ -1,0 +1,40 @@
+key,en,hi,sat,needsReview,notes
+fire01.title,Fire and explosion response,,,true,scenario title
+fire01.brief.instruction,A small fire has started near waste material.,,,true,step caption
+fire01.brief.audio,A small fire has started near waste material in the workshop.,,,true,narration script
+fire01.place_fire.instruction,Tap the floor to place the fire.,,,true,step caption
+fire01.place_fire.audio,Point your camera at the floor. Tap to place the fire.,,,true,narration script
+fire01.raise_alarm.instruction,Raise the alarm. Press the call point and shout Fire.,,,true,step caption
+fire01.raise_alarm.audio,Raise the alarm now. Press the call point and shout Fire.,,,true,narration script
+fire01.find_exit.instruction,Find the nearest exit sign with your camera.,,,true,step caption
+fire01.find_exit.audio,Find the nearest exit. Point your camera at the exit sign.,,,true,narration script
+fire01.pick_extinguisher.instruction,Choose the right extinguisher for this fire.,,,true,step caption
+fire01.pick_extinguisher.audio,Look at the fire. Choose the right extinguisher for it.,,,true,narration script
+fire01.pick_extinguisher.option.water,Water-type extinguisher,,,true,option label
+fire01.pick_extinguisher.option.dcp,Dry chemical powder (DCP) extinguisher,,,true,option label
+fire01.pick_extinguisher.option.co2,CO2 extinguisher,,,true,option label
+fire01.approach.instruction,Move closer with the exit behind you.,,,true,step caption
+fire01.approach.audio,Walk toward the fire. Keep the exit behind you.,,,true,narration script
+fire01.extinguish.instruction,Aim at the base of the fire and hold.,,,true,step caption
+fire01.extinguish.audio,"Aim at the base of the fire, not the flame tops. Hold steady.",,,true,narration script
+fire01.escalation.instruction,The fire is spreading. What do you do?,,,true,step caption
+fire01.escalation.audio,The fire is spreading. What do you do now?,,,true,narration script
+fire01.escalation.option.keep_fighting,Keep fighting the fire,,,true,option label
+fire01.escalation.option.evacuate_alert,Evacuate and alert others,,,true,option label
+fire01.escalation.option.collect_belongings,Collect your belongings,,,true,option label
+fire01.evacuate.instruction,Follow the arrows to the exit.,,,true,step caption
+fire01.evacuate.audio,Leave now. Follow the arrows to the exit.,,,true,narration script
+fire01.assembly.instruction,You are at the assembly point. What next?,,,true,step caption
+fire01.assembly.audio,You reached the assembly point. What do you do now?,,,true,narration script
+fire01.assembly.option.report_headcount,Report to the supervisor for headcount,,,true,option label
+fire01.assembly.option.go_back_inside,Go back inside,,,true,option label
+fire01.assembly.option.leave_site,Leave the site,,,true,option label
+fire01.rule.alarm_before_fight,Raise the alarm before you fight the fire.,,,true,rule feedback
+fire01.rule.alarm_fast,Raise the alarm quickly.,,,true,rule feedback
+fire01.rule.exit_found,Find the nearest exit.,,,true,rule feedback
+fire01.rule.right_extinguisher,Use the right extinguisher. Never use water on an oil fire.,,,true,rule feedback
+fire01.rule.exit_behind,Keep the exit behind you while you fight a fire.,,,true,rule feedback
+fire01.rule.aim_base,Aim at the base of the fire.,,,true,rule feedback
+fire01.rule.evacuate_decision,"If the fire spreads, evacuate and alert others.",,,true,rule feedback
+fire01.rule.evacuate_time,Evacuate quickly along the marked route.,,,true,rule feedback
+fire01.rule.assembly_report,Report to your supervisor at the assembly point.,,,true,rule feedback

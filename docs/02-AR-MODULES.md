@@ -36,8 +36,39 @@ instructor signs off. Code must not hard-code any of it; it lives in `content/sc
 }
 ```
 - `variant` is chosen per attempt: `variants[seed % variants.length]`; seed is stored with the attempt.
-- Step `params` may reference variant params with `"$fireType"`.
+- Step `params` may reference variant params with `"$fireType"`: any string value `"$name"`, at any
+  depth inside `params`, is replaced by the variant's param `name`.
 - Rule types and scoring: `docs/03-ASSESSMENT-ENGINE.md`.
+
+### Fields (D-016)
+- **Step:** `id`, `interaction`, `instructionKey`, `audioKey`, `params` (object, `{}` when none).
+  Optional: `timeLimitSec` (UI countdown), `variants` (step runs only in these variants; in others
+  the player emits `step_skipped` and moves on), `needsReview`.
+- **Option** (in `params.options` of `choose_one`, `choose_many`, `checklist`, `decision`):
+  `id`, `labelKey`. Optional: `forbidden` (bool; requires `tag`, emitted as `forbidden_action{tag}`),
+  `forbiddenVariants` (forbidden only in these variants; default all), `needsReview`.
+- **Rule:** `id`, `type`, `params`, `points`, `critical`, `feedbackKey`. Optional: `variants`,
+  `criticalOn: "forbidden"` (docs/03), `needsReview`.
+- **Variant:** `id`, `params`. Optional: `needsReview`.
+- `needsReview: true` on any object marks content a safety expert must confirm; it does not change
+  behaviour. The scenario-level flag stays `true` until the whole module is signed off. Gameplay
+  tuning (arrival radii, hold window `durationSec`, `minCones`) is not safety content: it is not
+  flagged and is tuned in device tests (T-28, T-33).
+- Anchor, target and zone names (`LeakSource`, `FreshAirPoint`, `AttackSpot`, `FireBase`,
+  `AlarmCallPoint`, ...) are objects inside the prefab placed by the scenario's `place_on_plane`
+  step; marker ids (`EXIT_A`) come from `setup.markers`.
+
+### Params by interaction type (D-016)
+| Type | `params` |
+|---|---|
+| `narration` | none |
+| `place_on_plane` | `prefab` (scene prefab name); any other keys are passed to the prefab (e.g. `fireType`) |
+| `tap_target` | `target` (named scene object) |
+| `choose_one`, `choose_many`, `checklist`, `decision` | `options` (see Fields) |
+| `aim_and_hold` | `targetZone`, `offTargetZones` (list), `durationSec` (length of the hold phase) |
+| `find_marker` | `marker` (must be listed in `setup.markers`) |
+| `move_to` | `anchor` (scene anchor name or marker id), `radiusM`. Optional: `showRoute` (AR arrows), `exitBehind {marker, minAngleDeg}` (then `step_completed` carries `exitBehind: true/false`), `detector {peakReading, alertLevel, dangerLevel}` (simulated gas reading rising with proximity) |
+| `mark_zone` | `hazard` (anchor name), `trueRadiusM` (scored by `zone_accuracy`), `minCones` |
 
 ## Interaction types (the only step types the player supports)
 | Type | AR behaviour | Tabletop fallback | Events emitted |

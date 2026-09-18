@@ -6,7 +6,9 @@ import { AuthProviderView, ProtectedRoute } from "./auth/AuthContext";
 import type { AuthProvider } from "./auth/types";
 import { Layout } from "./components/Layout";
 import { PageHeader } from "./components/ui";
+import { CompliancePage } from "./pages/compliance/CompliancePage";
 import { LoginPage } from "./pages/login/LoginPage";
+import { OverviewPage } from "./pages/overview/OverviewPage";
 
 export function createQueryClient(auth: AuthProvider = backend.auth) {
   return new QueryClient({
@@ -35,8 +37,8 @@ export function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route index element={<Placeholder title="Overview" />} />
-          <Route path="compliance" element={<Placeholder title="Compliance" />} />
+          <Route index element={<OverviewPage />} />
+          <Route path="compliance" element={<CompliancePage />} />
           <Route path="workers" element={<Placeholder title="Workers" />} />
           <Route path="attempts" element={<Placeholder title="Attempts" />} />
           <Route path="certificates" element={<Placeholder title="Certificates" />} />

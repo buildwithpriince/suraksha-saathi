@@ -14,6 +14,8 @@ Loaded when working inside `dashboard/`. Root `CLAUDE.md` rules still apply.
 ```
 src/
   api/          # typed fetchers; types mirror docs/06-API.md
+    index.ts    # the ONLY live/mock switch (D-026): env vars set -> http.ts + Supabase, else mock/
+    mock/       # in-browser docs/06 stand-in with docs/08 demo data (TEST keys only)
   auth/         # Supabase session, ProtectedRoute
   pages/        # one folder per screen in docs/08-DASHBOARD.md
   components/   # shared UI

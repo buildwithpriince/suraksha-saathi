@@ -64,7 +64,7 @@ Fill in dates for each milestone once the finale date is known.
 - [ ] T-57 [A] Unity sync client (signed headers, backoff) against deployed backend (deps: T-40, T-53)
 
 ## M6 — Dashboard (target: ____)
-- [ ] T-60 [E] Auth + layout + protected routes
+- [x] T-60 [E] Auth + layout + protected routes
 - [ ] T-61 [E] Overview + Compliance heatmap
 - [ ] T-62 [E] Workers, worker detail, attempts, attempt detail
 - [ ] T-63 [E] Certificates (revoke), Recertification (CSV), Devices (approve)

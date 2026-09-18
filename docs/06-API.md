@@ -7,6 +7,10 @@ from the status: 400 `bad_request` · 401 `unauthorized` · 403 `forbidden` · 4
 429 `rate_limited` · 500 `internal_error` · any other `http_<status>`. `validation_error` messages name
 fields (`body.deviceId: Field required`) and never echo submitted values; `internal_error` carries no details.
 Auth: **device** = signed headers (docs/05); **admin** = `Authorization: Bearer <Supabase JWT>`; **public** = none.
+Admin auth (D-025): the JWT must verify against the Supabase project JWKS (ES256/RS256/EdDSA; never HS256),
+`aud` = `authenticated`, `iss` = `<SUPABASE_URL>/auth/v1`. The role comes from `admin_profiles` by `sub`:
+no token or a bad one -> 401 `unauthorized`; a valid token without a profile, or a supervisor on an
+admin-only route -> 403 `forbidden`. 503 when the server lacks `SUPABASE_JWKS_URL` or the root key.
 
 ## Service endpoints
 ### GET /v1/health — public
@@ -17,6 +21,10 @@ Render's health-check path.
 ### POST /v1/devices/register — public (rate-limited)
 Req: `{"deviceId":"uuid","siteCode":"DHN-01","label":"Kiosk tablet 1","publicKey":"b64url"}`
 Res 201: `{"status":"pending"}` · 409 if id exists with a different key.
+Same id + same key again (a retry) -> 201 with the device's current status (`pending|approved|revoked`).
+422 `validation_error` for an unknown `siteCode` (`body.siteCode: Unknown site code`) or a `publicKey` that is
+not base64url of a canonical prime-order Ed25519 point (D-015). `label` ≤ 64 chars. 429 `rate_limited` after
+10 registrations per client IP per minute.
 
 ### GET /v1/devices/me/attestation — device (pending allowed)
 Res 200: `{"status":"pending|approved|revoked","attestation":"SA1...|null","expiresAt":1819536000}`

@@ -5,14 +5,19 @@ from typing import Any
 
 import pytest
 import sqlalchemy as sa
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.deps import get_now
 from app.config import Settings
+from app.crypto.keys import seed_b64url
 from app.db.models import Base
 from app.main import create_app
+from app.services.admin_auth import JwtVerifier
+from tests.factories import JWT_ISSUER, NOW
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
@@ -44,20 +49,32 @@ def database_url(tmp_path: Path) -> str:
 
 
 @pytest.fixture
-def settings(database_url: str) -> Settings:
-    # _env_file=None: tests never read a local backend/.env
+def settings(database_url: str, root_key: Ed25519PrivateKey) -> Settings:
+    # _env_file=None: tests never read a local backend/.env. Root key = docs/04 TEST key.
     return Settings(
-        _env_file=None, database_url=database_url, cors_origins=["http://localhost:5173"]
+        _env_file=None,
+        database_url=database_url,
+        cors_origins=["http://localhost:5173"],
+        root_signing_key_b64=seed_b64url(root_key),
     )
 
 
 @pytest.fixture
-def app(settings: Settings) -> FastAPI:
+def jwt_key() -> ec.EllipticCurvePrivateKey:
+    """Stands in for the Supabase project's JWT signing key (ES256)."""
+    return ec.generate_private_key(ec.SECP256R1())
+
+
+@pytest.fixture
+def app(settings: Settings, jwt_key: ec.EllipticCurvePrivateKey) -> FastAPI:
     # Tables from the models; tests/test_migrations.py checks the migrations build the same schema
     engine = sa.create_engine(settings.database_url)
     Base.metadata.create_all(engine)
     engine.dispose()
-    return create_app(settings)
+    app = create_app(settings)
+    app.state.jwt_verifier = JwtVerifier(lambda _token: jwt_key.public_key(), JWT_ISSUER)
+    app.dependency_overrides[get_now] = lambda: NOW
+    return app
 
 
 @pytest.fixture

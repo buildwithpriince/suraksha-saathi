@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     # SecretStr keeps it out of repr/str/dumps.
     # Never log it, never return it.
     root_signing_key_b64: SecretStr | None = None
+    # POST /v1/devices/register attempts per client IP per minute (docs/06 "rate-limited")
+    register_rate_limit_per_minute: int = 10
     # Comma-separated in the env, e.g. "http://localhost:5173,https://<dashboard>.vercel.app"
     cors_origins: Annotated[list[str], NoDecode] = Field(default_factory=list)
 

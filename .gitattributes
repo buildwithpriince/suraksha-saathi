@@ -1,4 +1,15 @@
-# Unity YAML: text with LF, smart merge
+# Default: text is stored AND checked out with LF on every OS (overrides core.autocrlf),
+# so Windows and macOS clones are byte-identical. See docs/DECISIONS.md D-010.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Better diff hunk headers
+*.cs diff=csharp
+*.py diff=python
+*.md diff=markdown
+
+# Unity YAML: text with LF, smart merge (driver setup: SETUP.md "First clone")
 *.unity   text eol=lf merge=unityyamlmerge
 *.prefab  text eol=lf merge=unityyamlmerge
 *.asset   text eol=lf merge=unityyamlmerge
@@ -6,17 +17,73 @@
 *.mat     text eol=lf merge=unityyamlmerge
 *.anim    text eol=lf merge=unityyamlmerge
 *.controller text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
+*.physicMaterial text eol=lf merge=unityyamlmerge
+*.mixer   text eol=lf merge=unityyamlmerge
+*.playable text eol=lf merge=unityyamlmerge
+*.signal  text eol=lf merge=unityyamlmerge
+*.mask    text eol=lf merge=unityyamlmerge
+*.preset  text eol=lf merge=unityyamlmerge
+*.lighting text eol=lf merge=unityyamlmerge
+*.renderTexture text eol=lf merge=unityyamlmerge
+*.spriteatlas text eol=lf merge=unityyamlmerge
+*.spriteatlasv2 text eol=lf merge=unityyamlmerge
+*.shadervariants text eol=lf merge=unityyamlmerge
+*.terrainlayer text eol=lf merge=unityyamlmerge
+*.cubemap text eol=lf merge=unityyamlmerge
+*.flare   text eol=lf merge=unityyamlmerge
+*.fontsettings text eol=lf merge=unityyamlmerge
+*.guiskin text eol=lf merge=unityyamlmerge
+*.giparams text eol=lf merge=unityyamlmerge
+*.brush   text eol=lf merge=unityyamlmerge
+
 # Binaries via Git LFS
+# Images
 *.png filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
-*.psd filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+*.bmp filter=lfs diff=lfs merge=lfs -text
 *.tga filter=lfs diff=lfs merge=lfs -text
+*.tif filter=lfs diff=lfs merge=lfs -text
+*.tiff filter=lfs diff=lfs merge=lfs -text
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.exr filter=lfs diff=lfs merge=lfs -text
+*.hdr filter=lfs diff=lfs merge=lfs -text
+*.webp filter=lfs diff=lfs merge=lfs -text
+# 3D models
 *.fbx filter=lfs diff=lfs merge=lfs -text
 *.glb filter=lfs diff=lfs merge=lfs -text
+*.obj filter=lfs diff=lfs merge=lfs -text
+*.blend filter=lfs diff=lfs merge=lfs -text
+*.dae filter=lfs diff=lfs merge=lfs -text
+# Audio (narration) and video
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.ogg filter=lfs diff=lfs merge=lfs -text
 *.mp3 filter=lfs diff=lfs merge=lfs -text
+*.m4a filter=lfs diff=lfs merge=lfs -text
+*.aif filter=lfs diff=lfs merge=lfs -text
+*.aiff filter=lfs diff=lfs merge=lfs -text
+*.flac filter=lfs diff=lfs merge=lfs -text
 *.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+*.webm filter=lfs diff=lfs merge=lfs -text
+# Fonts (Noto Devanagari / Ol Chiki)
 *.ttf filter=lfs diff=lfs merge=lfs -text
 *.otf filter=lfs diff=lfs merge=lfs -text
+*.ttc filter=lfs diff=lfs merge=lfs -text
+# Native and managed plugins (BouncyCastle, ZXing, SQLite)
 *.dll filter=lfs diff=lfs merge=lfs -text
+*.so filter=lfs diff=lfs merge=lfs -text
+*.aar filter=lfs diff=lfs merge=lfs -text
+*.jar filter=lfs diff=lfs merge=lfs -text
+# Documents and archives (printable markers)
+*.pdf filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.7z filter=lfs diff=lfs merge=lfs -text
+# Unity writes lighting data as binary even with Force Text serialization
+LightingData.asset filter=lfs diff=lfs merge=lfs -text
+
+# Dashboard assets stay in plain git: Vercel does not fetch LFS files unless enabled per project.
+# Must stay below the LFS rules so it overrides them.
+dashboard/** !filter !diff !merge

@@ -9,6 +9,22 @@
 - Android phone with Developer Options + USB debugging; check it is on Google's ARCore supported
   devices list (https://developers.google.com/ar/devices). Keep one non-ARCore phone for fallback testing.
 
+### First clone
+- Run `git lfs install` once, then `git clone <repo-url> suraksha-saathi`. Check binaries arrived:
+  in `git lfs ls-files`, `*` means a real file and `-` means a pointer (fix with `git lfs pull`).
+- Line endings are fixed by `.gitattributes`: every text file is LF on every OS. Do not change
+  `core.autocrlf`. A "CRLF will be replaced by LF" warning is that normalization working.
+- Unity Smart Merge (optional, per machine, Unity users). Without it Git does a normal text merge
+  of scenes/prefabs; safe, but more conflicts. Either way, only a scene's owner edits it (section 5).
+  ```
+  git config merge.unityyamlmerge.name "Unity SmartMerge"
+  git config merge.unityyamlmerge.driver "'<UnityYAMLMerge>' merge -p %O %B %A %A"
+  git config merge.unityyamlmerge.recursive binary
+  ```
+  `<UnityYAMLMerge>` is in the Unity install, for example
+  Windows: `C:/Program Files/Unity/Hub/Editor/<version>/Editor/Data/Tools/UnityYAMLMerge.exe`,
+  macOS: `/Applications/Unity/Hub/Editor/<version>/Unity.app/Contents/Tools/UnityYAMLMerge`.
+
 ## 2. Connect Claude Code to the Unity Editor (A and B at minimum)
 Pick ONE and follow its own install guide, then run `/mcp` inside Claude Code to confirm it is connected.
 - Official Unity MCP (part of Unity's AI tools, beta): https://docs.unity3d.com/Packages/com.unity.ai.assistant@2.0/manual/unity-mcp-overview.html

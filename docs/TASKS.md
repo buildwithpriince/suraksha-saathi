@@ -66,7 +66,7 @@ Fill in dates for each milestone once the finale date is known.
 ## M6 — Dashboard (target: ____)
 - [x] T-60 [E] Auth + layout + protected routes
 - [x] T-61 [E] Overview + Compliance heatmap
-- [ ] T-62 [E] Workers, worker detail, attempts, attempt detail
+- [x] T-62 [E] Workers, worker detail, attempts, attempt detail
 - [ ] T-63 [E] Certificates (revoke), Recertification (CSV), Devices (approve)
 - [ ] T-64 [E] Public `/verify` (camera scan, offline check, online status); deploy to Vercel
 

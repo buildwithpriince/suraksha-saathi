@@ -6,9 +6,13 @@ import { AuthProviderView, ProtectedRoute } from "./auth/AuthContext";
 import type { AuthProvider } from "./auth/types";
 import { Layout } from "./components/Layout";
 import { PageHeader } from "./components/ui";
+import { AttemptDetailPage } from "./pages/attempts/AttemptDetailPage";
+import { AttemptsPage } from "./pages/attempts/AttemptsPage";
 import { CompliancePage } from "./pages/compliance/CompliancePage";
 import { LoginPage } from "./pages/login/LoginPage";
 import { OverviewPage } from "./pages/overview/OverviewPage";
+import { WorkerDetailPage } from "./pages/workers/WorkerDetailPage";
+import { WorkersPage } from "./pages/workers/WorkersPage";
 
 export function createQueryClient(auth: AuthProvider = backend.auth) {
   return new QueryClient({
@@ -39,8 +43,10 @@ export function AppRoutes() {
         <Route element={<Layout />}>
           <Route index element={<OverviewPage />} />
           <Route path="compliance" element={<CompliancePage />} />
-          <Route path="workers" element={<Placeholder title="Workers" />} />
-          <Route path="attempts" element={<Placeholder title="Attempts" />} />
+          <Route path="workers" element={<WorkersPage />} />
+          <Route path="workers/:id" element={<WorkerDetailPage />} />
+          <Route path="attempts" element={<AttemptsPage />} />
+          <Route path="attempts/:id" element={<AttemptDetailPage />} />
           <Route path="certificates" element={<Placeholder title="Certificates" />} />
           <Route path="recertification" element={<Placeholder title="Recertification" />} />
           <Route path="devices" element={<Placeholder title="Devices" />} />

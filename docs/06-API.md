@@ -78,3 +78,28 @@ Worker fields are present for VALID, EXPIRED and REVOKED (both signatures verifi
 | GET /v1/admin/devices?status=pending | Devices | `[{"id","label","site","status","lastSeenAt"}]` |
 | POST /v1/admin/devices/{id}/approve | Approve + sign attestation (365 days) | device |
 | GET /v1/admin/export/attempts.csv?from=&to=&site= | CSV export | text/csv |
+
+### Admin shapes and rules (D-025)
+- Scoping: supervisors only ever see rows at their `site_ids`. Out-of-scope ids -> 404 (same as missing).
+  `/devices` (list + approve) is admin-only (403 for supervisors).
+- Paging: `page` is 1-based, 25 per page, `{"items":[...],"total":n}`. `site=` is always a site code.
+- `AttemptSummary` = `{"id","workerId","workerName","site","scenarioId","variant","mode","scorePercent","passed","flagged","startedAt"}`.
+  `/attempts` also takes `site=` (heatmap cell click) and is sorted newest first.
+- `/attempts/{id}` = AttemptSummary + `{"durationSec","flagReason","result":AttemptResult as sent,"events":[...]}`.
+  `scorePercent`/`passed` are always the server's recomputed values (D-022).
+- `/workers/{id}` = `{"id","displayName","employeeCode","site","preferredLang","certStatus","createdAt","attempts":[AttemptSummary],"certificates":[{"id","issuedAt","expiresAt","status","token"}]}`, both lists newest first.
+- `/workers` items are sorted by name; `q` matches name or employee code (case-insensitive substring).
+- Certificate `status`: `valid` | `expiring` (not revoked, expires within 30 days) | `expired` | `revoked`.
+  Worker `certStatus` = the best of their certificates in that order, or `none`.
+- `/certificates` item = `{"id","worker":{"id","displayName","site"},"issuedAt","expiresAt","status","revokedAt","revokedReason"}`,
+  newest issued first; revoke returns the same shape.
+- `certifiedPercent`, `passRate`: integer 0–100, rounded half away from zero. Certified = `certStatus` valid or
+  expiring. Heatmap `cells` cover every site × scenario; `passRate` is `null` when `attempts` is 0.
+- `attempts7d`: attempts whose `startedAt` is within the last 7 days. `topFailedRules`: top 5 by count of
+  `passed:false` rule results. `recertDue30d` = the length of `/recert-due?days=30`.
+- `/recert-due`: one row per worker, from their newest non-revoked certificate, if `0 ≤ daysLeft ≤ days`
+  (`daysLeft = floor((expiresAt − now) / 86400)`); `days` is 0–365. A re-certified worker drops off.
+- Device = `{"id","label","site","status","lastSeenAt","approvedAt"}`, newest registration first.
+- CSV columns: `attempt_id,worker_id,worker_name,site,scenario_id,scenario_version,variant,mode,score_percent,passed,flagged,flag_reason,started_at`
+  (`started_at` in ISO 8601 UTC); `from`/`to` are inclusive unix seconds on `startedAt`; oldest first. Text starting
+  with `= + - @` gets a leading `'` (CSV injection).

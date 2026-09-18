@@ -3,11 +3,13 @@
 import uuid
 
 from fastapi import APIRouter
+from sqlalchemy import select
 
 from app.api.deps import Now, RootPrivateKey, Session
 from app.api.errors import ApiError, code_for_status
 from app.db.models import Device, Site
 from app.schemas.admin import DeviceOut
+from app.schemas.devices import DeviceStatus
 from app.services.admin_auth import RequireAdmin
 from app.services.attestation import approve_device
 
@@ -23,6 +25,17 @@ def device_out(device: Device, site_code: str) -> DeviceOut:
         lastSeenAt=device.last_seen_at,
         approvedAt=device.approved_at,
     )
+
+
+@router.get("/devices")
+async def list_devices(
+    admin: RequireAdmin, session: Session, status: DeviceStatus | None = None
+) -> list[DeviceOut]:
+    """Newest registration first; `?status=pending` is the approval queue (docs/08)."""
+    query = select(Device, Site.code).join(Site).order_by(Device.created_at.desc(), Device.id)
+    if status is not None:
+        query = query.where(Device.status == status)
+    return [device_out(device, code) for device, code in (await session.execute(query)).all()]
 
 
 @router.post("/devices/{device_id}/approve")

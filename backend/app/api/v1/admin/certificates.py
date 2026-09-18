@@ -1,15 +1,18 @@
 """docs/06 admin certificate endpoints."""
 
 import uuid
+from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from sqlalchemy import func, select
 
 from app.api.deps import Now, RootPrivateKey, Session
 from app.api.errors import ApiError, code_for_status
 from app.db.models import Certificate, Site, Worker
-from app.schemas.admin import CertificateOut, RevokeRequest, WorkerRef
+from app.schemas.admin import CertificateList, CertificateOut, RevokeRequest, WorkerRef
 from app.services.admin_auth import CurrentAdmin
-from app.services.cert_status import cert_status
+from app.services.cert_status import CertStatus, cert_status
+from app.services.compliance import PAGE_SIZE, scoped, status_clause
 from app.services.revocations import revoke_certificate
 
 router = APIRouter(tags=["admin"])
@@ -24,6 +27,39 @@ def certificate_out(cert: Certificate, worker: Worker, site_code: str, now: int)
         status=cert_status(cert.expires_at, cert.revoked_at, now),
         revokedAt=cert.revoked_at,
         revokedReason=cert.revoked_reason,
+    )
+
+
+@router.get("/certificates")
+async def list_certificates(
+    admin: CurrentAdmin,
+    session: Session,
+    now: Now,
+    status: CertStatus | None = None,
+    page: Annotated[int, Query(ge=1)] = 1,
+) -> CertificateList:
+    """Newest issued first. `status`: valid | expiring (<= 30 days) | expired | revoked."""
+    query = scoped(
+        select(Certificate, Worker, Site.code)
+        .select_from(Certificate)
+        .join(Worker, Certificate.worker_id == Worker.id)
+        .join(Site, Worker.site_id == Site.id),
+        admin,
+        Worker.site_id,
+    )
+    if status is not None:
+        query = query.where(status_clause(status, now))
+    total = await session.scalar(select(func.count()).select_from(query.subquery())) or 0
+    rows = (
+        await session.execute(
+            query.order_by(Certificate.issued_at.desc(), Certificate.id.desc())
+            .offset((page - 1) * PAGE_SIZE)
+            .limit(PAGE_SIZE)
+        )
+    ).all()
+    return CertificateList(
+        items=[certificate_out(cert, worker, code, now) for cert, worker, code in rows],
+        total=total,
     )
 
 

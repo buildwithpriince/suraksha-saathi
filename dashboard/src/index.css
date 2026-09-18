@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* docs/08 safety palette */
+@theme {
+  --color-navy: #1f3864;
+  --color-brand: #0070c0;
+  --color-safety: #e0620b;
+  --color-fail: #b01e1e;
+  --font-sans: "Noto Sans", "Noto Sans Devanagari", system-ui, sans-serif;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 antialiased;
+}

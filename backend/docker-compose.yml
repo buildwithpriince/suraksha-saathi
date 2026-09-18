@@ -1,0 +1,22 @@
+# Local Postgres for development and tests. Start: `docker compose up -d` (from backend/).
+# Credentials are local-only defaults and match Settings.database_url in app/config.py.
+# Keep the major version equal to the Supabase project's Postgres (confirm in T-50).
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: suraksha
+      POSTGRES_PASSWORD: suraksha
+      POSTGRES_DB: suraksha
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U suraksha -d suraksha"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:

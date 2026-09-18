@@ -11,7 +11,7 @@ Fill in dates for each milestone once the finale date is known.
 - [ ] T-02 [A] Unity 6.3 LTS project in `app-unity/` with packages from `app-unity/CLAUDE.md`, Android target, IL2CPP ARM64, min API 29, Advanced Text Generator on — Done when: empty scene builds to a phone
 - [ ] T-03 [A] Folder layout + asmdefs (Core with No Engine References, Runtime, Editor, Tests) — Done when: layout matches `app-unity/CLAUDE.md`
 - [ ] T-04 [A] `CoreTests~` .NET 8 xUnit project compiling `Scripts/Core/**/*.cs` at LangVersion 9 — Done when: `dotnet test` runs 1 sample test
-- [ ] T-05 [D] Backend skeleton: uv, FastAPI app factory, config, health route, ruff, pytest, docker compose Postgres — Done when: `uv run pytest` green
+- [x] T-05 [D] Backend skeleton: uv, FastAPI app factory, config, health route, ruff, pytest, docker compose Postgres — Done when: `uv run pytest` green
 - [ ] T-06 [E] Dashboard skeleton: Vite React TS strict, Tailwind, Router, TanStack Query, Vitest — Done when: typecheck/test/build green
 - [ ] T-07 [A] Unity MCP connected to Claude Code (see SETUP.md) — Done when: Claude can read the Boot scene hierarchy
 - [ ] T-08 [A] Editor content import: copy `/content` into `Assets/StreamingAssets/content/` (gitignored, D-009) on asset import and in a pre-build hook; decide how `Assets/StreamingAssets.meta` stays stable in a fresh clone — Done when: a build from a fresh clone contains both scenario files (deps: T-03)

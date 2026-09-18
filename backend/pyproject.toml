@@ -1,0 +1,32 @@
+[project]
+name = "suraksha-saathi-backend"
+version = "0.1.0"
+description = "Suraksha Saathi sync API and certificate authority"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    # "standard" minus the FastAPI Cloud CLI (we deploy to Render); keeps `fastapi dev`/`fastapi run`
+    "fastapi[standard-no-fastapi-cloud-cli]>=0.115",
+    "pydantic-settings>=2.7",
+]
+
+[dependency-groups]
+dev = [
+    "anyio>=4",  # pytest plugin behind @pytest.mark.anyio in tests/
+    "httpx>=0.27",
+    "pytest>=8.3",
+    "ruff>=0.8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]

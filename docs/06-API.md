@@ -1,7 +1,17 @@
 # 06 — REST API (FastAPI, base path `/v1`)
 
 Errors: `{"error": {"code": "snake_case", "message": "human readable"}}` with proper HTTP status.
+Endpoint-specific codes are listed with the endpoint (e.g. `missing_worker`). Otherwise the code comes
+from the status: 400 `bad_request` · 401 `unauthorized` · 403 `forbidden` · 404 `not_found` ·
+405 `method_not_allowed` · 409 `conflict` · 413 `payload_too_large` · 422 `validation_error` ·
+429 `rate_limited` · 500 `internal_error` · any other `http_<status>`. `validation_error` messages name
+fields (`body.deviceId: Field required`) and never echo submitted values; `internal_error` carries no details.
 Auth: **device** = signed headers (docs/05); **admin** = `Authorization: Bearer <Supabase JWT>`; **public** = none.
+
+## Service endpoints
+### GET /v1/health — public
+Res 200: `{"status":"ok"}`. Liveness only (the process is up); does not check the database.
+Render's health-check path.
 
 ## Device endpoints
 ### POST /v1/devices/register — public (rate-limited)

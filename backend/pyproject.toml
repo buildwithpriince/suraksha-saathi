@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Suraksha Saathi sync API and certificate authority"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "cryptography>=43",
     # "standard" minus the FastAPI Cloud CLI (we deploy to Render); keeps `fastapi dev`/`fastapi run`
     "fastapi[standard-no-fastapi-cloud-cli]>=0.115",
     "pydantic-settings>=2.7",

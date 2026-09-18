@@ -19,7 +19,8 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://suraksha:suraksha@localhost:5432/suraksha"
     supabase_url: str | None = None
     supabase_jwks_url: str | None = None
-    # Root Ed25519 private key (base64). SecretStr keeps it out of repr/str/dumps.
+    # Root Ed25519 private key: base64url of the raw 32-byte seed (docs/04, D-014).
+    # SecretStr keeps it out of repr/str/dumps.
     # Never log it, never return it.
     root_signing_key_b64: SecretStr | None = None
     # Comma-separated in the env, e.g. "http://localhost:5173,https://<dashboard>.vercel.app"

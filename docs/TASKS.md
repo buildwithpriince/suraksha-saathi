@@ -21,9 +21,11 @@ Fill in dates for each milestone once the finale date is known.
 - [ ] T-11 [F] Author `content/scenarios/FIRE_01.json` and `GAS_01.json` from docs/02 via `/new-scenario` — Done when: validator passes, rule points sum to 100
 - [ ] T-12 [A] Assessment engine + the 13 required tests in docs/03 — Done when: all 13 pass (deps: T-10, T-11)
 - [ ] T-13 [A] Token codec + Ed25519 sign/verify in Core (BouncyCastle) — Done when: V1–V4 vectors pass (docs/04)
-- [ ] T-14 [D] Python crypto module + same V1–V4 vectors + `gen_root_key.py` — Done when: vectors pass
+- [x] T-14 [D] Python crypto module + same V1–V4 vectors + `gen_root_key.py` — Done when: vectors pass
 - [ ] T-15 [E] `lib/cert` in TS + V1–V4 vectors — Done when: vectors pass
 - [ ] T-16 [D] `validate_scenarios.py` tool (same checks as T-10) — Done when: CLI passes on both files
+- [ ] T-17 [D] Human step: run `uv run python -m app.tools.gen_root_key` in your own terminal, set the printed `ROOT_SIGNING_KEY_B64` in Render, commit `content/trust/root_public_key.txt` (D-014) — Done when: the file holds a 43-char key and Render has the secret (deps: T-14)
+- [ ] T-18 [D] Pin the remaining cross-language token rules in docs/04 before T-13/T-15 (from the T-14 crypto review): integers as JSON integers 0..2^53−1 without fraction/exponent; duplicate keys; whitespace around scanned tokens; lowercase UUIDs for `cid`; which content limits verifiers enforce (`wn` ≤ 24, score range, required modules); RFC 8032 cofactorless verify and prime-order key checks in C#/TS (e.g. noble `zip215: false`). Add shared negative vectors to `content/trust/test-vectors.json` (non-canonical/padded segment, 63-byte signature, float `iat`, BOM body, bad `att`, small-order `dpk`, forged SR1) — Done when: docs/04 lists the rules and Python passes the new vectors (deps: T-14)
 
 ## M2 — FIRE_01 playable (target: ____)
 - [ ] T-20 [A] Boot scene: AR availability check -> route to ARTraining or TabletopTraining; DB migration stub

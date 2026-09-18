@@ -4,7 +4,10 @@
 ```
 <PREFIX>.<base64url(bodyJsonUtf8)>.<base64url(ed25519Signature)>
 ```
-- base64url without padding (RFC 4648 §5).
+- base64url without padding (RFC 4648 §5). Decoders are strict (D-013): they reject `=`,
+  any character outside `A–Z a–z 0–9 - _`, impossible lengths (length % 4 == 1), and
+  non-canonical encodings (non-zero leftover bits: `QR` is rejected although lenient decoders read
+  it as the same byte as `QQ`), so every byte string has exactly one accepted spelling.
 - The signature is over the ASCII bytes of `<PREFIX>.<base64url(body)>` exactly as transmitted.
 - Verifiers split on the LAST `.`, verify, then decode the body. **Never re-serialize JSON to verify.**
 - Signers serialize body JSON compactly (no spaces). Key order does not matter for verification.
@@ -42,13 +45,21 @@ Revocation list (`SR1`):
 
 ## Verification algorithm (app Verify screen, dashboard /verify, backend public endpoint)
 Input: token string, trusted root public key, cached revocation list (optional), `now`.
-1. Prefix must be `SS1` and have 3 parts -> else `INVALID_FORMAT`.
+1. Prefix must be `SS1` and have 3 parts -> else `INVALID_FORMAT`. Also `INVALID_FORMAT`: a
+   segment that is not canonical base64url, a signature that is not 64 bytes, or a body that is
+   not strict UTF-8 (no BOM) RFC 8259 JSON (no `NaN`/`Infinity`, anywhere) forming an object with
+   the certificate fields and JSON types above (unknown fields ignored).
 2. Decode body; parse `att`. Verify `att` signature with root public key -> else `INVALID_ATTESTATION`.
+   Also `INVALID_ATTESTATION`: `att` missing its `SA1` prefix or malformed, its body missing fields,
+   or `dpk` not the canonical encoding of an Ed25519 point of prime order (D-015: small-order and
+   mixed-order keys let anyone forge signatures that verify, with no private key).
 3. Attestation must cover issuance: `att.iat ≤ cert.iat ≤ att.exp` -> else `INVALID_ATTESTATION`.
 4. `att.site == cert.site` -> else `INVALID_ATTESTATION`.
 5. Verify certificate signature with `att.dpk` -> else `INVALID_SIGNATURE`.
 6. `cert.iat ≤ now + 300` (5 min clock skew) -> else `INVALID_FORMAT`.
 7. If revocation list present and verified with root key, and `cid` in it -> `REVOKED`.
+   A list that fails verification (wrong prefix, bad signature, malformed) is ignored and reported
+   like a missing list: "Revocation status unknown".
 8. If `now > cert.exp` -> `EXPIRED`.
 9. Otherwise `VALID`.
 UI mapping: VALID -> green "Valid"; EXPIRED -> amber "Expired"; REVOKED -> red "Revoked";
@@ -59,8 +70,12 @@ anything else -> red "Invalid". Always show "Revocation list updated <relative t
 - Root key: generated once with `backend/app/tools/gen_root_key.py`; private key only in backend
   env `ROOT_SIGNING_KEY_B64`. Public key committed at `content/trust/root_public_key.txt` and
   compiled into app and dashboard.
+- Formats (D-014): `ROOT_SIGNING_KEY_B64` is base64url (no padding) of the raw 32-byte Ed25519
+  seed, 43 characters. `root_public_key.txt` holds one line: base64url of the raw 32-byte public
+  key (43 characters) followed by a newline; readers trim whitespace.
 - Device key: generated on first launch, stored in app-private storage (prototype limitation;
-  production: hardware-backed keystore). Never leaves the device.
+  production: hardware-backed keystore). Never leaves the device. The backend rejects a device
+  public key at registration unless it is a canonical prime-order point (same check as step 2).
 
 ## Test vectors (TEST KEYS ONLY — never use in a real build)
 Seeds are raw 32-byte Ed25519 private key seeds.

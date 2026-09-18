@@ -4,10 +4,15 @@ version = "0.1.0"
 description = "Suraksha Saathi sync API and certificate authority"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "aiosqlite>=0.20",
+    "alembic>=1.14",
+    "asyncpg>=0.30",
     "cryptography>=43",
     # "standard" minus the FastAPI Cloud CLI (we deploy to Render); keeps `fastapi dev`/`fastapi run`
     "fastapi[standard-no-fastapi-cloud-cli]>=0.115",
     "pydantic-settings>=2.7",
+    "pyjwt[crypto]>=2.10",
+    "sqlalchemy[asyncio]>=2.0.36",
 ]
 
 [dependency-groups]

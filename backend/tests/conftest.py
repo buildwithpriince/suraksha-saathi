@@ -4,11 +4,14 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+import sqlalchemy as sa
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Settings
+from app.db.models import Base
 from app.main import create_app
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -35,13 +38,25 @@ def anyio_backend() -> str:
 
 
 @pytest.fixture
-def settings() -> Settings:
+def database_url(tmp_path: Path) -> str:
+    """A fresh SQLite file per test: Docker (Postgres) isn't available everywhere (D-019)."""
+    return f"sqlite:///{(tmp_path / 'test.db').as_posix()}"
+
+
+@pytest.fixture
+def settings(database_url: str) -> Settings:
     # _env_file=None: tests never read a local backend/.env
-    return Settings(_env_file=None, cors_origins=["http://localhost:5173"])
+    return Settings(
+        _env_file=None, database_url=database_url, cors_origins=["http://localhost:5173"]
+    )
 
 
 @pytest.fixture
 def app(settings: Settings) -> FastAPI:
+    # Tables from the models; tests/test_migrations.py checks the migrations build the same schema
+    engine = sa.create_engine(settings.database_url)
+    Base.metadata.create_all(engine)
+    engine.dispose()
     return create_app(settings)
 
 
@@ -49,6 +64,15 @@ def app(settings: Settings) -> FastAPI:
 async def client(app: FastAPI) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
+    await app.state.engine.dispose()
+
+
+@pytest.fixture
+async def db(app: FastAPI) -> AsyncIterator[AsyncSession]:
+    """A session on the app's database, for arranging and checking rows directly."""
+    async with app.state.sessionmaker() as session:
+        yield session
+    await app.state.engine.dispose()
 
 
 # docs/04 shared test vectors. TEST KEYS ONLY: seeds stay in the vectors file and tests, never app/.

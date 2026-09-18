@@ -15,7 +15,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Default matches docker-compose.yml; the async driver scheme is chosen in T-50.
+    # postgresql://... (Supabase, docker-compose.yml) or sqlite:///path.db (no Docker, D-019).
+    # Plain URL: app/db/engine.py picks the async driver. Default matches docker-compose.yml.
     database_url: str = "postgresql://suraksha:suraksha@localhost:5432/suraksha"
     supabase_url: str | None = None
     supabase_jwks_url: str | None = None

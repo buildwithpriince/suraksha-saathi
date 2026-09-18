@@ -28,7 +28,12 @@ Rules: any insert into `workers/attempts/certificates` inserts its `outbox` row 
 | `attempts` | id, worker_id, device_id, scenario_id, scenario_version, variant, seed, mode, started_at, duration_sec, score_percent, passed, result_json (jsonb), events_json (jsonb), flagged bool, flag_reason, received_at |
 | `certificates` | id (cid), worker_id, device_id, token, issued_at, expires_at, revoked_at NULL, revoked_reason NULL, revoked_by NULL |
 | `admin_profiles` | user_id (Supabase auth uid), role (`admin/supervisor`), site_ids uuid[] |
+| `revocation_lists` | id (serial), token (`SR1...`), iat — every SR1 signed; the newest row is served (D-022) |
 Indexes: attempts(worker_id), attempts(scenario_id, passed), certificates(expires_at), workers(site_id).
+Also stored (T-50): `devices.attestation_expires_at`, `devices.created_at`, `attempts.received_at`,
+`certificates.received_at`, `certificates(worker_id)` index. Times are unix-second `bigint`s.
+`attempts.score_percent`/`passed` hold the server-recomputed values; the device's claims stay in
+`result_json` (D-021). Schema lives in `backend/app/db/models.py` + Alembic; tests run it on SQLite (D-019).
 
 ## Device authentication
 Every device API call (except register) carries:

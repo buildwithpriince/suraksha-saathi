@@ -52,7 +52,7 @@ Fill in dates for each milestone once the finale date is known.
 - [ ] T-44 [F] Airplane-mode test of full journey — Done when: zero network calls needed, no crashes
 
 ## M5 — Backend (target: ____)
-- [ ] T-50 [D] Models + Alembic migration for docs/05 server tables
+- [x] T-50 [D] Models + Alembic migration for docs/05 server tables
 - [ ] T-51 [D] Device register, admin approve (attestation signing), attestation status
 - [ ] T-52 [D] Device signed-request auth dependency + tests (bad sig, stale timestamp, pending device)
 - [ ] T-53 [D] `POST /v1/sync` ingest with idempotency, flagging, certificate verification + tests

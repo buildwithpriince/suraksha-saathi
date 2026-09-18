@@ -56,7 +56,7 @@ Fill in dates for each milestone once the finale date is known.
 - [x] T-51 [D] Device register, admin approve (attestation signing), attestation status (the status route shipped with T-52's auth)
 - [x] T-52 [D] Device signed-request auth dependency + tests (bad sig, stale timestamp, pending device)
 - [x] T-53 [D] `POST /v1/sync` ingest with idempotency, flagging, certificate verification + tests
-- [ ] T-54 [D] Revocations (SR1 generation on revoke), content manifest, public verify
+- [x] T-54 [D] Revocations (SR1 generation on revoke), content manifest, public verify
 - [ ] T-55 [D] Admin endpoints (docs/06 table) with supervisor site scoping + tests
 - [ ] T-56 [D] `seed_demo.py` per docs/08; deploy to Render
 - [ ] T-57 [A] Unity sync client (signed headers, backoff) against deployed backend (deps: T-40, T-53)

@@ -47,14 +47,20 @@ errors: 422 `validation_error` (envelope), 413 `payload_too_large`. Rules: docs/
 
 ### GET /v1/revocations — device or public
 Res 200: `{"token":"SR1...","iat":1789500000}`
+The newest root-signed list (D-023): all revoked `cid`s, sorted, lowercase. Re-signed on every revoke. Before
+the first revocation it is a signed empty list. Needs no auth.
 
 ### GET /v1/content/manifest — device or public
 Res 200: `{"contentVersion":"2026.09.1","scenarios":[{"id":"FIRE_01","version":1},{"id":"GAS_01","version":1}]}`
+`contentVersion` comes from `content/manifest.json`; `scenarios` lists the newest version of each
+`content/scenarios/*.json`, sorted by id (D-024).
 
 ## Public endpoints
 ### GET /v1/public/verify?token=SS1... — public
 Res 200: `{"status":"VALID|EXPIRED|REVOKED|INVALID_FORMAT|INVALID_ATTESTATION|INVALID_SIGNATURE","workerName":"Ravi Munda","site":"DHN-01","modules":[{"id":"FIRE_01","score":86}],"issuedAt":1789000000,"expiresAt":1820536000,"checkedAt":1789100000}`
 (For non-VALID signature failures, omit worker fields.)
+Worker fields are present for VALID, EXPIRED and REVOKED (both signatures verified) and omitted for every
+`INVALID_*`. Server clock plus the live SR1 list. Missing `token` -> 422; longer than 4096 chars -> 422.
 
 ## Admin endpoints (JWT; supervisors see only their `site_ids`)
 | Method & path | Purpose | Response shape |

@@ -31,3 +31,5 @@ src/
 
 ## Commands
 - `npm install`, `npm run dev`, `npm run typecheck`, `npm run test`, `npm run build`
+- Deploy: from the repo root, `npx vercel --prod`. The root `vercel.json` builds `dashboard/` (the build reads
+  `../content`, so deploy from the root, not from `dashboard/`). Set the three `VITE_*` vars in Vercel to leave mock mode

@@ -1,0 +1,6 @@
+# The dashboard build reads dashboard/ and content/ (trust key, test vectors, scenarios) only
+/app-unity
+/backend
+/docs
+dashboard/node_modules
+dashboard/dist

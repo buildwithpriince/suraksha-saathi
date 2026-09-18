@@ -68,7 +68,7 @@ Fill in dates for each milestone once the finale date is known.
 - [x] T-61 [E] Overview + Compliance heatmap
 - [x] T-62 [E] Workers, worker detail, attempts, attempt detail
 - [x] T-63 [E] Certificates (revoke), Recertification (CSV), Devices (approve)
-- [ ] T-64 [E] Public `/verify` (camera scan, offline check, online status); deploy to Vercel
+- [ ] T-64 [E] Public `/verify` (camera scan, offline check, online status); deploy to Vercel — page, root `vercel.json` and tests done; the first deploy waits on a Vercel login (`npx vercel --prod` from the repo root)
 
 ## M7 — Localization + audio (target: ____)
 - [ ] T-70 [C] CSV -> Unity Localization importer + Localization Report menu (docs/07)

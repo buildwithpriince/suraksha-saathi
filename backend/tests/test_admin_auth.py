@@ -1,4 +1,4 @@
-"""T-51: admin auth = Supabase JWT (JWKS keys) + admin_profiles role (docs/06, D-025)."""
+"""T-51: admin auth = Supabase JWT (JWKS keys) + admin_profiles role (docs/06, D-020)."""
 
 import time
 import uuid

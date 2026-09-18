@@ -1,7 +1,7 @@
 """Admin auth (docs/06): Supabase JWT verified with the project JWKS, role from admin_profiles.
 
 Only asymmetric signing keys are accepted (the JWKS route). Projects still on the legacy shared
-HS256 secret must switch to JWT signing keys in Supabase (D-025).
+HS256 secret must switch to JWT signing keys in Supabase (D-020).
 """
 
 import uuid

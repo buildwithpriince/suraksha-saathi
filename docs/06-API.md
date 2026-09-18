@@ -7,7 +7,7 @@ from the status: 400 `bad_request` · 401 `unauthorized` · 403 `forbidden` · 4
 429 `rate_limited` · 500 `internal_error` · any other `http_<status>`. `validation_error` messages name
 fields (`body.deviceId: Field required`) and never echo submitted values; `internal_error` carries no details.
 Auth: **device** = signed headers (docs/05); **admin** = `Authorization: Bearer <Supabase JWT>`; **public** = none.
-Admin auth (D-025): the JWT must verify against the Supabase project JWKS (ES256/RS256/EdDSA; never HS256),
+Admin auth (D-020): the JWT must verify against the Supabase project JWKS (ES256/RS256/EdDSA; never HS256),
 `aud` = `authenticated`, `iss` = `<SUPABASE_URL>/auth/v1`. The role comes from `admin_profiles` by `sub`:
 no token or a bad one -> 401 `unauthorized`; a valid token without a profile, or a supervisor on an
 admin-only route -> 403 `forbidden`. 503 when the server lacks `SUPABASE_JWKS_URL` or the root key.
@@ -28,6 +28,7 @@ not base64url of a canonical prime-order Ed25519 point (D-015). `label` ≤ 64 c
 
 ### GET /v1/devices/me/attestation — device (pending allowed)
 Res 200: `{"status":"pending|approved|revoked","attestation":"SA1...|null","expiresAt":1819536000}`
+`attestation` and `expiresAt` are `null` unless `status` is `approved`. Revoked devices are answered too.
 
 ### POST /v1/sync — device
 Req:

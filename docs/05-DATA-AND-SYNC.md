@@ -42,6 +42,13 @@ Every device API call (except register) carries:
 - `X-Signature`: base64url Ed25519 signature by the device key over
   `METHOD + "\n" + PATH + "\n" + TIMESTAMP + "\n" + hex(sha256(body))`
 Server loads the device's public key; device must be `approved` (register/attestation-status endpoints allow `pending`).
+Details (D-023): PATH is the URL path without the query string (`/v1/sync`); TIMESTAMP is the header text
+exactly as sent and must be ASCII digits only; `hex` is lowercase; the signature is strict base64url of
+64 bytes (D-013). Every failure -> 401 `unauthorized` (message says which: missing headers, clock skew,
+unknown device, bad signature). The signature is checked before the status: then pending -> 403 "Device is
+not approved yet", revoked -> 403 "Device is revoked". The attestation-status endpoint also answers revoked
+devices, so they learn their status. A success updates `devices.last_seen_at`. A replay within the 300 s
+window is accepted; every device write is idempotent, so a replay changes nothing.
 
 ## Sync algorithm (device)
 Trigger: app resume, "Sync now" button, every 10 minutes while app is open and online.

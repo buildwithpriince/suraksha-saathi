@@ -1,4 +1,4 @@
-"""docs/06 admin endpoint shapes (the open ones pinned by D-020)."""
+"""docs/06 admin endpoint shapes (the open ones pinned by D-025)."""
 
 import uuid
 

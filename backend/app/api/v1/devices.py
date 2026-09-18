@@ -7,7 +7,12 @@ from app.api.deps import Now, Session
 from app.api.errors import ApiError, code_for_status
 from app.api.rate_limit import client_ip
 from app.db.models import Device, Site
-from app.schemas.devices import RegisterDeviceRequest, RegisterDeviceResponse
+from app.schemas.devices import (
+    AttestationStatusResponse,
+    RegisterDeviceRequest,
+    RegisterDeviceResponse,
+)
+from app.services.device_auth import AnyStatusDevice
 
 router = APIRouter(prefix="/devices", tags=["devices"])
 
@@ -41,3 +46,14 @@ async def register_device(
     )
     await session.commit()
     return RegisterDeviceResponse(status="pending")
+
+
+@router.get("/me/attestation")
+async def attestation_status(device: AnyStatusDevice) -> AttestationStatusResponse:
+    """Pending devices poll this until approved (docs/05 sync step 1)."""
+    approved = device.status == "approved"
+    return AttestationStatusResponse(
+        status=device.status,  # type: ignore[arg-type]
+        attestation=device.attestation_token if approved else None,
+        expiresAt=device.attestation_expires_at if approved else None,
+    )

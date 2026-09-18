@@ -8,9 +8,12 @@ import { Layout } from "./components/Layout";
 import { PageHeader } from "./components/ui";
 import { AttemptDetailPage } from "./pages/attempts/AttemptDetailPage";
 import { AttemptsPage } from "./pages/attempts/AttemptsPage";
+import { CertificatesPage } from "./pages/certificates/CertificatesPage";
 import { CompliancePage } from "./pages/compliance/CompliancePage";
+import { DevicesPage } from "./pages/devices/DevicesPage";
 import { LoginPage } from "./pages/login/LoginPage";
 import { OverviewPage } from "./pages/overview/OverviewPage";
+import { RecertificationPage } from "./pages/recertification/RecertificationPage";
 import { WorkerDetailPage } from "./pages/workers/WorkerDetailPage";
 import { WorkersPage } from "./pages/workers/WorkersPage";
 
@@ -47,9 +50,9 @@ export function AppRoutes() {
           <Route path="workers/:id" element={<WorkerDetailPage />} />
           <Route path="attempts" element={<AttemptsPage />} />
           <Route path="attempts/:id" element={<AttemptDetailPage />} />
-          <Route path="certificates" element={<Placeholder title="Certificates" />} />
-          <Route path="recertification" element={<Placeholder title="Recertification" />} />
-          <Route path="devices" element={<Placeholder title="Devices" />} />
+          <Route path="certificates" element={<CertificatesPage />} />
+          <Route path="recertification" element={<RecertificationPage />} />
+          <Route path="devices" element={<DevicesPage />} />
           <Route path="*" element={<Placeholder title="Page not found" />} />
         </Route>
       </Route>

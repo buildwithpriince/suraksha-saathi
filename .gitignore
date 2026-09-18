@@ -1,0 +1,37 @@
+# Unity
+app-unity/[Ll]ibrary/
+app-unity/[Tt]emp/
+app-unity/[Oo]bj/
+app-unity/[Bb]uild/
+app-unity/[Bb]uilds/
+app-unity/[Ll]ogs/
+app-unity/[Uu]ser[Ss]ettings/
+app-unity/TestResults/
+app-unity/*.csproj
+app-unity/*.sln
+app-unity/.vs/
+app-unity/.idea/
+app-unity/CoreTests~/bin/
+app-unity/CoreTests~/obj/
+*.apk
+*.aab
+*.keystore
+# Python
+backend/.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+# Node
+node_modules/
+dashboard/dist/
+# Secrets
+.env
+.env.local
+.env.production
+*.pem
+**/keys/
+CLAUDE.local.md
+.claude/settings.local.json
+# OS
+.DS_Store
+Thumbs.db

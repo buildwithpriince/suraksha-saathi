@@ -104,7 +104,7 @@ class Attempt(Base):
     mode: Mapped[str] = mapped_column(String(16))
     started_at: Mapped[int] = mapped_column(BigInteger)
     duration_sec: Mapped[float] = mapped_column(Float)
-    # Server-recomputed values (D-021); the device's own claims stay in result_json
+    # Server-recomputed values (D-022); the device's own claims stay in result_json
     score_percent: Mapped[int] = mapped_column(Integer)
     passed: Mapped[bool] = mapped_column(Boolean)
     result_json: Mapped[dict[str, Any]] = mapped_column(JsonType)
@@ -139,7 +139,7 @@ class AdminProfile(Base):
 
 
 class RevocationList(Base):
-    """Every SR1 the backend signed; the newest row is served (docs/05, D-022)."""
+    """Every SR1 the backend signed; the newest row is served (docs/05, D-023)."""
 
     __tablename__ = "revocation_lists"
 

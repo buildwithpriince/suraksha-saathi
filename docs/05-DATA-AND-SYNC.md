@@ -28,12 +28,12 @@ Rules: any insert into `workers/attempts/certificates` inserts its `outbox` row 
 | `attempts` | id, worker_id, device_id, scenario_id, scenario_version, variant, seed, mode, started_at, duration_sec, score_percent, passed, result_json (jsonb), events_json (jsonb), flagged bool, flag_reason, received_at |
 | `certificates` | id (cid), worker_id, device_id, token, issued_at, expires_at, revoked_at NULL, revoked_reason NULL, revoked_by NULL |
 | `admin_profiles` | user_id (Supabase auth uid), role (`admin/supervisor`), site_ids uuid[] |
-| `revocation_lists` | id (serial), token (`SR1...`), iat — every SR1 signed; the newest row is served (D-022) |
+| `revocation_lists` | id (serial), token (`SR1...`), iat — every SR1 signed; the newest row is served (D-023) |
 Indexes: attempts(worker_id), attempts(scenario_id, passed), certificates(expires_at), workers(site_id).
 Also stored (T-50): `devices.attestation_expires_at`, `devices.created_at`, `attempts.received_at`,
 `certificates.received_at`, `certificates(worker_id)` index. Times are unix-second `bigint`s.
 `attempts.score_percent`/`passed` hold the server-recomputed values; the device's claims stay in
-`result_json` (D-021). Schema lives in `backend/app/db/models.py` + Alembic; tests run it on SQLite (D-019).
+`result_json` (D-022). Schema lives in `backend/app/db/models.py` + Alembic; tests run it on SQLite (D-019).
 
 ## Device authentication
 Every device API call (except register) carries:
@@ -42,7 +42,7 @@ Every device API call (except register) carries:
 - `X-Signature`: base64url Ed25519 signature by the device key over
   `METHOD + "\n" + PATH + "\n" + TIMESTAMP + "\n" + hex(sha256(body))`
 Server loads the device's public key; device must be `approved` (register/attestation-status endpoints allow `pending`).
-Details (D-023): PATH is the URL path without the query string (`/v1/sync`); TIMESTAMP is the header text
+Details (D-021): PATH is the URL path without the query string (`/v1/sync`); TIMESTAMP is the header text
 exactly as sent and must be ASCII digits only; `hex` is lowercase; the signature is strict base64url of
 64 bytes (D-013). Every failure -> 401 `unauthorized` (message says which: missing headers, clock skew,
 unknown device, bad signature). The signature is checked before the status: then pending -> 403 "Device is
@@ -70,3 +70,20 @@ Trigger: app resume, "Sync now" button, every 10 minutes while app is open and o
 - Certificate validation: run the `docs/04` verification with server time; `INVALID_*` -> rejected
   `invalid_certificate` (not retryable). Worker must exist (else retryable `missing_worker`).
 - Attempt referencing an unknown worker -> rejected `missing_worker`, retryable.
+- Clarifications (D-022). Items are processed in order in one transaction, so a worker earlier in the batch
+  exists for later attempts. Checks that can never pass run before retryable ones, so permanent problems
+  are never reported as retryable. Nothing is written for a rejected item.
+  - Item `id` not a UUID, or `payload` failing its schema (strict JSON types) -> `invalid_payload`, not retryable.
+  - Worker `siteCode` unknown or not the sending device's site, or an existing worker at another site ->
+    `invalid_payload`. LWW: a strictly newer `updatedAt` overwrites; older or equal is accepted unchanged.
+  - Attempt: `result.attemptId` must equal the item id (`invalid_payload`); `scenarioId`+`scenarioVersion` must
+    exist in `/content` (`unknown_scenario`, not retryable). Identical = same workerId, result and events.
+  - Attempt recheck: the server trusts per-rule `earned`/`passed` but takes rule `max`, `critical` and
+    variant scoping from the scenario file. A critical rule without `criticalOn` fails when it earns 0.
+    Stored `score_percent`/`passed` are the server's values; `flag_reason` lists every disagreement
+    (score, passed, criticalFailures, unknown/missing/duplicate rules, unknown variant). `eventsSha256` is
+    not checked (the server can't reproduce the device's exact bytes).
+  - Certificate: VALID, EXPIRED and REVOKED are accepted (the signatures verified). It is also
+    `invalid_certificate` if `cid` ≠ item id, `wid` ≠ `payload.workerId`, or `site` ≠ the worker's site.
+    Identical = same workerId and token. `device_id` = the sending device.
+  - Envelope: bad JSON, unknown `kind`, or more than 50 items -> 422 for the whole request; body over 2 MB -> 413.

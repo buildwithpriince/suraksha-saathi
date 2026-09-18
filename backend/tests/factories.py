@@ -3,6 +3,7 @@
 import hashlib
 import time
 import uuid
+from fractions import Fraction
 from typing import Any
 
 import jwt
@@ -11,9 +12,12 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crypto import base64url
+from app.crypto.bodies import AttestationBody, CertificateBody, ModuleScore
 from app.crypto.keys import public_key_b64url
+from app.crypto.tokens import Prefix, sign_token
 from app.db.ids import uuid7
 from app.db.models import AdminProfile, Device, Site, Worker
+from app.services.content import Scenario
 
 NOW = 1789100000  # pinned server clock for API tests (docs/04 V1 "now")
 JWT_ISSUER = "https://test.supabase.co/auth/v1"
@@ -94,6 +98,98 @@ def admin_token(jwt_key: ec.EllipticCurvePrivateKey, user_id: uuid.UUID, **overr
 
 def bearer(token: str) -> dict[str, str]:
     return {"Authorization": f"Bearer {token}"}
+
+
+def attempt_result(
+    scenario: Scenario,
+    attempt_id: uuid.UUID,
+    variant: str,
+    *,
+    earned: dict[str, float] | None = None,
+    **overrides: Any,
+) -> dict[str, Any]:
+    """A docs/03 AttemptResult the way an honest engine reports it. `earned` lowers rule points."""
+    earned = earned or {}
+    rules, critical_failures = [], []
+    earned_total = max_total = 0.0
+    for rule in scenario.rules_for(variant).values():
+        points = earned.get(rule.id, float(rule.points))
+        passed = points == rule.points
+        if rule.critical and not passed and (rule.critical_on is None or points == 0):
+            critical_failures.append(rule.id)
+        rules.append(
+            {
+                "ruleId": rule.id,
+                "earned": points,
+                "max": rule.points,
+                "critical": rule.critical,
+                "passed": passed,
+                "feedbackKey": f"{scenario.id.lower()}.rule.{rule.id.lower()}",
+            }
+        )
+        earned_total += points
+        max_total += rule.points
+    score = int(Fraction(100 * earned_total / max_total) + Fraction(1, 2))  # half away from zero
+    result = {
+        "attemptId": str(attempt_id),
+        "scenarioId": scenario.id,
+        "scenarioVersion": scenario.version,
+        "variant": variant,
+        "seed": 123456,
+        "mode": "ar",
+        "startedAt": NOW - 600,
+        "durationSec": 212.4,
+        "scorePercent": score,
+        "passed": not critical_failures and score >= scenario.pass_threshold_percent,
+        "criticalFailures": critical_failures,
+        "rules": rules,
+        "eventsSha256": "0" * 64,
+    }
+    result.update(overrides)
+    return result
+
+
+def attestation_for(
+    root_key: Ed25519PrivateKey,
+    device_id: uuid.UUID,
+    device_key: Ed25519PrivateKey,
+    site: str = "DHN-01",
+    iat: int = NOW - 86400 * 30,
+    exp: int = NOW + 86400 * 335,
+) -> str:
+    body = AttestationBody(
+        did=str(device_id),
+        dpk=public_key_b64url(device_key.public_key()),
+        site=site,
+        iat=iat,
+        exp=exp,
+    )
+    return sign_token(Prefix.ATTESTATION, body, root_key)
+
+
+def certificate_token(
+    device_key: Ed25519PrivateKey,
+    attestation: str,
+    *,
+    cid: uuid.UUID,
+    wid: uuid.UUID,
+    site: str = "DHN-01",
+    name: str = "Ravi Munda",
+    iat: int = NOW - 3600,
+    exp: int = NOW - 3600 + 365 * 86400,
+) -> str:
+    body = CertificateBody(
+        cid=str(cid),
+        wid=str(wid),
+        wn=name,
+        site=site,
+        mods=[ModuleScore(id="FIRE_01", v=1, s=86), ModuleScore(id="GAS_01", v=1, s=91)],
+        iat=iat,
+        exp=exp,
+        lang="hi",
+        att=attestation,
+    )
+    return sign_token(Prefix.CERTIFICATE, body, device_key)
 
 
 def signed_headers(

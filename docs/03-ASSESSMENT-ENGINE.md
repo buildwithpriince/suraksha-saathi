@@ -36,6 +36,9 @@ Critical rules:
 scorePercent = round(100 × Σearned / Σmax)            // Σmax over non-skipped rules
 passed       = criticalFailures.Count == 0 && scorePercent >= scenario.passThresholdPercent
 ```
+`round` = round half away from zero (D-022): 92.5 -> 93, 82.5 -> 83. In C# use
+`Math.Round(x, MidpointRounding.AwayFromZero)`, since the default rounds half to even and would give 82. The
+backend recomputes the score with this rule and flags any mismatch. Skipped rules are left out of `rules[]`.
 `attempt_aborted` present -> `passed = false`, score still computed for feedback.
 
 ```json

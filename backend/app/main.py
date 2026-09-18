@@ -5,11 +5,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import v1
+from app.api.body_limit import BodySizeLimit
 from app.api.errors import install_error_handlers
 from app.api.rate_limit import RateLimiter
 from app.config import Settings, get_settings
 from app.db.engine import create_engine, create_sessionmaker
+from app.schemas.sync import MAX_BODY_BYTES
 from app.services.admin_auth import supabase_verifier
+from app.services.content import load_catalog
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -28,6 +31,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.state.sessionmaker = create_sessionmaker(engine)
     app.state.jwt_verifier = supabase_verifier(settings)
     app.state.register_limiter = RateLimiter(settings.register_rate_limit_per_minute, 60)
+    app.state.catalog = load_catalog(settings.content_dir)
+    app.add_middleware(BodySizeLimit, max_bytes=MAX_BODY_BYTES)
+    # Added last = outermost, so even a 413 carries CORS headers.
     # Admin auth is a bearer token (docs/06), so no cookies: allow_credentials stays False.
     app.add_middleware(
         CORSMiddleware,

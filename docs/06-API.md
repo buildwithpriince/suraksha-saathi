@@ -41,6 +41,9 @@ Req:
 ```
 Res 200: `{"accepted":["uuid"],"rejected":[{"id":"uuid","code":"missing_worker","retryable":true}]}`
 Max 50 items, max body 2 MB.
+Rejection codes: `missing_worker` (retryable) · `conflict_immutable` · `invalid_payload` · `unknown_scenario` ·
+`invalid_certificate` (none of the last four are retryable). Ids are echoed exactly as sent. Whole-request
+errors: 422 `validation_error` (envelope), 413 `payload_too_large`. Rules: docs/05 "Sync ingest rules".
 
 ### GET /v1/revocations — device or public
 Res 200: `{"token":"SR1...","iat":1789500000}`

@@ -1,4 +1,4 @@
-"""Device signed-request auth (docs/05 "Device authentication", D-023).
+"""Device signed-request auth (docs/05 "Device authentication", D-021).
 
 Headers: X-Device-Id, X-Timestamp (unix seconds), X-Signature = base64url Ed25519 signature by the
 device key over  METHOD "\\n" PATH "\\n" TIMESTAMP "\\n" hex(sha256(body)).

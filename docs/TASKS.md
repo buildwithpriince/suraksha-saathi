@@ -55,7 +55,7 @@ Fill in dates for each milestone once the finale date is known.
 - [x] T-50 [D] Models + Alembic migration for docs/05 server tables
 - [x] T-51 [D] Device register, admin approve (attestation signing), attestation status (the status route shipped with T-52's auth)
 - [x] T-52 [D] Device signed-request auth dependency + tests (bad sig, stale timestamp, pending device)
-- [ ] T-53 [D] `POST /v1/sync` ingest with idempotency, flagging, certificate verification + tests
+- [x] T-53 [D] `POST /v1/sync` ingest with idempotency, flagging, certificate verification + tests
 - [ ] T-54 [D] Revocations (SR1 generation on revoke), content manifest, public verify
 - [ ] T-55 [D] Admin endpoints (docs/06 table) with supervisor site scoping + tests
 - [ ] T-56 [D] `seed_demo.py` per docs/08; deploy to Render

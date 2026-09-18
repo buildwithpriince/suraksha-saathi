@@ -1,4 +1,4 @@
-"""Initial server tables (docs/05 "Server PostgreSQL") plus revocation_lists (D-022).
+"""Initial server tables (docs/05 "Server PostgreSQL") plus revocation_lists (D-023).
 
 Revision ID: 0001
 Revises:

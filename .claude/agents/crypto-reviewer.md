@@ -1,6 +1,6 @@
 ---
 name: crypto-reviewer
-description: Reviews certificate, attestation, revocation, and device-request signing code for security and cross-language compatibility bugs. Use whenever files under Certificates/, backend/app/crypto/, or dashboard/src/lib/cert/ change.
+description: Reviews certificate, attestation, revocation, and device-request signing code for security and cross-language compatibility bugs. Use whenever files under mobile/src/core/certificates/, backend/app/crypto/, or dashboard/src/lib/cert/ change.
 tools: Read, Grep, Glob, Bash
 model: opus
 ---

@@ -13,7 +13,8 @@ Steps:
 3. Check, and report with file:line references:
    - Contract mismatches: field names, types, enums, endpoint paths, status codes, rule semantics.
    - Judge checklist regressions (root CLAUDE.md list), especially offline behaviour and localization.
-   - Hard-coded user-facing strings, hard-coded safety content, TextMeshPro usage, Unity YAML edits.
+   - Hard-coded user-facing strings, hard-coded safety content, react/react-native/expo imports in
+     `mobile/src/core`, edits to generated `mobile/android|ios/`.
    - Missing tests that the spec requires (docs/03 test list, docs/04 vectors, API endpoint tests).
 4. Output exactly three sections: **Blockers** (must fix), **Should fix**, **OK** (one line each).
 Keep it under 40 lines. If there are no blockers, say "No blockers" first.

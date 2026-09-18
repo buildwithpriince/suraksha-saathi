@@ -1,6 +1,6 @@
 ---
 paths:
-  - "app-unity/Assets/_Project/Scripts/Core/Certificates/**"
+  - "mobile/src/core/certificates/**"
   - "backend/app/crypto/**"
   - "dashboard/src/lib/cert/**"
 ---

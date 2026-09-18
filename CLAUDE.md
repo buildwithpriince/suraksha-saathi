@@ -4,8 +4,8 @@ Team Caffeine Coders. Monorepo for a hackathon prototype judged against a fixed 
 Read `docs/00-PRD.md` once per new task area; it defines what "done" means.
 
 ## What we are building (one paragraph)
-An offline-first Android app (Unity + AR Foundation/ARCore) that trains industrial workers in
-Jharkhand through AR safety drills overlaid on their real surroundings, scores what they *do*
+An offline-first Android app (Expo React Native, camera-based AR overlays; D-027) that trains
+industrial workers in Jharkhand through AR safety drills overlaid on their real surroundings, scores what they *do*
 (not quiz answers), and issues a signed QR certificate that can be verified with no network.
 A FastAPI backend syncs data and signs device attestations; a React dashboard shows compliance.
 
@@ -21,7 +21,7 @@ A FastAPI backend syncs data and signs device attestations; a React dashboard sh
 If a change risks any item above, stop and say so before continuing.
 
 ## Repo map
-- `app-unity/` — Unity 6.3 LTS project (see `app-unity/CLAUDE.md`)
+- `mobile/` — Expo React Native Android app (see `mobile/CLAUDE.md`)
 - `backend/` — FastAPI + PostgreSQL (Supabase) (see `backend/CLAUDE.md`)
 - `dashboard/` — React + Vite + TypeScript (see `dashboard/CLAUDE.md`)
 - `content/scenarios/` — scenario JSON files; the single source of truth for module steps
@@ -43,31 +43,35 @@ If a change risks any item above, stop and say so before continuing.
 | Task board | `docs/TASKS.md` |
 | Decisions log | `docs/DECISIONS.md` |
 
+Until T-09 is done, parts of docs/00–09 still describe the Unity app. Where they disagree with
+`mobile/CLAUDE.md` about how the app is built, `mobile/CLAUDE.md` and D-027 win; data contracts
+(scenario JSON, events, scoring, tokens, API, DB) are unchanged.
+
 ## How to work in this repo
 - Work one task from `docs/TASKS.md` at a time (use `/implement-task T-XX`).
 - Start any task touching more than 2 files in plan mode; show the plan before editing.
 - Specs win over your assumptions. If code and spec disagree, or the spec is silent or
   ambiguous, ask — do not invent a contract. When a decision is made, append it to `docs/DECISIONS.md`.
 - Changing a data contract (scenario JSON, QR format, API shape, DB schema) means updating the
-  spec file in the same change, and every consumer (Unity, backend, dashboard) in the same task or a
+  spec file in the same change, and every consumer (app, backend, dashboard) in the same task or a
   follow-up task added to `docs/TASKS.md`.
 - Finish a task by: running that area's tests, ticking the task in `docs/TASKS.md`, and giving a
   3-line summary (what changed, how it was verified, what is left).
 - Small commits, one task per commit: `T-XX: short imperative summary`.
 
 ## Hard rules
-- Never hand-edit Unity YAML (`*.unity`, `*.prefab`, `*.asset`, `*.meta`, `ProjectSettings/`).
-  Use the Unity MCP tools or tell the human the exact Editor steps. A hook blocks these edits.
+- Never edit `mobile/android/` or `mobile/ios/`: `expo prebuild` generates them. Native config goes in
+  `mobile/app.config.ts` or a config plugin. A hook blocks these edits.
 - Never read, print, or commit secrets: `.env*`, `*.pem`, `keys/`. Root signing private key lives
   only in the backend environment.
 - All user-facing app text goes through localization keys. No hard-coded strings in UI.
-- App UI uses UI Toolkit with the Advanced Text Generator. Never TextMeshPro (breaks Devanagari).
+- App text renders with the bundled Noto Sans Devanagari font; check Hindi conjuncts on a device (docs/07).
 - Safety procedure content (steps, thresholds, PPE) only comes from `content/scenarios/*.json`.
   Do not invent safety facts in code or strings; mark unknowns `"needsReview": true`.
 - Everything the worker does must work in airplane mode. Network is only for sync.
 
 ## Commands (quick reference; details in each sub-CLAUDE.md)
-- Core C# tests (fast, no Editor): `dotnet test app-unity/CoreTests~`
+- App core tests: `cd mobile && npm test` (Vitest); `npm run typecheck && npm run lint`
 - Backend tests: `cd backend && uv run pytest -q`
 - Dashboard: `cd dashboard && npm run typecheck && npm run test && npm run build`
 - Validate scenario JSON: `cd backend && uv run python -m app.tools.validate_scenarios ../content/scenarios`

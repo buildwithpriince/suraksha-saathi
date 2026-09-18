@@ -1,0 +1,46 @@
+# Render Blueprint for the backend API (T-56). One-time setup (a human, see SETUP.md section 8):
+# Render dashboard > New > Blueprint > this repo. Render asks for every `sync: false` value.
+services:
+  - type: web
+    name: suraksha-saathi-api
+    runtime: python
+    plan: free # sleeps when idle: open /v1/health a minute before a demo
+    region: singapore # closest Render region to Jharkhand
+    branch: main
+    buildFilter:
+      paths:
+        - backend/**
+        - content/** # scenario files + manifest are read at runtime
+        - render.yaml
+    # System Python 3.12 only: a uv-downloaded interpreter lives outside the project dir and is
+    # not kept between build and runtime, which would break the venv.
+    buildCommand: cd backend && pip install uv && uv sync --frozen --no-dev
+    # The free plan has no pre-deploy hook, so migrations run on every start (idempotent).
+    # SEED_DEMO_ON_START=true seeds the docs/08 demo data once (seed_demo refuses to run twice).
+    startCommand: >-
+      cd backend &&
+      uv run --no-sync alembic upgrade head &&
+      if [ "$SEED_DEMO_ON_START" = "true" ]; then uv run --no-sync python -m app.tools.seed_demo; fi &&
+      uv run --no-sync fastapi run app/main.py --host 0.0.0.0 --port $PORT
+    healthCheckPath: /v1/health # liveness only, no database (D-011)
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: UV_PYTHON_DOWNLOADS
+        value: never
+      - key: FORWARDED_ALLOW_IPS # trust Render's proxy for client IPs (register rate limit)
+        value: "*"
+      - key: SEED_DEMO_ON_START
+        value: "false"
+      # Supabase > Connect > Session pooler URI (IPv4), postgresql://...?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # base64url 32-byte seed from `uv run python -m app.tools.gen_root_key` (T-17, D-014)
+      - key: ROOT_SIGNING_KEY_B64
+        sync: false
+      - key: SUPABASE_URL # https://<project>.supabase.co
+        sync: false
+      - key: SUPABASE_JWKS_URL # https://<project>.supabase.co/auth/v1/.well-known/jwks.json
+        sync: false
+      - key: CORS_ORIGINS # http://localhost:5173,https://<dashboard>.vercel.app
+        sync: false

@@ -75,3 +75,22 @@ Render env vars, commit only the public key to `content/trust/root_public_key.tx
 - Install Unity modules, sign in to Unity, create the Android keystore, and build/install APKs.
 - Test AR on real phones; print markers; record narration audio; get the safety-content review.
 - Source 3D models/VFX (free or CC0) and record their licenses in README credits.
+
+## 8. Deploy the backend to Render (human, once; task T-58)
+Claude can't do this: it needs your Render and Supabase accounts and the real root key (D-014).
+1. **Root key (T-17).** In your own terminal: `cd backend && uv run python -m app.tools.gen_root_key`.
+   Commit the changed `content/trust/root_public_key.txt`; keep the printed `ROOT_SIGNING_KEY_B64` for step 3 only.
+2. **Supabase.** Create a project. Under Authentication > JWT signing keys, make sure asymmetric keys are
+   in use (D-020). Copy the Connect > **Session pooler** URI (IPv4; Render has no IPv6) and add
+   `?sslmode=require`.
+3. **Render.** Dashboard > New > **Blueprint** > this repo (`render.yaml` at the root). Fill in the
+   prompted values: `DATABASE_URL`, `ROOT_SIGNING_KEY_B64`, `SUPABASE_URL`, `SUPABASE_JWKS_URL`
+   (`<SUPABASE_URL>/auth/v1/.well-known/jwks.json`), `CORS_ORIGINS`. For the demo database, set
+   `SEED_DEMO_ON_START=true` on the first deploy (the seed refuses to run twice, so leaving it on is safe).
+   Each start runs `alembic upgrade head`.
+4. **Check.** `https://<service>.onrender.com/v1/health` -> `{"status":"ok"}`;
+   `/v1/content/manifest` and `/v1/revocations` answer (both need the DB and the root key).
+5. **Dashboard admins.** Create a user in Supabase Auth, then add their uid to `admin_profiles`
+   (SQL editor: `insert into admin_profiles (user_id, role, site_ids) values ('<uid>', 'admin', '{}');`).
+   Or, for a local seed: `uv run python -m app.tools.seed_demo --admin <uid>`.
+The free plan sleeps when idle: open `/v1/health` a minute before a demo.

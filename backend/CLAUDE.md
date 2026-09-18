@@ -7,7 +7,8 @@ Loaded when working inside `backend/`. Root `CLAUDE.md` rules still apply.
 - SQLAlchemy 2 (async) + Alembic, PostgreSQL on Supabase
 - Auth for admins: Supabase Auth JWT (verify with the project JWKS)
 - Crypto: `cryptography` (Ed25519)
-- Tests: pytest + httpx AsyncClient against a local Postgres (docker compose)
+- Tests: pytest + httpx AsyncClient; each test gets a fresh SQLite file (D-019). Before relying on new
+  SQL, run them against `docker compose` Postgres too (T-59)
 - Deploy: Render (web service). Env vars documented in `.env.example` only
 
 ## Layout

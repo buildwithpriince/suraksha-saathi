@@ -58,7 +58,9 @@ Fill in dates for each milestone once the finale date is known.
 - [x] T-53 [D] `POST /v1/sync` ingest with idempotency, flagging, certificate verification + tests
 - [x] T-54 [D] Revocations (SR1 generation on revoke), content manifest, public verify
 - [x] T-55 [D] Admin endpoints (docs/06 table) with supervisor site scoping + tests
-- [ ] T-56 [D] `seed_demo.py` per docs/08; deploy to Render
+- [ ] T-56 [D] `seed_demo.py` per docs/08; deploy to Render — seed_demo + `render.yaml` done and smoke-tested locally; the live deploy waits on T-58
+- [ ] T-58 [D] Human step: Supabase project + Render Blueprint per SETUP.md section 8 (root key, DB URL, JWKS, CORS; `SEED_DEMO_ON_START=true` once) — Done when: `https://<service>.onrender.com/v1/health` is ok and `/v1/revocations` returns an SR1 (deps: T-17)
+- [ ] T-59 [D] Run `uv run pytest` once against `docker compose` Postgres (the suite has only run on SQLite, D-019); fix any dialect differences — Done when: green on Postgres 17
 - [ ] T-57 [A] Unity sync client (signed headers, backoff) against deployed backend (deps: T-40, T-53)
 
 ## M6 — Dashboard (target: ____)

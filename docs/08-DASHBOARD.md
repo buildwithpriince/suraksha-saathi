@@ -25,3 +25,6 @@ red #B01E1E for failures). Desktop-first for admin screens; `/verify` is mobile-
 `backend/app/tools/seed_demo.py` creates 3 sites (`DHN-01` coal, `JSR-02` steel, `KDM-03` mica),
 40 workers, ~150 attempts with realistic failures (GAS_01 R_BUDDY_CHECK is the most-failed rule),
 12 certificates expiring within 30 days, 1 revoked certificate, 1 pending device.
+Also 2 flagged attempts (a client claimed a pass the server rejected). All tokens are really signed with
+the configured root key, so `/verify` works on demo certificates. Run on an empty migrated DB (it refuses
+to run twice). `--admin <supabase uid>` / `--supervisor <uid>:<site>` add dashboard users.

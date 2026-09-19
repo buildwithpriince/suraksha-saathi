@@ -1,0 +1,30 @@
+key,en,hi,sat,needsReview,notes
+app.title,Suraksha Saathi,,,false,app name
+lang.en,English,,,false,picker label: always in its own script (docs/07)
+lang.hi,हिन्दी,,,false,picker label: always in its own script (docs/07)
+lang.sat,संताली,,,true,picker label needs native-speaker confirmation (docs/07)
+setup.title,Set up this device,,,false,screen title
+setup.site_code.label,Site code,,,false,input label
+setup.site_code.hint,"The code of this site, for example DHN-01.",,,false,input hint
+setup.site_code.invalid,"Use 2 to 16 capital letters, digits or dashes.",,,false,validation error
+setup.save.button,Save,,,false,button
+home.workers.title,Workers,,,false,section title
+home.workers.empty,No workers yet. Enrol the first worker.,,,false,empty state
+home.enrol.button,Enrol worker,,,false,button
+home.verify.button,Verify a certificate,,,false,button
+home.site.label,Site {{site}},,,false,{{site}} = site code
+home.pending_sync.label,{{count}} records waiting to sync,,,false,{{count}} = outbox rows
+enrol.title,Enrol worker,,,false,screen title
+enrol.name.label,Name,,,false,input label
+enrol.name.hint,Up to 24 letters. It is printed on the certificate.,,,false,input hint
+enrol.name.required,Enter the worker's name.,,,false,validation error
+enrol.employee_code.label,Employee code (optional),,,false,input label
+enrol.language.label,Preferred language,,,false,picker label
+enrol.save.button,Enrol,,,false,button
+worker.attempts.title,Attempts,,,false,section title
+worker.attempts.empty,No attempts yet.,,,false,empty state
+worker.train.button,Start: {{module}},,,false,{{module}} = scenario title
+worker.certificate.button,Certificate,,,false,button
+attempt.score.label,{{score}}%,,,false,{{score}} = score percent
+attempt.pass.label,PASS,,,false,result badge
+attempt.not_yet.label,NOT YET,,,false,result badge

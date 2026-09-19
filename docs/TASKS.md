@@ -11,7 +11,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [x] T-01 [A] Monorepo init: `.gitignore` (Unity/Python/Node), `.gitattributes` with Git LFS for binaries, README skeleton — Done when: fresh clone opens all three apps
 - [ ] T-02 [A] Expo app in `mobile/` per `mobile/CLAUDE.md`: TypeScript strict, expo-router, Android package id, minSdk 29 (`expo-build-properties`), `eas.json` with a `preview` profile that builds an APK, `.gitignore` for `android/` `ios/` `.expo/` — Done when: the starter screen runs on a phone via `npx expo start` and `eas build -p android --profile preview` produces an APK that installs (human: expo.dev login)
 - [ ] T-03 [A] Folder layout from `mobile/CLAUDE.md` + ESLint with `no-restricted-imports` keeping `src/core` free of react / react-native / expo — Done when: layout matches, `npm run lint` and `npm run typecheck` green, an RN import in `src/core` fails lint (deps: T-02)
-- [ ] T-04 [A] Vitest for `src/core` (`npm test`) — Done when: `npm test` runs 1 sample test (deps: T-03)
+- [x] T-04 [A] Vitest for `src/core` (`npm test`) — Done when: `npm test` runs 1 sample test (deps: T-03)
 - [x] T-05 [D] Backend skeleton: uv, FastAPI app factory, config, health route, ruff, pytest, docker compose Postgres — Done when: `uv run pytest` green
 - [x] T-06 [E] Dashboard skeleton: Vite React TS strict, Tailwind, Router, TanStack Query, Vitest — Done when: typecheck/test/build green
 - ~~T-07 [A] Unity MCP connected to Claude Code~~ — dropped: no Unity Editor (D-027)

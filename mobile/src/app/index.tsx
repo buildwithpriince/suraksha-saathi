@@ -1,41 +1,68 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
-// Placeholder home for the first Expo Go milestone (T-02). Hard-coded text is temporary: the real
-// Home screen (T-41) reads every string from i18next keys. The second line checks that Android
-// shapes Devanagari conjuncts and vowel signs correctly (docs/07 acceptance words).
+import type { WorkerRecord } from '@/core/sync/payloads';
+import { outboxCount } from '@/db/database';
+import { getDevice } from '@/db/device';
+import { listWorkers } from '@/db/workers';
+import { Body, Button, Card, Screen, Title } from '@/ui/components';
+import { colors, space } from '@/ui/theme';
+
 export default function HomeScreen() {
+  const { t } = useTranslation();
+  const router = useRouter();
+  const [device, setDevice] = useState(getDevice);
+  const [workers, setWorkers] = useState<WorkerRecord[]>([]);
+  const [pending, setPending] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setDevice(getDevice());
+      setWorkers(listWorkers());
+      setPending(outboxCount());
+    }, []),
+  );
+
+  if (device === null) return <Redirect href="/setup" />;
+
   return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Suraksha Saathi</Text>
-        <Text style={styles.subtitle}>सुरक्षा साथी</Text>
-        <Text style={styles.check}>क्षमता · ज्ञान · प्रशिक्षण · सुरक्षित</Text>
-        <Text style={styles.note}>Placeholder home screen</Text>
-      </View>
-    </SafeAreaView>
+    <Screen>
+      <Body muted>
+        {t('home.site.label', { site: device.siteCode })} · {t('home.pending_sync.label', { count: pending })}
+      </Body>
+      <Card>
+        <Title>{t('home.workers.title')}</Title>
+        {workers.length === 0 ? <Body muted>{t('home.workers.empty')}</Body> : null}
+        {workers.map((w) => (
+          <Pressable
+            key={w.id}
+            accessibilityRole="button"
+            onPress={() => router.push({ pathname: '/worker/[id]', params: { id: w.id } })}
+            style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+          >
+            <Text style={styles.rowTitle}>{w.displayName}</Text>
+            <Text style={styles.rowMeta}>{t(`lang.${w.preferredLang}`)}</Text>
+          </Pressable>
+        ))}
+        <Button label={t('home.enrol.button')} onPress={() => router.push('/enrol')} />
+      </Card>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
+  row: {
+    minHeight: 56,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F4F7FB',
-    padding: 24,
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingVertical: space.s,
   },
-  card: {
-    alignSelf: 'stretch',
-    alignItems: 'center',
-    gap: 12,
-    paddingVertical: 32,
-    paddingHorizontal: 20,
-    borderRadius: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  title: { fontSize: 28, fontWeight: '700', color: '#0B3D63' },
-  subtitle: { fontSize: 24, color: '#0B3D63' },
-  check: { fontSize: 20, color: '#1F2933' },
-  note: { fontSize: 14, color: '#52606D' },
+  rowPressed: { backgroundColor: colors.background },
+  rowTitle: { fontSize: 18, color: colors.text, fontWeight: '600' },
+  rowMeta: { fontSize: 16, color: colors.muted },
 });

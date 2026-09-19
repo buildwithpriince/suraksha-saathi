@@ -36,6 +36,11 @@ export default function WorkerScreen() {
             onPress={() => router.push({ pathname: '/train/[scenarioId]', params: { scenarioId: s.id, workerId: worker.id } })}
           />
         ))}
+        <Button
+          kind="secondary"
+          label={t('worker.certificate.button')}
+          onPress={() => router.push({ pathname: '/certificate/[workerId]', params: { workerId: worker.id } })}
+        />
       </Card>
       <Card>
         <Title>{t('worker.attempts.title')}</Title>

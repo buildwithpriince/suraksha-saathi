@@ -61,3 +61,20 @@ result.done.button,Done,,,false,button: back to the worker
 result.passed.audio,Well done. You passed.,,,false,spoken when the result opens
 result.not_yet.audio,Not yet. Tap each red row to hear what to do better.,,,false,spoken when the result opens
 result.aborted.label,You stopped the drill early.,,,false,shown when the attempt was stopped
+demo_keys.banner,Demo keys: signed with test keys. Not valid outside this demo.,,,false,"banner on certificate and verify screens while no real root key is committed (D-030)"
+cert.title,Certificate,,,false,screen title
+cert.issue.button,Issue certificate,,,false,button
+cert.reissue.button,Issue a new certificate,,,false,button
+cert.missing.label,Pass these modules first: {{modules}},,,false,{{modules}} = module titles
+cert.not_approved.label,Device not approved yet. The certificate will be issued after the next sync.,,,false,docs/04 issuance step 2
+cert.untrusted.label,This app has no trusted root key. Certificates cannot be issued or checked.,,,false,root_public_key.txt is garbled
+cert.show.hint,Show this QR code to the inspector.,,,false,under the QR
+cert.name.label,Name,,,false,detail label
+cert.site.label,Site,,,false,detail label
+cert.issued.label,Issued,,,false,detail label
+cert.expires.label,Valid until,,,false,detail label
+cert.module.label,{{module}}: {{score}}%,,,false,{{module}} = title; {{score}} = score percent
+verify.status.valid,Valid,,,false,docs/04 status (green)
+verify.status.expired,Expired,,,false,docs/04 status (amber)
+verify.status.revoked,Revoked,,,false,docs/04 status (red)
+verify.status.invalid,Invalid,,,false,docs/04 status (red)

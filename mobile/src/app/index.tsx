@@ -48,6 +48,7 @@ export default function HomeScreen() {
         ))}
         <Button label={t('home.enrol.button')} onPress={() => router.push('/enrol')} />
       </Card>
+      <Button kind="secondary" label={t('home.verify.button')} onPress={() => router.push('/verify')} />
     </Screen>
   );
 }

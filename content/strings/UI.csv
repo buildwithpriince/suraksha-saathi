@@ -78,3 +78,16 @@ verify.status.valid,Valid,,,false,docs/04 status (green)
 verify.status.expired,Expired,,,false,docs/04 status (amber)
 verify.status.revoked,Revoked,,,false,docs/04 status (red)
 verify.status.invalid,Invalid,,,false,docs/04 status (red)
+verify.title,Verify certificate,,,false,screen title
+verify.scan.hint,Point the camera at the certificate QR code.,,,false,scanner hint
+verify.camera.body,Allow the camera to scan certificate QR codes.,,,false,permission text
+verify.camera.allow.button,Allow camera,,,false,button
+verify.again.button,Scan another,,,false,button
+verify.revocation.updated,Revocation list updated {{when}},,,false,docs/04 freshness line; {{when}} = relative time
+verify.revocation.unknown,"Revocation status unknown (offline, no list)",,,false,docs/04 freshness line
+verify.reason.invalid_format,This is not a valid Suraksha Saathi certificate.,,,false,INVALID_FORMAT detail
+verify.reason.invalid_attestation,The device that issued it is not approved.,,,false,INVALID_ATTESTATION detail
+verify.reason.invalid_signature,The certificate was changed after it was signed.,,,false,INVALID_SIGNATURE detail
+time.minutes_ago,{{count}} min ago,,,false,relative time
+time.hours_ago,{{count}} h ago,,,false,relative time
+time.days_ago,{{count}} days ago,,,false,relative time

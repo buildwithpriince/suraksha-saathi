@@ -1,11 +1,13 @@
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import { getScenario, playableScenarios } from '@/content/scenarios';
 import { listAttempts, type AttemptRecord } from '@/db/attempts';
-import { getWorker } from '@/db/workers';
+import { getWorker, setPreferredLang } from '@/db/workers';
+import { isLocale, setLocale } from '@/i18n';
+import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
 import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
 import { colors, space } from '@/ui/theme';
 
@@ -15,6 +17,11 @@ export default function WorkerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [worker] = useState(() => getWorker(id));
   const [attempts, setAttempts] = useState<AttemptRecord[]>([]);
+
+  // docs/07: the kiosk switches to the worker's preferred language when they are picked
+  useEffect(() => {
+    if (worker !== null && isLocale(worker.preferredLang)) setLocale(worker.preferredLang);
+  }, [worker]);
 
   useFocusEffect(
     useCallback(() => {
@@ -36,6 +43,7 @@ export default function WorkerScreen() {
             onPress={() => router.push({ pathname: '/train/[scenarioId]', params: { scenarioId: s.id, workerId: worker.id } })}
           />
         ))}
+        <LanguageSwitcher label={t('worker.language.label')} onChange={(l) => setPreferredLang(worker.id, l)} />
         <Button
           kind="secondary"
           label={t('worker.certificate.button')}

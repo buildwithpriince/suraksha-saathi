@@ -43,3 +43,8 @@ export function setLocale(locale: Locale): void {
 }
 
 export default i18n;
+
+/** True while a locale has fewer strings than English, so some text shows its fallback (docs/07). */
+export function isIncomplete(locale: Locale): boolean {
+  return Object.keys({ en, hi, sat }[locale]).length < Object.keys(en).length;
+}

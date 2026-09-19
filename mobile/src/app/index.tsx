@@ -7,6 +7,7 @@ import type { WorkerRecord } from '@/core/sync/payloads';
 import { outboxCount } from '@/db/database';
 import { getDevice } from '@/db/device';
 import { listWorkers } from '@/db/workers';
+import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
 import { Body, Button, Card, Screen, Title } from '@/ui/components';
 import { colors, space } from '@/ui/theme';
 
@@ -49,6 +50,9 @@ export default function HomeScreen() {
         <Button label={t('home.enrol.button')} onPress={() => router.push('/enrol')} />
       </Card>
       <Button kind="secondary" label={t('home.verify.button')} onPress={() => router.push('/verify')} />
+      <Card>
+        <LanguageSwitcher label={t('home.language.label')} />
+      </Card>
     </Screen>
   );
 }

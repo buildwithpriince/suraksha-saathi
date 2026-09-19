@@ -1,93 +1,96 @@
 key,en,hi,sat,needsReview,notes
-app.title,Suraksha Saathi,,,false,app name
+app.title,Suraksha Saathi,सुरक्षा साथी,,true,app name
 lang.en,English,,,false,picker label: always in its own script (docs/07)
 lang.hi,हिन्दी,,,false,picker label: always in its own script (docs/07)
 lang.sat,संताली,,,true,picker label needs native-speaker confirmation (docs/07)
-setup.title,Set up this device,,,false,screen title
-setup.site_code.label,Site code,,,false,input label
-setup.site_code.hint,"The code of this site, for example DHN-01.",,,false,input hint
-setup.site_code.invalid,"Use 2 to 16 capital letters, digits or dashes.",,,false,validation error
-setup.save.button,Save,,,false,button
-home.workers.title,Workers,,,false,section title
-home.workers.empty,No workers yet. Enrol the first worker.,,,false,empty state
-home.enrol.button,Enrol worker,,,false,button
-home.verify.button,Verify a certificate,,,false,button
-home.site.label,Site {{site}},,,false,{{site}} = site code
-home.pending_sync.label,{{count}} records waiting to sync,,,false,{{count}} = outbox rows
-enrol.title,Enrol worker,,,false,screen title
-enrol.name.label,Name,,,false,input label
-enrol.name.hint,Up to 24 letters. It is printed on the certificate.,,,false,input hint
-enrol.name.required,Enter the worker's name.,,,false,validation error
-enrol.employee_code.label,Employee code (optional),,,false,input label
-enrol.language.label,Preferred language,,,false,picker label
-enrol.save.button,Enrol,,,false,button
-worker.attempts.title,Attempts,,,false,section title
-worker.attempts.empty,No attempts yet.,,,false,empty state
-worker.train.button,Start: {{module}},,,false,{{module}} = scenario title
-worker.certificate.button,Certificate,,,false,button
+setup.title,Set up this device,इस डिवाइस को सेट करें,,true,screen title
+setup.site_code.label,Site code,साइट कोड,,true,input label
+setup.site_code.hint,"The code of this site, for example DHN-01.","इस साइट का कोड, जैसे DHN-01।",,true,input hint
+setup.site_code.invalid,"Use 2 to 16 capital letters, digits or dashes.","2 से 16 बड़े अक्षर, अंक या डैश लिखें।",,true,validation error
+setup.save.button,Save,सेव करें,,true,button
+home.workers.title,Workers,कामगार,,true,section title
+home.workers.empty,No workers yet. Enrol the first worker.,अभी कोई कामगार नहीं है। पहले कामगार को जोड़ें।,,true,empty state
+home.enrol.button,Enrol worker,कामगार जोड़ें,,true,button
+home.verify.button,Verify a certificate,प्रमाणपत्र जाँचें,,true,button
+home.site.label,Site {{site}},साइट {{site}},,true,{{site}} = site code
+home.pending_sync.label,{{count}} records waiting to sync,{{count}} रिकॉर्ड सिंक होने बाकी,,true,{{count}} = outbox rows
+enrol.title,Enrol worker,कामगार जोड़ें,,true,screen title
+enrol.name.label,Name,नाम,,true,input label
+enrol.name.hint,Up to 24 letters. It is printed on the certificate.,24 अक्षर तक। यह प्रमाणपत्र पर छपेगा।,,true,input hint
+enrol.name.required,Enter the worker's name.,कामगार का नाम लिखें।,,true,validation error
+enrol.employee_code.label,Employee code (optional),कर्मचारी कोड (ज़रूरी नहीं),,true,input label
+enrol.language.label,Preferred language,पसंदीदा भाषा,,true,picker label
+enrol.save.button,Enrol,जोड़ें,,true,button
+worker.attempts.title,Attempts,प्रयास,,true,section title
+worker.attempts.empty,No attempts yet.,अभी कोई प्रयास नहीं।,,true,empty state
+worker.train.button,Start: {{module}},शुरू करें: {{module}},,true,{{module}} = scenario title
+worker.certificate.button,Certificate,प्रमाणपत्र,,true,button
 attempt.score.label,{{score}}%,,,false,{{score}} = score percent
-attempt.pass.label,PASS,,,false,result badge
-attempt.not_yet.label,NOT YET,,,false,result badge
-worker.modules.title,Training modules,,,false,section title
-training.replay.button,Replay,,,false,button: hear the instruction again
-training.stop.button,Stop,,,false,button: end the drill early
-training.continue.button,Continue,,,false,button
-training.hold.button,Hold to spray,,,false,press-and-hold button for aim_and_hold
-training.held.label,Sprayed {{held}} of {{total}} s,,,false,hold progress
-training.time_left.label,{{seconds}} s,,,false,step countdown
-training.camera.title,Camera needed,,,false,permission card title
-training.camera.body,The drill shows the fire on your real floor through the camera.,,,false,permission card text
-training.camera.allow.button,Allow camera,,,false,button
-training.camera.skip.button,Train without camera,,,false,button: tabletop mode
-training.tabletop.label,Virtual room: no camera,,,false,mode banner
-training.hint.scan_marker,Scan the printed exit sign with the camera.,,,false,find_marker / move_to marker hint (camera)
-training.hint.tap_marker,Turn around and tap the exit sign.,,,false,find_marker / move_to marker hint (no camera)
-training.hint.waypoints,Tap the marks on the floor one by one.,,,false,move_to waypoint hint
-training.hint.hold,Press and hold the button to spray.,,,false,aim_and_hold hint
-training.hint.target,Tap it.,,,false,tap_target hint
-training.object.alarm_call_point,FIRE ALARM,,,false,label on the alarm call point overlay
-training.object.exit_sign,EXIT,,,false,label on the virtual exit sign (no-camera mode)
-training.detector.label,Gas {{reading}},,,false,detector reading on move_to with a detector
-training.saving.label,Saving your result…,,,false,shown while the attempt is saved
-result.title,Your result,,,false,screen title
-result.score.label,Score {{score}}%,,,false,{{score}} = score percent
-result.threshold.label,Pass mark {{threshold}}%,,,false,{{threshold}} = scenario pass threshold
-result.critical.label,Critical step missed,,,false,rule row tag for a failed critical rule
+attempt.pass.label,PASS,पास,,true,result badge
+attempt.not_yet.label,NOT YET,अभी नहीं,,true,result badge
+worker.modules.title,Training modules,प्रशिक्षण मॉड्यूल,,true,section title
+training.replay.button,Replay,फिर सुनें,,true,button: hear the instruction again
+training.stop.button,Stop,रोकें,,true,button: end the drill early
+training.continue.button,Continue,आगे बढ़ें,,true,button
+training.hold.button,Hold to spray,दबाकर रखें और छिड़कें,,true,press-and-hold button for aim_and_hold
+training.held.label,Sprayed {{held}} of {{total}} s,{{total}} में से {{held}} सेकंड छिड़का,,true,hold progress
+training.time_left.label,{{seconds}} s,{{seconds}} सेकंड,,true,step countdown
+training.camera.title,Camera needed,कैमरा चाहिए,,true,permission card title
+training.camera.body,The drill shows the fire on your real floor through the camera.,कैमरे से आग आपके असली फ़र्श पर दिखेगी।,,true,permission card text
+training.camera.allow.button,Allow camera,कैमरा चालू करें,,true,button
+training.camera.skip.button,Train without camera,बिना कैमरे के अभ्यास करें,,true,button: tabletop mode
+training.tabletop.label,Virtual room: no camera,आभासी कमरा: कैमरा नहीं,,true,mode banner
+training.hint.scan_marker,Scan the printed exit sign with the camera.,छपे हुए निकास (EXIT) चिह्न को कैमरे से स्कैन करें।,,true,find_marker / move_to marker hint (camera)
+training.hint.tap_marker,Turn around and tap the exit sign.,पीछे मुड़ें और निकास चिह्न को छुएँ।,,true,find_marker / move_to marker hint (no camera)
+training.hint.waypoints,Tap the marks on the floor one by one.,फ़र्श पर बने निशानों को एक-एक करके छुएँ।,,true,move_to waypoint hint
+training.hint.hold,Press and hold the button to spray.,छिड़कने के लिए बटन दबाकर रखें।,,true,aim_and_hold hint
+training.hint.target,Tap it.,इसे छुएँ।,,true,tap_target hint
+training.object.alarm_call_point,FIRE ALARM,फ़ायर अलार्म,,true,label on the alarm call point overlay
+training.object.exit_sign,EXIT,निकास,,true,label on the virtual exit sign (no-camera mode)
+training.detector.label,Gas {{reading}},गैस {{reading}},,true,detector reading on move_to with a detector
+training.saving.label,Saving your result…,आपका परिणाम सेव हो रहा है…,,true,shown while the attempt is saved
+result.title,Your result,आपका परिणाम,,true,screen title
+result.score.label,Score {{score}}%,अंक {{score}}%,,true,{{score}} = score percent
+result.threshold.label,Pass mark {{threshold}}%,पास होने के लिए {{threshold}}%,,true,{{threshold}} = scenario pass threshold
+result.critical.label,Critical step missed,ज़रूरी कदम छूट गया,,true,rule row tag for a failed critical rule
 result.points.label,{{earned}} / {{max}},,,false,rule row points
-result.rules.title,What you did,,,false,section title
-result.tap_to_hear.hint,Tap a row to hear it.,,,false,hint under the rules title
-result.try_again.button,Try again,,,false,button: new attempt with a new seed
-result.done.button,Done,,,false,button: back to the worker
-result.passed.audio,Well done. You passed.,,,false,spoken when the result opens
-result.not_yet.audio,Not yet. Tap each red row to hear what to do better.,,,false,spoken when the result opens
-result.aborted.label,You stopped the drill early.,,,false,shown when the attempt was stopped
-demo_keys.banner,Demo keys: signed with test keys. Not valid outside this demo.,,,false,"banner on certificate and verify screens while no real root key is committed (D-030)"
-cert.title,Certificate,,,false,screen title
-cert.issue.button,Issue certificate,,,false,button
-cert.reissue.button,Issue a new certificate,,,false,button
-cert.missing.label,Pass these modules first: {{modules}},,,false,{{modules}} = module titles
-cert.not_approved.label,Device not approved yet. The certificate will be issued after the next sync.,,,false,docs/04 issuance step 2
-cert.untrusted.label,This app has no trusted root key. Certificates cannot be issued or checked.,,,false,root_public_key.txt is garbled
-cert.show.hint,Show this QR code to the inspector.,,,false,under the QR
-cert.name.label,Name,,,false,detail label
-cert.site.label,Site,,,false,detail label
-cert.issued.label,Issued,,,false,detail label
-cert.expires.label,Valid until,,,false,detail label
+result.rules.title,What you did,आपने क्या किया,,true,section title
+result.tap_to_hear.hint,Tap a row to hear it.,सुनने के लिए किसी पंक्ति को छुएँ।,,true,hint under the rules title
+result.try_again.button,Try again,फिर से करें,,true,button: new attempt with a new seed
+result.done.button,Done,हो गया,,true,button: back to the worker
+result.passed.audio,Well done. You passed.,बहुत अच्छा। आप पास हो गए।,,true,spoken when the result opens
+result.not_yet.audio,Not yet. Tap each red row to hear what to do better.,अभी नहीं। हर लाल पंक्ति को छूकर सुनें कि क्या बेहतर करना है।,,true,spoken when the result opens
+result.aborted.label,You stopped the drill early.,आपने अभ्यास बीच में रोक दिया।,,true,shown when the attempt was stopped
+demo_keys.banner,Demo keys: signed with test keys. Not valid outside this demo.,डेमो कुंजियाँ: परीक्षण कुंजियों से हस्ताक्षरित। इस डेमो के बाहर मान्य नहीं।,,true,banner on certificate and verify screens while no real root key is committed (D-030)
+cert.title,Certificate,प्रमाणपत्र,,true,screen title
+cert.issue.button,Issue certificate,प्रमाणपत्र जारी करें,,true,button
+cert.reissue.button,Issue a new certificate,नया प्रमाणपत्र जारी करें,,true,button
+cert.missing.label,Pass these modules first: {{modules}},पहले ये मॉड्यूल पास करें: {{modules}},,true,{{modules}} = module titles
+cert.not_approved.label,Device not approved yet. The certificate will be issued after the next sync.,डिवाइस अभी स्वीकृत नहीं है। अगली सिंक के बाद प्रमाणपत्र जारी होगा।,,true,docs/04 issuance step 2
+cert.untrusted.label,This app has no trusted root key. Certificates cannot be issued or checked.,इस ऐप में भरोसेमंद रूट कुंजी नहीं है। प्रमाणपत्र जारी या जाँचे नहीं जा सकते।,,true,root_public_key.txt is garbled
+cert.show.hint,Show this QR code to the inspector.,यह QR कोड निरीक्षक को दिखाएँ।,,true,under the QR
+cert.name.label,Name,नाम,,true,detail label
+cert.site.label,Site,साइट,,true,detail label
+cert.issued.label,Issued,जारी,,true,detail label
+cert.expires.label,Valid until,मान्य तक,,true,detail label
 cert.module.label,{{module}}: {{score}}%,,,false,{{module}} = title; {{score}} = score percent
-verify.status.valid,Valid,,,false,docs/04 status (green)
-verify.status.expired,Expired,,,false,docs/04 status (amber)
-verify.status.revoked,Revoked,,,false,docs/04 status (red)
-verify.status.invalid,Invalid,,,false,docs/04 status (red)
-verify.title,Verify certificate,,,false,screen title
-verify.scan.hint,Point the camera at the certificate QR code.,,,false,scanner hint
-verify.camera.body,Allow the camera to scan certificate QR codes.,,,false,permission text
-verify.camera.allow.button,Allow camera,,,false,button
-verify.again.button,Scan another,,,false,button
-verify.revocation.updated,Revocation list updated {{when}},,,false,docs/04 freshness line; {{when}} = relative time
-verify.revocation.unknown,"Revocation status unknown (offline, no list)",,,false,docs/04 freshness line
-verify.reason.invalid_format,This is not a valid Suraksha Saathi certificate.,,,false,INVALID_FORMAT detail
-verify.reason.invalid_attestation,The device that issued it is not approved.,,,false,INVALID_ATTESTATION detail
-verify.reason.invalid_signature,The certificate was changed after it was signed.,,,false,INVALID_SIGNATURE detail
-time.minutes_ago,{{count}} min ago,,,false,relative time
-time.hours_ago,{{count}} h ago,,,false,relative time
-time.days_ago,{{count}} days ago,,,false,relative time
+verify.status.valid,Valid,मान्य,,true,docs/04 status (green)
+verify.status.expired,Expired,समय-सीमा समाप्त,,true,docs/04 status (amber)
+verify.status.revoked,Revoked,रद्द,,true,docs/04 status (red)
+verify.status.invalid,Invalid,अमान्य,,true,docs/04 status (red)
+verify.title,Verify certificate,प्रमाणपत्र जाँचें,,true,screen title
+verify.scan.hint,Point the camera at the certificate QR code.,कैमरे को प्रमाणपत्र के QR कोड पर रखें।,,true,scanner hint
+verify.camera.body,Allow the camera to scan certificate QR codes.,प्रमाणपत्र के QR कोड स्कैन करने के लिए कैमरा चालू करें।,,true,permission text
+verify.camera.allow.button,Allow camera,कैमरा चालू करें,,true,button
+verify.again.button,Scan another,दूसरा स्कैन करें,,true,button
+verify.revocation.updated,Revocation list updated {{when}},रद्द-सूची अपडेट: {{when}},,true,docs/04 freshness line; {{when}} = relative time
+verify.revocation.unknown,"Revocation status unknown (offline, no list)","रद्द होने की स्थिति पता नहीं (ऑफ़लाइन, कोई सूची नहीं)",,true,docs/04 freshness line
+verify.reason.invalid_format,This is not a valid Suraksha Saathi certificate.,यह मान्य सुरक्षा साथी प्रमाणपत्र नहीं है।,,true,INVALID_FORMAT detail
+verify.reason.invalid_attestation,The device that issued it is not approved.,इसे जारी करने वाला डिवाइस स्वीकृत नहीं है।,,true,INVALID_ATTESTATION detail
+verify.reason.invalid_signature,The certificate was changed after it was signed.,हस्ताक्षर के बाद प्रमाणपत्र बदला गया है।,,true,INVALID_SIGNATURE detail
+time.minutes_ago,{{count}} min ago,{{count}} मिनट पहले,,true,relative time
+time.hours_ago,{{count}} h ago,{{count}} घंटे पहले,,true,relative time
+time.days_ago,{{count}} days ago,{{count}} दिन पहले,,true,relative time
+home.language.label,Language,भाषा,,true,language switcher label
+worker.language.label,Worker's language,कामगार की भाषा,,true,language switcher on the worker page (kiosk)
+lang.sat.pending,Santali translation is not ready yet. Showing Hindi for now.,संताली अनुवाद अभी तैयार नहीं है। अभी हिन्दी दिखाई जा रही है।,,true,shown when sat is chosen while sat strings are empty (T-71/T-72)

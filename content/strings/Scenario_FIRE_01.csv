@@ -1,40 +1,40 @@
 key,en,hi,sat,needsReview,notes
-fire01.title,Fire and explosion response,,,true,scenario title
-fire01.brief.instruction,A small fire has started near waste material.,,,true,step caption
-fire01.brief.audio,A small fire has started near waste material in the workshop.,,,true,narration script
-fire01.place_fire.instruction,Tap the floor to place the fire.,,,true,step caption
-fire01.place_fire.audio,Point your camera at the floor. Tap to place the fire.,,,true,narration script
-fire01.raise_alarm.instruction,Raise the alarm. Press the call point and shout Fire.,,,true,step caption
-fire01.raise_alarm.audio,Raise the alarm now. Press the call point and shout Fire.,,,true,narration script
-fire01.find_exit.instruction,Find the nearest exit sign with your camera.,,,true,step caption
-fire01.find_exit.audio,Find the nearest exit. Point your camera at the exit sign.,,,true,narration script
-fire01.pick_extinguisher.instruction,Choose the right extinguisher for this fire.,,,true,step caption
-fire01.pick_extinguisher.audio,Look at the fire. Choose the right extinguisher for it.,,,true,narration script
-fire01.pick_extinguisher.option.water,Water-type extinguisher,,,true,option label
-fire01.pick_extinguisher.option.dcp,Dry chemical powder (DCP) extinguisher,,,true,option label
-fire01.pick_extinguisher.option.co2,CO2 extinguisher,,,true,option label
-fire01.approach.instruction,Move closer with the exit behind you.,,,true,step caption
-fire01.approach.audio,Walk toward the fire. Keep the exit behind you.,,,true,narration script
-fire01.extinguish.instruction,Aim at the base of the fire and hold.,,,true,step caption
-fire01.extinguish.audio,"Aim at the base of the fire, not the flame tops. Hold steady.",,,true,narration script
-fire01.escalation.instruction,The fire is spreading. What do you do?,,,true,step caption
-fire01.escalation.audio,The fire is spreading. What do you do now?,,,true,narration script
-fire01.escalation.option.keep_fighting,Keep fighting the fire,,,true,option label
-fire01.escalation.option.evacuate_alert,Evacuate and alert others,,,true,option label
-fire01.escalation.option.collect_belongings,Collect your belongings,,,true,option label
-fire01.evacuate.instruction,Follow the arrows to the exit.,,,true,step caption
-fire01.evacuate.audio,Leave now. Follow the arrows to the exit.,,,true,narration script
-fire01.assembly.instruction,You are at the assembly point. What next?,,,true,step caption
-fire01.assembly.audio,You reached the assembly point. What do you do now?,,,true,narration script
-fire01.assembly.option.report_headcount,Report to the supervisor for headcount,,,true,option label
-fire01.assembly.option.go_back_inside,Go back inside,,,true,option label
-fire01.assembly.option.leave_site,Leave the site,,,true,option label
-fire01.rule.alarm_before_fight,Raise the alarm before you fight the fire.,,,true,rule feedback
-fire01.rule.alarm_fast,Raise the alarm quickly.,,,true,rule feedback
-fire01.rule.exit_found,Find the nearest exit.,,,true,rule feedback
-fire01.rule.right_extinguisher,Use the right extinguisher. Never use water on an oil fire.,,,true,rule feedback
-fire01.rule.exit_behind,Keep the exit behind you while you fight a fire.,,,true,rule feedback
-fire01.rule.aim_base,Aim at the base of the fire.,,,true,rule feedback
-fire01.rule.evacuate_decision,"If the fire spreads, evacuate and alert others.",,,true,rule feedback
-fire01.rule.evacuate_time,Evacuate quickly along the marked route.,,,true,rule feedback
-fire01.rule.assembly_report,Report to your supervisor at the assembly point.,,,true,rule feedback
+fire01.title,Fire and explosion response,आग और विस्फोट से बचाव,,true,scenario title
+fire01.brief.instruction,A small fire has started near waste material.,कचरे के पास छोटी आग लग गई है।,,true,step caption
+fire01.brief.audio,A small fire has started near waste material in the workshop.,वर्कशॉप में कचरे के पास एक छोटी आग लग गई है।,,true,narration script
+fire01.place_fire.instruction,Tap the floor to place the fire.,आग रखने के लिए फ़र्श को छुएँ।,,true,step caption
+fire01.place_fire.audio,Point your camera at the floor. Tap to place the fire.,कैमरा फ़र्श की ओर करें। आग रखने के लिए छुएँ।,,true,narration script
+fire01.raise_alarm.instruction,Raise the alarm. Press the call point and shout Fire.,अलार्म बजाएँ। कॉल पॉइंट दबाएँ और ज़ोर से आग चिल्लाएँ।,,true,step caption
+fire01.raise_alarm.audio,Raise the alarm now. Press the call point and shout Fire.,अभी अलार्म बजाएँ। कॉल पॉइंट दबाएँ और ज़ोर से आग चिल्लाएँ।,,true,narration script
+fire01.find_exit.instruction,Find the nearest exit sign with your camera.,कैमरे से सबसे पास का निकास चिह्न ढूँढें।,,true,step caption
+fire01.find_exit.audio,Find the nearest exit. Point your camera at the exit sign.,सबसे पास का निकास ढूँढें। कैमरा निकास चिह्न की ओर करें।,,true,narration script
+fire01.pick_extinguisher.instruction,Choose the right extinguisher for this fire.,इस आग के लिए सही अग्निशामक चुनें।,,true,step caption
+fire01.pick_extinguisher.audio,Look at the fire. Choose the right extinguisher for it.,आग को देखें। इसके लिए सही अग्निशामक चुनें।,,true,narration script
+fire01.pick_extinguisher.option.water,Water-type extinguisher,पानी वाला अग्निशामक,,true,option label
+fire01.pick_extinguisher.option.dcp,Dry chemical powder (DCP) extinguisher,सूखा रासायनिक पाउडर (DCP) अग्निशामक,,true,option label
+fire01.pick_extinguisher.option.co2,CO2 extinguisher,CO2 अग्निशामक,,true,option label
+fire01.approach.instruction,Move closer with the exit behind you.,निकास को पीछे रखते हुए पास जाएँ।,,true,step caption
+fire01.approach.audio,Walk toward the fire. Keep the exit behind you.,आग की ओर बढ़ें। निकास को अपने पीछे रखें।,,true,narration script
+fire01.extinguish.instruction,Aim at the base of the fire and hold.,आग की जड़ पर निशाना लगाएँ और दबाकर रखें।,,true,step caption
+fire01.extinguish.audio,"Aim at the base of the fire, not the flame tops. Hold steady.","आग की जड़ पर निशाना लगाएँ, लपटों के ऊपर नहीं। हाथ स्थिर रखें।",,true,narration script
+fire01.escalation.instruction,The fire is spreading. What do you do?,आग फैल रही है। आप क्या करेंगे?,,true,step caption
+fire01.escalation.audio,The fire is spreading. What do you do now?,आग फैल रही है। अब आप क्या करेंगे?,,true,narration script
+fire01.escalation.option.keep_fighting,Keep fighting the fire,आग से लड़ते रहें,,true,option label
+fire01.escalation.option.evacuate_alert,Evacuate and alert others,बाहर निकलें और दूसरों को सावधान करें,,true,option label
+fire01.escalation.option.collect_belongings,Collect your belongings,अपना सामान इकट्ठा करें,,true,option label
+fire01.evacuate.instruction,Follow the arrows to the exit.,तीर के निशानों के पीछे निकास तक जाएँ।,,true,step caption
+fire01.evacuate.audio,Leave now. Follow the arrows to the exit.,अभी निकलें। तीर के निशानों के पीछे निकास तक जाएँ।,,true,narration script
+fire01.assembly.instruction,You are at the assembly point. What next?,आप असेंबली पॉइंट पर हैं। अब क्या करेंगे?,,true,step caption
+fire01.assembly.audio,You reached the assembly point. What do you do now?,आप असेंबली पॉइंट पर पहुँच गए। अब आप क्या करेंगे?,,true,narration script
+fire01.assembly.option.report_headcount,Report to the supervisor for headcount,गिनती के लिए सुपरवाइज़र को रिपोर्ट करें,,true,option label
+fire01.assembly.option.go_back_inside,Go back inside,वापस अंदर जाएँ,,true,option label
+fire01.assembly.option.leave_site,Leave the site,साइट छोड़कर चले जाएँ,,true,option label
+fire01.rule.alarm_before_fight,Raise the alarm before you fight the fire.,आग बुझाने से पहले अलार्म बजाएँ।,,true,rule feedback
+fire01.rule.alarm_fast,Raise the alarm quickly.,जल्दी अलार्म बजाएँ।,,true,rule feedback
+fire01.rule.exit_found,Find the nearest exit.,सबसे पास का निकास ढूँढें।,,true,rule feedback
+fire01.rule.right_extinguisher,Use the right extinguisher. Never use water on an oil fire.,सही अग्निशामक इस्तेमाल करें। तेल की आग पर कभी पानी न डालें।,,true,rule feedback
+fire01.rule.exit_behind,Keep the exit behind you while you fight a fire.,आग बुझाते समय निकास को अपने पीछे रखें।,,true,rule feedback
+fire01.rule.aim_base,Aim at the base of the fire.,आग की जड़ पर निशाना लगाएँ।,,true,rule feedback
+fire01.rule.evacuate_decision,"If the fire spreads, evacuate and alert others.",आग फैले तो बाहर निकलें और दूसरों को सावधान करें।,,true,rule feedback
+fire01.rule.evacuate_time,Evacuate quickly along the marked route.,तय रास्ते से जल्दी बाहर निकलें।,,true,rule feedback
+fire01.rule.assembly_report,Report to your supervisor at the assembly point.,असेंबली पॉइंट पर अपने सुपरवाइज़र को रिपोर्ट करें।,,true,rule feedback

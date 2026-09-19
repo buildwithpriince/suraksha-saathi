@@ -114,6 +114,7 @@
   "gas01.self_rescuer.option.don_now": "Put on the self-rescuer now",
   "gas01.title": "Gas leak and confined space",
   "home.enrol.button": "Enrol worker",
+  "home.language.label": "Language",
   "home.pending_sync.label": "{{count}} records waiting to sync",
   "home.site.label": "Site {{site}}",
   "home.verify.button": "Verify a certificate",
@@ -122,6 +123,7 @@
   "lang.en": "English",
   "lang.hi": "हिन्दी",
   "lang.sat": "संताली",
+  "lang.sat.pending": "Santali translation is not ready yet. Showing Hindi for now.",
   "result.aborted.label": "You stopped the drill early.",
   "result.critical.label": "Critical step missed",
   "result.done.button": "Done",
@@ -179,6 +181,7 @@
   "worker.attempts.empty": "No attempts yet.",
   "worker.attempts.title": "Attempts",
   "worker.certificate.button": "Certificate",
+  "worker.language.label": "Worker's language",
   "worker.modules.title": "Training modules",
   "worker.train.button": "Start: {{module}}"
 }

@@ -2,13 +2,17 @@
   "expo": {
     "name": "Suraksha Saathi",
     "slug": "suraksha-saathi",
+    "owner": "buildwithpriinces-team",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "surakshasaathi",
     "userInterfaceStyle": "light",
-    "platforms": ["android"],
+    "platforms": [
+      "android"
+    ],
     "android": {
+      "package": "com.cafcoders.surakshasaathi",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -31,6 +35,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "da939013-f237-44f8-bd7f-fa59551a2a11"
+      }
     }
   }
 }

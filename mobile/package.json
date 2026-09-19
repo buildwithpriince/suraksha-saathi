@@ -16,6 +16,7 @@
     "@noble/ed25519": "^3.2.0",
     "@noble/hashes": "^2.4.0",
     "expo": "~57.0.24",
+    "expo-build-properties": "~57.0.21",
     "expo-camera": "~57.0.5",
     "expo-constants": "~57.0.19",
     "expo-crypto": "~57.0.3",

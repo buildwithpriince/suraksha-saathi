@@ -8,6 +8,9 @@
       ],
       "@/assets/*": [
         "./assets/*"
+      ],
+      "@content/*": [
+        "../content/*"
       ]
     }
   },

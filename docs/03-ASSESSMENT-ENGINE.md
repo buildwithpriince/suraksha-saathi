@@ -1,8 +1,8 @@
-# 03 — Assessment Engine (pure C#, `Scripts/Core/Assessment`)
+# 03 — Assessment Engine (pure TypeScript, `mobile/src/core/assessment`; D-027)
 
 ## Principle
 `AttemptResult Evaluate(Scenario scenario, string variantId, IReadOnlyList<AttemptEvent> events)`
-is a pure function. Same inputs, same output. No clocks, no randomness, no Unity APIs inside.
+is a pure function. Same inputs, same output. No clocks, no randomness, no platform APIs inside.
 
 ## Event model
 ```json
@@ -21,11 +21,12 @@ is a pure function. Same inputs, same output. No clocks, no randomness, no Unity
 | `time_limit` | `step`, `seconds` | full if completed within `seconds` of its `step_started` |
 | `correct_choice` | `step`, `correct` (list or per-variant map), `partial` (bool) | single: full if first choice in `correct`. `partial`: `points × max(0, rightPicked − wrongPicked) / correct.count`, rounded down. Multi-select steps (`choose_many`, `checklist`) without `partial`: full only if the picked set equals `correct` (D-017) |
 | `no_forbidden` | `tag` | full if no `forbidden_action` with that tag |
-| `hold` | `step`, `minOnTargetSec`, `maxOffTargetRatio` | full if both met; half if only on-target met; else 0 |
+| `hold` | `step`, `minOnTargetSec`, `maxOffTargetRatio` | full if both met; half if only on-target met; else 0. Each `hold_progress` in the step is one 0.25 s sample: `zone` is the zone under the reticle (`"none"` if none) and `onTargetSec` is cumulative. onTarget = the largest `onTargetSec` in the step; offTargetRatio = samples whose `zone` is in the step's `offTargetZones` / all samples in the step (D-028) |
 | `zone_accuracy` | `step`, `toleranceM` (true radius = the step's `trueRadiusM` after `$` variant substitution) | full if abs error ≤ tol; half if ≤ 2×tol; else 0 |
 
 Critical rules:
-- A `critical` rule "fails" if it earns 0 **or** if any `forbidden_action` occurred in its step.
+- A `critical` rule "fails" if it earns 0 **or** if any `forbidden_action` occurred in its step
+  (the rule's `params.step`; `order` and `no_forbidden` rules have none, so only the 0 check applies).
 - With `"criticalOn": "forbidden"` it fails critically **only** if a `forbidden_action` occurred in
   its step; earning 0 alone is then just lost points (docs/02 "critical if forbidden picked", D-017).
 - Rules scoped to a variant (`"variants": ["major"]`) are skipped for other variants; skipped rules
@@ -36,10 +37,12 @@ Critical rules:
 scorePercent = round(100 × Σearned / Σmax)            // Σmax over non-skipped rules
 passed       = criticalFailures.Count == 0 && scorePercent >= scenario.passThresholdPercent
 ```
-`round` = round half away from zero (D-022): 92.5 -> 93, 82.5 -> 83. In C# use
-`Math.Round(x, MidpointRounding.AwayFromZero)`, since the default rounds half to even and would give 82. The
+`round` = round half away from zero (D-022): 92.5 -> 93, 82.5 -> 83. Compute it in integers
+(`floor((200 × Σearned + Σmax) / (2 × Σmax))`) so every language agrees (D-028). The
 backend recomputes the score with this rule and flags any mismatch. Skipped rules are left out of `rules[]`.
 `attempt_aborted` present -> `passed = false`, score still computed for feedback.
+Earned points are integers: "half" is `floor(points / 2)` (15 -> 7), like `partial`'s round-down (D-028).
+Per-rule `passed`: for a critical rule, false only on a critical failure; for any other rule, `earned == max`.
 
 ```json
 {

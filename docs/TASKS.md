@@ -30,13 +30,13 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [ ] T-18 [D] Pin the remaining cross-language token rules in docs/04 before T-13 (from the T-14 crypto review): integers as JSON integers 0..2^53−1 without fraction/exponent; duplicate keys; whitespace around scanned tokens; lowercase UUIDs for `cid`; which content limits verifiers enforce (`wn` ≤ 24, score range, required modules); RFC 8032 cofactorless verify and prime-order key checks in TS (noble `zip215: false`, app and dashboard). Add shared negative vectors to `content/trust/test-vectors.json` (non-canonical/padded segment, 63-byte signature, float `iat`, BOM body, bad `att`, small-order `dpk`, forged SR1) — Done when: docs/04 lists the rules and Python passes the new vectors; app and dashboard pick them up in a follow-up (deps: T-14)
 
 ## M2 — FIRE_01 playable (target: ____)
-- [ ] T-20 [A] Boot: camera permission -> `ar` mode, denied/no camera -> `tabletop`; SQLite migration stub; locale load; route to setup or home (deps: T-03)
-- [ ] T-21 [B] Camera training screen: `expo-camera` feed, overlay layer anchored to device orientation (`expo-sensors`, 3DoF), tap-to-place (`place_on_plane`) (deps: T-20)
-- [ ] T-22 [B] ScenarioPlayer: plays steps from JSON, writes events with the monotonic clock, calls the engine at the end (deps: T-12, T-21)
-- [ ] T-23 [B] Interactions: `tap_target`, `choose_one`, `decision`, `narration`
-- [ ] T-24 [B] Interactions: `aim_and_hold` (screen-centre reticle on anchored base-vs-top zones, 0.25 s samples per T-12), `move_to` (waypoint taps for scene anchors; walk-and-scan for marker anchors; `exitBehind` from compass heading)
-- [ ] T-25 [B] `find_marker` by QR scanning of printed `EXIT_A`/`EXIT_B` markers + a script that generates the printable A5 marker PDFs + on-screen route arrow by heading
-- [ ] T-26 [C] Result screen per docs/03 (sorted rules, tap-to-hear feedback, try again)
+- [x] T-20 [A] Boot: camera permission -> `ar` mode, denied/no camera -> `tabletop`; SQLite migration stub; locale load; route to setup or home (deps: T-03)
+- [x] T-21 [B] Camera training screen: `expo-camera` feed, overlay layer anchored to device orientation (`expo-sensors`, 3DoF), tap-to-place (`place_on_plane`) (deps: T-20)
+- [x] T-22 [B] ScenarioPlayer: plays steps from JSON, writes events with the monotonic clock, calls the engine at the end (deps: T-12, T-21)
+- [x] T-23 [B] Interactions: `tap_target`, `choose_one`, `decision`, `narration`
+- [x] T-24 [B] Interactions: `aim_and_hold` (screen-centre reticle on anchored base-vs-top zones, 0.25 s samples per T-12), `move_to` (waypoint taps for scene anchors; walk-and-scan for marker anchors; `exitBehind` from compass heading)
+- [x] T-25 [B] `find_marker` by QR scanning of printed `EXIT_A`/`EXIT_B` markers + a script that generates the printable A5 marker PDFs + on-screen route arrow by heading
+- [x] T-26 [C] Result screen per docs/03 (sorted rules, tap-to-hear feedback, try again)
 - [ ] T-27 [B] Fire overlay (animated 2D, Reanimated/SVG) + escalation spread; 30 fps on target phone
 - [ ] T-28 [F] Device test: full FIRE_01 run on 2 phones, bug list filed as tasks
 
@@ -47,10 +47,10 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [ ] T-33 [F] Device test GAS_01 + tabletop run of both modules
 
 ## M4 — Worker journey, persistence, certificates (target: ____)
-- [ ] T-40 [A] `expo-sqlite` layer + repositories + outbox-in-same-transaction (docs/05); device key pair generated on first launch, private key in `expo-secure-store` (supersedes D-004's package choice)
+- [x] T-40 [A] `expo-sqlite` layer + repositories + outbox-in-same-transaction (docs/05); device key pair generated on first launch, private key in `expo-secure-store` (supersedes D-004's package choice)
 - [ ] T-41 [C] Screens: device setup, home, kiosk login (scan worker ID QR / pick), enrol worker, module list, settings
-- [ ] T-42 [A] Certificate issuance flow + QR render (`react-native-qrcode-svg`, error correction M; docs/04 issuance) (deps: T-13, T-40)
-- [ ] T-43 [C] Verify screen: `expo-camera` QR scan + status card + revocation freshness line (deps: T-13)
+- [x] T-42 [A] Certificate issuance flow + QR render (`react-native-qrcode-svg`, error correction M; docs/04 issuance) (deps: T-13, T-40)
+- [x] T-43 [C] Verify screen: `expo-camera` QR scan + status card + revocation freshness line (deps: T-13)
 - [ ] T-44 [F] Airplane-mode test of full journey — Done when: zero network calls needed, no crashes
 
 ## M5 — Backend (target: ____)

@@ -5,7 +5,8 @@ import { describe, expect, test } from 'vitest';
 import en from '@/i18n/generated/en.json';
 
 import { loadScenario } from '../scenarios/load';
-import { PREFABS, offsetFrom, zoneAt } from './prefabs';
+import { FIRE_SIZE_DEG, labelBoxDeg } from './layout';
+import { PREFABS, offsetFrom, zoneAt, type Offset } from './prefabs';
 
 const fire = PREFABS.WorkshopFire!;
 
@@ -42,6 +43,21 @@ describe.each([
       if (step.interaction === 'mark_zone') {
         expect(prefab.objects).toHaveProperty(p.hazard as string);
         expect(prefab.metresPerDeg).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  test('labels overlap neither each other nor the fire on the narrowest screen', () => {
+    const box = labelBoxDeg();
+    const labelled = Object.keys(prefab.labels).map((name) => [name, prefab.objects[name]!] as const);
+    const apart = (a: Offset, b: Offset, dh: number, de: number) => Math.abs(a.dh - b.dh) >= dh || Math.abs(a.de - b.de) >= de;
+    for (const [i, [name, at]] of labelled.entries()) {
+      for (const [other, there] of labelled.slice(i + 1)) {
+        expect(apart(at, there, box.dh, box.de), `${name} vs ${other}`).toBe(true);
+      }
+      const fire = prefab.objects.Fire;
+      if (fire !== undefined) {
+        expect(apart(at, fire, (box.dh + FIRE_SIZE_DEG) / 2, (box.de + FIRE_SIZE_DEG) / 2), `${name} vs Fire`).toBe(true);
       }
     }
   });

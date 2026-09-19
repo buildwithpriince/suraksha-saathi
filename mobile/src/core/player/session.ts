@@ -11,6 +11,9 @@ import { findVariant, optionForbiddenIn, resolveParams, stepOptions, stepRunsIn 
 /** Seconds per `hold_progress` sample (docs/02, D-028). */
 export const HOLD_SAMPLE_SEC = 0.25;
 
+/** "Skip step" is offered after this long without progress in a step (D-033). */
+export const SKIP_OFFER_AFTER_SEC = 30;
+
 export interface CurrentStep {
   index: number;
   step: Step;
@@ -74,6 +77,17 @@ export class ScenarioSession {
     this.complete();
   }
 
+  /**
+   * `move_to` arrival: `position_reached{anchor, distanceM}`, then `step_completed` with `data`
+   * (e.g. `exitBehind`). `distanceM` is null when reaching means scanning a marker (D-027).
+   */
+  arrive(anchor: string, distanceM: number | null, data?: JsonObject): void {
+    const cur = this.require();
+    if (cur.step.interaction !== 'move_to') throw new Error(`${cur.step.id} is not move_to`);
+    this.emit('position_reached', cur.step.id, { anchor, distanceM });
+    this.complete(data);
+  }
+
   /** Record an interaction event in the current step without completing it. */
   record(type: Extract<EventType, 'target_hit' | 'marker_found' | 'position_reached' | 'zone_marked'>, data: JsonObject): void {
     this.emit(type, this.require().step.id, data);
@@ -92,6 +106,16 @@ export class ScenarioSession {
     const heldSec = this.heldSamples * HOLD_SAMPLE_SEC;
     if (heldSec + 1e-9 >= (cur.params.durationSec as number)) this.complete();
     return heldSec;
+  }
+
+  /**
+   * The worker couldn't complete the current step ("Skip step", D-033): `step_skipped` with
+   * `reason: "no_progress"`, then the next step. The engine scores the step as failed.
+   */
+  skip(): void {
+    const cur = this.require();
+    this.emit('step_skipped', cur.step.id, { reason: 'no_progress' });
+    this.advance();
   }
 
   /** The worker stopped: `attempt_aborted`; the attempt still gets scored for feedback. */

@@ -11,6 +11,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { angleDiff, screenOffset, type Direction } from '@/core/orientation';
+import { LABEL_BOX_PX, clampToBand, type Band } from '@/core/player/layout';
 import type { Offset } from '@/core/player/prefabs';
 import { Text } from '@/ui/Text';
 import { colors } from '@/ui/theme';
@@ -21,7 +22,11 @@ export interface ScreenGeometry {
   pxPerDeg: number;
 }
 
-/** A view drawn at a direction anchored in the world, moving as the phone turns (3DoF). */
+/**
+ * A view drawn at a direction anchored in the world, moving as the phone turns (3DoF). With a
+ * `band`, its centre stays inside it (D-033): pinned to the nearest edge, slightly faded, when the
+ * real direction is off screen or under the card, so something the worker must tap always can be.
+ */
 export function Anchored({
   anchor,
   offset,
@@ -29,6 +34,7 @@ export function Anchored({
   geometry,
   width,
   height,
+  band,
   children,
 }: {
   anchor: SharedValue<Direction | null>;
@@ -37,6 +43,7 @@ export function Anchored({
   geometry: ScreenGeometry;
   width: number;
   height: number;
+  band?: Band;
   children: ReactNode;
 }) {
   const { dh, de } = offset;
@@ -46,7 +53,8 @@ export function Anchored({
     if (a === null) return { opacity: 0, transform: [{ translateX: -10000 }, { translateY: 0 }] };
     const target = { headingDeg: a.headingDeg + dh, elevationDeg: a.elevationDeg + de };
     const { dx, dy } = screenOffset(target, direction.value, pxPerDeg);
-    return { opacity: 1, transform: [{ translateX: cx + dx - width / 2 }, { translateY: cy + dy - height / 2 }] };
+    const at = band === undefined ? { x: cx + dx, y: cy + dy, pinned: false } : clampToBand(cx + dx, cy + dy, band);
+    return { opacity: at.pinned ? 0.85 : 1, transform: [{ translateX: at.x - width / 2 }, { translateY: at.y - height / 2 }] };
   });
   return (
     <Animated.View pointerEvents="box-none" style={[styles.anchored, { width, height }, style]}>
@@ -119,12 +127,14 @@ export function TargetButton({ label, onPress, active, color }: { label: string;
   );
 }
 
+/** A `move_to` path mark. Any mark not yet reached takes a tap (waypoints.ts); `next` is highlighted. */
 export function Waypoint({ index, next, done, onPress }: { index: number; next: boolean; done: boolean; onPress: () => void }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={String(index + 1)}
-      disabled={!next}
+      disabled={done}
+      hitSlop={12}
       onPress={onPress}
       style={[styles.waypoint, next && styles.waypointNext, done && styles.waypointDone]}
     >
@@ -174,9 +184,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 10,
+    maxWidth: LABEL_BOX_PX.width, // longer labels wrap inside the box the layout test assumes
   },
   targetActive: { borderColor: '#FFFFFF' },
-  targetText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800' },
+  targetText: { color: '#FFFFFF', fontSize: 16, fontWeight: '800', textAlign: 'center' },
   waypoint: {
     width: 56,
     height: 56,

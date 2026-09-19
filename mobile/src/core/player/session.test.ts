@@ -6,6 +6,7 @@ import { evaluate } from '../assessment/engine';
 import { loadScenario } from '../scenarios/load';
 import { PREFABS } from './prefabs';
 import { ScenarioSession } from './session';
+import { tapWaypoint } from './waypoints';
 import { markedRadiusM } from './zone';
 
 const FIRE = loadScenario(fireJson);
@@ -50,46 +51,81 @@ function playFire(variant: 'ordinary' | 'oil', extinguisher: string) {
   return session;
 }
 
-/** Plays GAS_01 the way the camera screen does, with cones tapped `coneDeg` degrees from the leak. */
-function playGas(variant: 'minor' | 'major', coneDeg: number, ppe = ['self_rescuer', 'gas_detector', 'helmet_cap_lamp']) {
+const AREA = PREFABS.ConfinedAreaEntrance!;
+
+/**
+ * Walks a `move_to` path the way the camera screen does: each tap goes through `tapWaypoint`, and
+ * arrival goes through `session.arrive`. Returns false if the taps never arrive.
+ */
+function walk(session: ScenarioSession, taps: number[]): boolean {
+  const anchor = String(session.current()!.params.anchor);
+  const path = AREA.paths[anchor]!;
+  let reached = 0;
+  for (const i of taps) {
+    const tap = tapWaypoint(reached, i, path.length);
+    if (tap === null) continue;
+    reached = tap.reached;
+    if (tap.arrived) {
+      session.arrive(anchor, 0);
+      return true;
+    }
+  }
+  return false;
+}
+
+interface GasPlay {
+  coneDeg?: number;
+  ppe?: string[];
+  retreatSec?: number;
+}
+
+/** A GAS_01 session with one action per step, played the way the camera screen does. */
+function gasSession(variant: 'minor' | 'major', o: GasPlay = {}) {
   let now = 0;
   const tick = (sec: number) => (now += sec);
   const session = new ScenarioSession(GAS, variant, () => now);
-  const area = PREFABS.ConfinedAreaEntrance!;
-  const leak = area.objects.LeakSource!;
+  const leak = AREA.objects.LeakSource!;
+  const coneDeg = o.coneDeg ?? (variant === 'minor' ? 10 : 16.67); // alert radius at 0.15 m per degree
+  const actions: Record<string, () => void> = {
+    brief: () => session.complete(),
+    place_area: () => session.complete({ headingDeg: 40, elevationDeg: -35 }),
+    ppe: () => session.chooseMany(o.ppe ?? ['self_rescuer', 'gas_detector', 'helmet_cap_lamp']),
+    buddy_check: () => session.chooseMany(['detector_on', 'self_rescuer_carried', 'lamp_working', 'hand_signals_agreed']),
+    detect: () => walk(session, [0, 1, 2]),
+    mark_zone: () => {
+      const cones = [0, 90, 180, 270].map((deg) => ({
+        dh: leak.dh + coneDeg * Math.cos((deg * Math.PI) / 180),
+        de: leak.de + coneDeg * Math.sin((deg * Math.PI) / 180),
+      }));
+      session.record('zone_marked', { radiusM: markedRadiusM(AREA, 'LeakSource', cones) });
+      session.complete();
+    },
+    ignition_trap: () => session.choose('do_not_touch'),
+    self_rescuer: () => session.choose('don_now'),
+    enter_or_retreat: () => session.choose('retreat_signal'),
+    retreat: () => {
+      tick((o.retreatSec ?? 20) - 5);
+      walk(session, [0, 1]);
+    },
+    report: () => session.choose('report_barricade'),
+  };
   session.start();
-  tick(5);
-  session.complete(); // brief
-  tick(3);
-  session.complete({ headingDeg: 40, elevationDeg: -35 }); // place_area
-  tick(8);
-  session.chooseMany(ppe);
-  tick(10);
-  session.chooseMany(['detector_on', 'self_rescuer_carried', 'lamp_working', 'hand_signals_agreed']);
-  tick(12);
-  session.record('position_reached', { anchor: 'LeakSource', distanceM: 0 });
-  session.complete(); // detect
-  tick(15);
-  const cones = [0, 90, 180, 270].map((deg) => ({
-    dh: leak.dh + coneDeg * Math.cos((deg * Math.PI) / 180),
-    de: leak.de + coneDeg * Math.sin((deg * Math.PI) / 180),
-  }));
-  session.record('zone_marked', { radiusM: markedRadiusM(area, 'LeakSource', cones) });
-  session.complete(); // mark_zone
-  tick(4);
-  session.choose('do_not_touch');
-  if (variant === 'major') {
-    tick(4);
-    session.choose('don_now');
-  }
-  tick(4);
-  session.choose('retreat_signal');
-  tick(20);
-  session.record('position_reached', { anchor: 'FreshAirPoint', distanceM: 0 });
-  session.complete(); // retreat
-  tick(4);
-  session.choose('report_barricade');
-  return session;
+  return {
+    session,
+    tick,
+    /** Plays steps until `stepId` is current (or to the end). */
+    playUntil(stepId?: string) {
+      while (!session.finished && session.current()!.step.id !== stepId) {
+        tick(5);
+        actions[session.current()!.step.id]!();
+      }
+      return session;
+    },
+  };
+}
+
+function playGas(variant: 'minor' | 'major', coneDeg: number, ppe?: string[]) {
+  return gasSession(variant, { coneDeg, ppe }).playUntil();
 }
 
 describe('ScenarioSession', () => {
@@ -183,5 +219,113 @@ describe('ScenarioSession', () => {
     session.start();
     expect(() => session.holdSample('FireBase')).toThrow();
     expect(() => session.chooseMany(['a'])).toThrow();
+  });
+});
+
+describe('move_to completion path (GAS_01 retreat)', () => {
+  test('tapping the waypoints in order arrives: position_reached, step_completed, next step', () => {
+    const { session, playUntil } = gasSession('minor');
+    playUntil('retreat');
+    expect(session.current()?.params.anchor).toBe('FreshAirPoint');
+    expect(walk(session, [0])).toBe(false); // first of two marks: not there yet
+    expect(session.current()?.step.id).toBe('retreat');
+    const before = session.events.length;
+    expect(walk(session, [0, 0, 1])).toBe(true); // the repeated tap on mark 1 is ignored
+    expect(session.events.slice(before, before + 2)).toEqual([
+      expect.objectContaining({ type: 'position_reached', stepId: 'retreat', data: { anchor: 'FreshAirPoint', distanceM: 0 } }),
+      expect.objectContaining({ type: 'step_completed', stepId: 'retreat' }),
+    ]);
+    expect(session.current()?.step.id).toBe('report');
+  });
+
+  test('tapping the last mark first also arrives, so a mark out of reach cannot block the run', () => {
+    const { session, playUntil } = gasSession('major');
+    playUntil('retreat');
+    expect(walk(session, [1])).toBe(true);
+    expect(session.current()?.step.id).toBe('report');
+  });
+
+  test('arrival within the step time limit earns R_RETREAT_TIME; a slow one does not', () => {
+    const fast = gasSession('minor', { retreatSec: 40 }).playUntil();
+    const slow = gasSession('minor', { retreatSec: 50 }).playUntil();
+    expect(evaluate(GAS, 'minor', fast.events).rules.find((r) => r.ruleId === 'R_RETREAT_TIME')?.earned).toBe(5);
+    expect(evaluate(GAS, 'minor', slow.events).rules.find((r) => r.ruleId === 'R_RETREAT_TIME')?.earned).toBe(0);
+  });
+
+  test('arrive is refused outside a move_to step', () => {
+    const { session } = gasSession('minor');
+    expect(() => session.arrive('FreshAirPoint', 0)).toThrow();
+  });
+});
+
+describe('Skip step (D-033): always a failure, never a pass', () => {
+  const rule = (events: Parameters<typeof evaluate>[2], variant: string, id: string, scenario = GAS) =>
+    evaluate(scenario, variant, events).rules.find((r) => r.ruleId === id)!;
+
+  test('skip records step_skipped with a reason and moves to the next step', () => {
+    const { session, playUntil } = gasSession('minor');
+    playUntil('retreat');
+    session.skip();
+    expect(session.events.at(-2)).toEqual(expect.objectContaining({ type: 'step_skipped', stepId: 'retreat', data: { reason: 'no_progress' } }));
+    expect(session.current()?.step.id).toBe('report');
+  });
+
+  test('a skipped non-critical step loses its points; the rest of the run still counts', () => {
+    const { session, playUntil } = gasSession('minor');
+    playUntil('retreat');
+    session.skip();
+    playUntil();
+    const e = evaluate(GAS, 'minor', session.events);
+    expect(e.rules.find((r) => r.ruleId === 'R_RETREAT_TIME')).toEqual(expect.objectContaining({ earned: 0, passed: false }));
+    expect(e.scorePercent).toBe(94); // 80 / 85: minor leaves out the 15 self-rescuer points
+    expect(e.passed).toBe(true);
+  });
+
+  test('skipping the ignition question fails R_NO_IGNITION critically instead of earning "no forbidden act"', () => {
+    const { session, playUntil } = gasSession('minor');
+    playUntil('ignition_trap');
+    session.skip();
+    playUntil();
+    const e = evaluate(GAS, 'minor', session.events);
+    expect(rule(session.events, 'minor', 'R_NO_IGNITION')).toEqual(expect.objectContaining({ earned: 0, passed: false }));
+    expect(e.criticalFailures).toContain('R_NO_IGNITION');
+    expect(e.passed).toBe(false);
+  });
+
+  test('skipping a step voids order rules on it (major: rescuer before retreat)', () => {
+    const { session, playUntil } = gasSession('major');
+    playUntil('retreat');
+    session.skip();
+    playUntil();
+    expect(rule(session.events, 'major', 'R_ORDER_RESCUER_RETREAT')).toEqual(expect.objectContaining({ earned: 0, passed: false }));
+  });
+
+  test('points recorded before the skip do not count: a half-done hold earns nothing', () => {
+    const { session, tick } = clockedSession('ordinary');
+    session.start();
+    session.complete(); // brief
+    session.complete({ headingDeg: 10, elevationDeg: -30 }); // place_fire
+    session.record('target_hit', { target: 'AlarmCallPoint' });
+    session.complete(); // raise_alarm
+    session.record('marker_found', { marker: 'EXIT_A' });
+    session.complete(); // find_exit
+    session.choose('water');
+    session.arrive('AttackSpot', 0, { exitBehind: true });
+    for (let i = 0; i < 24; i++) {
+      tick(0.25);
+      session.holdSample('FireBase'); // 6 s on target: enough for R_AIM_BASE on its own
+    }
+    session.skip(); // extinguish
+    const e = evaluate(FIRE, 'ordinary', session.events);
+    expect(rule(session.events, 'ordinary', 'R_AIM_BASE', FIRE)).toEqual(expect.objectContaining({ earned: 0, passed: false }));
+    // "alarm before fight" can't be earned for a fight that was skipped; it is critical
+    expect(e.criticalFailures).toContain('R_ALARM_BEFORE_FIGHT');
+    expect(e.passed).toBe(false);
+  });
+
+  test('a variant step_skipped is not a worker skip (GAS_01 minor self_rescuer)', () => {
+    const e = evaluate(GAS, 'minor', gasSession('minor').playUntil().events);
+    expect(e.scorePercent).toBe(100);
+    expect(e.passed).toBe(true);
   });
 });

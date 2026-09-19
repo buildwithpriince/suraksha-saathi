@@ -43,7 +43,9 @@ instructor signs off. Code must not hard-code any of it; it lives in `content/sc
 ### Fields (D-016)
 - **Step:** `id`, `interaction`, `instructionKey`, `audioKey`, `params` (object, `{}` when none).
   Optional: `timeLimitSec` (UI countdown), `variants` (step runs only in these variants; in others
-  the player emits `step_skipped` and moves on), `needsReview`.
+  the player emits `step_skipped` and moves on), `needsReview`. A worker who makes no progress for
+  30 s can skip any step; that `step_skipped` carries `reason: "no_progress"` and the step is scored
+  as failed (docs/03, D-033).
 - **Option** (in `params.options` of `choose_one`, `choose_many`, `checklist`, `decision`):
   `id`, `labelKey`. Optional: `forbidden` (bool; requires `tag`, emitted as `forbidden_action{tag}`),
   `forbiddenVariants` (forbidden only in these variants; default all), `needsReview`.

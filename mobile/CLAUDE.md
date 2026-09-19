@@ -74,14 +74,16 @@ files); never hand-edit it.
 | `aim_and_hold` | Turn the phone so the screen-centre reticle is on the anchored zone; `hold_progress` sample every 0.25 s |
 | `find_marker` | Scan the printed QR marker (`EXIT_A`, `EXIT_B`) with `expo-camera` |
 | `move_to` to a marker id | Walk to the printed marker and scan it |
-| `move_to` to a scene anchor | Tap waypoints along the drawn path; detector reading rises with path progress; `showRoute` points at the next waypoint |
+| `move_to` to a scene anchor | Tap waypoints along the drawn path (any mark not yet reached counts; the next one is pinned on screen, D-033); detector reading rises with path progress; `showRoute` points at the next waypoint |
 | `exitBehind` | Heading when the exit marker was found vs heading at arrival: angle > `minAngleDeg` |
 | `mark_zone` | Tap the floor to place cones (tap one to remove it), Done after `minCones`; `radiusM` = mean cone distance from the hazard in the prefab's `metresPerDeg` scale; each cone shows the simulated detector reading (D-031) |
 
 Markers: a printed marker is a QR code whose text is exactly the marker id (`EXIT_A`).
 `npm run markers` writes printable 150 mm SVGs to `assets/markers/`. Prefab layouts (object,
 zone and waypoint angles) live in `src/core/player/prefabs.ts`; `PREVIEW_HFOV_DEG` in
-`src/training/TrainingRun.tsx` maps degrees to pixels. Tune both on a phone (T-28).
+`src/core/player/layout.ts` maps degrees to pixels. Tune both on a phone (T-28); labels must stay
+one label box apart on a 320 dp screen (`prefabs.test.ts`).
+Any step with no progress for 30 s offers "Skip step", which is scored as failed (D-033).
 Anchoring: overlays keep a fixed direction as the phone rotates (3DoF, from device orientation).
 There is no position tracking, so overlays drift if the worker walks; steps that need walking use
 printed markers or waypoints instead.

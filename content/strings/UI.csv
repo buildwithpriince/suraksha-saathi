@@ -42,7 +42,7 @@ training.camera.skip.button,Train without camera,बिना कैमरे �
 training.tabletop.label,Virtual room: no camera,आभासी कमरा: कैमरा नहीं,आभासी ओड़ाः: कैमरा बानुःआ,true,mode banner
 training.hint.scan_marker,Scan the printed exit sign with the camera.,छपे हुए निकास (EXIT) चिह्न को कैमरे से स्कैन करें।,छापाव ओडोक् होर (EXIT) चिन्हा कैमरा ते स्कैनमे।,true,find_marker / move_to marker hint (camera)
 training.hint.tap_marker,Turn around and tap the exit sign.,पीछे मुड़ें और निकास चिह्न को छुएँ।,रुवाड़ काते ओडोक् होर चिन्हा टिपावमे।,true,find_marker / move_to marker hint (no camera)
-training.hint.waypoints,Tap the marks on the floor one by one.,फ़र्श पर बने निशानों को एक-एक करके छुएँ।,ओते रेन चिन्हाको मित् मित् काते टिपावमे।,true,move_to waypoint hint
+training.hint.waypoints,"Tap the yellow mark on the floor. If it is at the screen edge, turn that way.","फ़र्श पर पीले निशान को छुएँ। अगर वह स्क्रीन के किनारे पर है, तो उसी ओर मुड़ें।","ओते रेन सासांग चिन्हा टिपावमे। स्क्रीन सेमेद् रे खान, उनी सेच् ञिरोःमे।",true,move_to waypoint hint (any mark not yet reached takes a tap; D-033)
 training.hint.hold,Press and hold the button to spray.,छिड़कने के लिए बटन दबाकर रखें।,छिटाव लागित् बटन टिपाव काते सापाःमे।,true,aim_and_hold hint
 training.hint.target,Tap it.,इसे छुएँ।,नोवा टिपावमे।,true,tap_target hint
 training.object.alarm_call_point,FIRE ALARM,फ़ायर अलार्म,फायर अलार्म,true,label on the alarm call point overlay
@@ -56,6 +56,7 @@ training.hint.checklist,"Tap each item as you check it, then tap Done.","हर 
 training.hint.mark_zone,Tap the floor to place cones. Tap a cone to remove it.,फ़र्श को छूकर कोन रखें। कोन हटाने के लिए उसे छुएँ।,कोन दोहो लागित् ओते टिपावमे। कोन हाताव लागित् ओना टिपावमे।,true,mark_zone hint
 training.cones.label,Cones: {{count}} (at least {{min}}),कोन: {{count}} (कम से कम {{min}}),कोन: {{count}} (कोम से कोम {{min}}),true,{{count}} = cones placed; {{min}} = the step's minCones
 training.cone.remove,Remove cone,कोन हटाएँ,कोन हातावमे,true,accessibility label on a placed cone
+training.skip.button,Skip this step (counts as failed),यह चरण छोड़ें (असफल गिना जाएगा),नोवा धाप बागीमे (फेल लेखाव होयोःआ),true,"shown after 30 s without progress in a step; the step is scored as failed (D-033)"
 training.saving.label,Saving your result…,आपका परिणाम सेव हो रहा है…,आमाः फोल सेव होयोः काना…,true,shown while the attempt is saved
 result.title,Your result,आपका परिणाम,आमाः फोल,true,screen title
 result.score.label,Score {{score}}%,अंक {{score}}%,नोंबोर {{score}}%,true,{{score}} = score percent

@@ -5,7 +5,7 @@
  */
 import type { JsonValue, Rule, Scenario, Step } from '../scenarios/types';
 import { MULTI_SELECT } from '../scenarios/types';
-import { findVariant, resolveParams } from '../scenarios/variants';
+import { findVariant, resolveParams, stepOptions, stepRunsIn } from '../scenarios/variants';
 import type { AttemptEvent, Evaluation, RuleResult } from './types';
 
 // Event times carry 2 decimals; compare with a tolerance so 0.1 + 0.2 style noise can't flip a rule.
@@ -15,6 +15,7 @@ export function evaluate(scenario: Scenario, variantId: string, events: readonly
   const variant = findVariant(scenario, variantId);
   const log = new EventLog(sortByTime(events));
   const steps = new Map(scenario.steps.map((s) => [s.id, s]));
+  const skippedByWorker = workerSkippedSteps(steps, variant.id, log);
 
   const rules: RuleResult[] = [];
   const criticalFailures: string[] = [];
@@ -23,8 +24,10 @@ export function evaluate(scenario: Scenario, variantId: string, events: readonly
   for (const rule of scenario.rules) {
     // Variant-scoped rules are skipped for other variants: out of both earned and max
     if (rule.variants !== undefined && !rule.variants.includes(variant.id)) continue;
-    const earned = earnedPoints(rule, variant.id, steps, log, (step) => resolveParams(step.params, variant));
-    const criticalFailure = rule.critical && isCriticalFailure(rule, earned, log);
+    // D-033: a step the worker skipped scores as failed, whatever was recorded in it before the skip
+    const failedStep = scoresSkippedStep(rule, skippedByWorker, steps);
+    const earned = failedStep ? 0 : earnedPoints(rule, variant.id, steps, log, (step) => resolveParams(step.params, variant));
+    const criticalFailure = rule.critical && (failedStep || isCriticalFailure(rule, earned, log));
     if (criticalFailure) criticalFailures.push(rule.id);
     rules.push({
       ruleId: rule.id,
@@ -56,6 +59,31 @@ export function sortByTime(events: readonly AttemptEvent[]): AttemptEvent[] {
     .map((event, index) => ({ event, index }))
     .sort((a, b) => a.event.t - b.event.t || a.index - b.index)
     .map((x) => x.event);
+}
+
+/**
+ * Steps the worker skipped with "Skip step" (D-033): a `step_skipped` for a step that runs in this
+ * variant. Steps outside the variant are `step_skipped` too, but their rules are variant-scoped.
+ */
+function workerSkippedSteps(steps: Map<string, Step>, variantId: string, log: EventLog): Set<string> {
+  const skipped = new Set<string>();
+  for (const e of log.all) {
+    const step = e.type === 'step_skipped' && e.stepId !== undefined ? steps.get(e.stepId) : undefined;
+    if (step !== undefined && stepRunsIn(step, variantId)) skipped.add(step.id);
+  }
+  return skipped;
+}
+
+/**
+ * A rule scores a skipped step if it names it (`step`, `before`, `after`) or, for `no_forbidden`,
+ * if its tag belongs to one of the step's options: skipping the question must not earn "no forbidden act".
+ */
+function scoresSkippedStep(rule: Rule, skipped: ReadonlySet<string>, steps: Map<string, Step>): boolean {
+  if (skipped.size === 0) return false;
+  const p = rule.params;
+  if ([p.step, p.before, p.after].some((s) => typeof s === 'string' && skipped.has(s))) return true;
+  if (rule.type !== 'no_forbidden') return false;
+  return [...skipped].some((id) => stepOptions(steps.get(id)!).some((o) => o.tag === p.tag));
 }
 
 /**

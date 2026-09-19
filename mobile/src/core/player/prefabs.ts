@@ -42,7 +42,7 @@ export const PREFABS: Record<string, Prefab> = {
   WorkshopFire: {
     objects: {
       Fire: { dh: 0, de: 6 },
-      AlarmCallPoint: { dh: 18, de: 10 },
+      AlarmCallPoint: { dh: 20, de: 10 }, // clear of the fire drawing on a 320 dp screen
     },
     labels: { AlarmCallPoint: 'training.object.alarm_call_point' },
     zones: {
@@ -59,7 +59,8 @@ export const PREFABS: Record<string, Prefab> = {
     },
   },
   ConfinedAreaEntrance: {
-    objects: { Entrance: { dh: 0, de: 6 }, LeakSource: { dh: 8, de: 2 } },
+    // Labels at least one label box apart on a 320 dp screen (layout.ts, prefabs.test.ts)
+    objects: { Entrance: { dh: -14, de: 8 }, LeakSource: { dh: 10, de: -1 } },
     labels: { Entrance: 'training.object.entrance', LeakSource: 'training.object.leak_source' },
     zones: {},
     // 10 degrees = 1.5 m: the minor alert radius spans a third of the preview width (tune in T-33)
@@ -67,10 +68,11 @@ export const PREFABS: Record<string, Prefab> = {
     cloud: { at: 'LeakSource', sizeDeg: 14 },
     stepEffects: { detect: { gasLevel: 1 } },
     paths: {
+      // Ends just below the GAS LEAK label, not on it
       LeakSource: [
-        { dh: -10, de: -20 },
-        { dh: -2, de: -12 },
-        { dh: 8, de: -4 },
+        { dh: -8, de: -24 },
+        { dh: 2, de: -18 },
+        { dh: 10, de: -13 },
       ],
       FreshAirPoint: [
         { dh: -150, de: -15 },

@@ -32,6 +32,18 @@ Critical rules:
 - Rules scoped to a variant (`"variants": ["major"]`) are skipped for other variants; skipped rules
   are removed from both earned and max (they never help or hurt).
 
+Steps the worker skips (D-033):
+- The app offers "Skip step" after 30 s without progress in a step. The player then emits
+  `step_skipped` for that step with `data: { "reason": "no_progress" }` and moves on. A `step_skipped`
+  for a step that runs in the attempt's variant is a worker skip (steps outside the variant are
+  `step_skipped` too, but their rules are variant-scoped and already left out).
+- A worker-skipped step always scores as failed, never as a pass. Every rule tied to it earns 0 and
+  has `passed: false`, whatever was recorded in the step before the skip. A rule is tied to the step
+  if its `step`, `before` or `after` names it, or if it is a `no_forbidden` rule whose `tag` is on one
+  of the step's options (skipping the question must not earn "no forbidden act").
+- A critical rule tied to a skipped step is a critical failure, even with `criticalOn: "forbidden"`,
+  so skipping a critical step fails the attempt (docs/00 R3: a critical-step miss fails regardless of score).
+
 ## Result
 ```
 scorePercent = round(100 × Σearned / Σmax)            // Σmax over non-skipped rules

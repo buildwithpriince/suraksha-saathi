@@ -9,8 +9,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { buildAttemptResult } from '@/core/assessment/result';
 import type { AttemptMode } from '@/core/assessment/types';
 import { isBehind, type Direction } from '@/core/orientation';
+import { FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, type Band } from '@/core/player/layout';
 import { PREFABS, VIRTUAL_MARKER_OFFSET, offsetFrom, zoneAt, type Offset, type Prefab } from '@/core/player/prefabs';
-import { HOLD_SAMPLE_SEC, ScenarioSession, type CurrentStep } from '@/core/player/session';
+import { HOLD_SAMPLE_SEC, SKIP_OFFER_AFTER_SEC, ScenarioSession, type CurrentStep } from '@/core/player/session';
+import { tapWaypoint } from '@/core/player/waypoints';
 import { distanceM, hazardDetector, markedRadiusM, readingAt } from '@/core/player/zone';
 import { MULTI_SELECT, type Scenario } from '@/core/scenarios/types';
 import { pickVariant, stepOptions } from '@/core/scenarios/variants';
@@ -24,10 +26,10 @@ import { colors, space } from '@/ui/theme';
 import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
 import { useCameraDirection } from './useCameraDirection';
 
-/** Horizontal field of view assumed for the portrait camera preview. Tune on device (T-28). */
-const PREVIEW_HFOV_DEG = 50;
-const FIRE_HEIGHT_DEG = 18;
 const EMPTY_PREFAB: Prefab = { objects: {}, labels: {}, zones: {}, paths: {} };
+const WAYPOINT_PX = 64;
+/** Space kept between a pinned overlay and the screen edge, card or bottom panel (D-033). */
+const PIN_GAP_PX = 8;
 
 function randomSeed(): number {
   const b = randomBytes(4);
@@ -90,6 +92,17 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const [cones, setCones] = useState<{ id: number; at: Offset }[]>([]);
   const nextConeId = useRef(0);
   const [, setTick] = useState(0);
+  // Free screen space between the instruction card and the bottom panel, in screen px
+  const [cardBottom, setCardBottom] = useState(0);
+  const [panelTop, setPanelTop] = useState(height);
+  // "Skip step" (D-033): session time and event count at the last sign of progress in this step
+  const lastProgress = useRef({ at: 0, events: 0 });
+  const [canSkip, setCanSkip] = useState(false);
+
+  const progressed = () => {
+    lastProgress.current = { at: session.now(), events: session.events.length };
+    setCanSkip(false);
+  };
 
   // Each new step: reset per-step state, apply prefab effects, speak the instruction
   useEffect(() => {
@@ -99,6 +112,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     setHolding(false);
     setPicked([]);
     setCones([]);
+    progressed();
     const effect = prefab.stepEffects?.[cur.step.id];
     if (effect?.fireLevel !== undefined) fireLevel.value = withTiming(effect.fireLevel, { duration: 1500 });
     if (effect?.gasLevel !== undefined) gasLevel.value = withTiming(effect.gasLevel, { duration: 2500 });
@@ -112,6 +126,17 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex]);
+
+  // No new event and no UI progress for SKIP_OFFER_AFTER_SEC: offer "Skip step"
+  useEffect(() => {
+    if (stepIndex < 0) return;
+    const id = setInterval(() => {
+      if (session.events.length !== lastProgress.current.events) progressed();
+      else if (session.now() - lastProgress.current.at >= SKIP_OFFER_AFTER_SEC) setCanSkip(true);
+    }, 1000);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stepIndex, session]);
 
   // Countdown for steps with a UI time limit
   useEffect(() => {
@@ -171,8 +196,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       session.complete();
     } else {
       // No position tracking (D-027): reaching a marker means scanning it, so no distance is known
-      session.record('position_reached', { anchor: marker, distanceM: null });
-      session.complete();
+      session.arrive(marker, null);
     }
     refresh();
   };
@@ -217,6 +241,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     const at = offsetFrom(a, tapDirection(e));
     nextConeId.current += 1;
     setCones((placed) => [...placed, { id: nextConeId.current, at }]);
+    progressed();
   };
 
   /** mark_zone Done: the mean cone distance becomes `zone_marked.radiusM` (D-031). */
@@ -240,22 +265,42 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     refresh();
   };
 
-  const onWaypoint = (i: number, path: number) => {
+  /** A path mark tapped: any mark not yet reached counts (waypoints.ts); the last one is arrival. */
+  const onWaypoint = (i: number, pathLength: number, index: number) => {
     const c = session.current();
-    if (c?.step.interaction !== 'move_to' || i !== waypoint) return;
-    if (i < path - 1) {
-      setWaypoint(i + 1);
+    const tap = c?.index === index && c.step.interaction === 'move_to' ? tapWaypoint(waypoint, i, pathLength) : null;
+    if (__DEV__) console.log(`[training] waypoint ${i + 1}/${pathLength} tapped in ${c?.step.id}: ${tap === null ? 'ignored' : `reached ${tap.reached}`}`);
+    if (c === null || tap === null) return;
+    progressed();
+    if (!tap.arrived) {
+      setWaypoint(tap.reached);
       return;
     }
-    const anchorName = String(c.params.anchor);
-    session.record('position_reached', { anchor: anchorName, distanceM: 0 });
     const behind = c.params.exitBehind as { minAngleDeg: number } | undefined;
-    if (behind === undefined) {
-      session.complete();
-    } else {
-      const exit = exitHeadingNow();
-      session.complete({ exitBehind: exit !== null && isBehind(exit, camera.read().headingDeg, behind.minAngleDeg) });
+    const exit = behind === undefined ? null : exitHeadingNow();
+    session.arrive(
+      String(c.params.anchor),
+      0,
+      behind === undefined ? undefined : { exitBehind: exit !== null && isBehind(exit, camera.read().headingDeg, behind.minAngleDeg) },
+    );
+    refresh();
+  };
+
+  /**
+   * "Skip step" after SKIP_OFFER_AFTER_SEC without progress (D-033): the step is recorded as
+   * `step_skipped` and the engine scores it as failed. `index` guards against a double tap.
+   */
+  const onSkip = (index: number) => {
+    const c = session.current();
+    if (c?.index !== index) return;
+    if (c.step.interaction === 'place_on_plane' && placedAnchor.current === null) {
+      // Placement isn't scored, but later steps need the overlay: put it where the camera points
+      const placed = camera.read();
+      anchor.set(placed);
+      placedAnchor.current = placed;
     }
+    if (__DEV__) console.log(`[training] step ${c.step.id} skipped after no progress: scored as failed`);
+    session.skip();
     refresh();
   };
 
@@ -263,7 +308,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const scanning = mode === 'ar' && wantedMarker(cur) !== null;
   const path = interaction === 'move_to' && cur !== null ? prefab.paths[String(cur.params.anchor)] : undefined;
   const tapTarget = interaction === 'tap_target' ? String(cur?.params.target) : null;
-  const fireSize = FIRE_HEIGHT_DEG * geometry.pxPerDeg;
+  const fireSize = FIRE_SIZE_DEG * geometry.pxPerDeg;
   const stepStart = cur === null ? 0 : ([...session.events].reverse().find((e) => e.type === 'step_started')?.t ?? 0);
   const remaining = cur?.step.timeLimitSec === undefined ? null : Math.max(0, Math.ceil(cur.step.timeLimitSec - (session.now() - stepStart)));
   const detector = interaction === 'move_to' ? (cur?.params.detector as { peakReading: number } | undefined) : undefined;
@@ -279,6 +324,19 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     const reading = readingAt(distanceM(prefab, zoneHazard, at), zoneDetector, Number(cur.params.trueRadiusM));
     return t('training.detector.label', { reading });
   };
+  // Where the centre of an overlay the worker must tap may go (D-033): clear of the card, the
+  // bottom panel and the screen edges
+  const bandFor = useCallback(
+    (w: number, h: number): Band => ({
+      left: w / 2 + PIN_GAP_PX,
+      right: width - w / 2 - PIN_GAP_PX,
+      top: cardBottom + h / 2 + PIN_GAP_PX,
+      bottom: panelTop - h / 2 - PIN_GAP_PX,
+    }),
+    [width, cardBottom, panelTop],
+  );
+  const waypointBand = useMemo(() => bandFor(WAYPOINT_PX, WAYPOINT_PX), [bandFor]);
+  const labelBand = useMemo(() => bandFor(LABEL_BOX_PX.width, LABEL_BOX_PX.height), [bandFor]);
   const cloudAt = prefab.cloud === undefined ? undefined : prefab.objects[prefab.cloud.at];
   const cloudSize = (prefab.cloud?.sizeDeg ?? 0) * geometry.pxPerDeg;
 
@@ -337,7 +395,16 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       {Object.entries(prefab.labels)
         .filter(([name]) => prefab.objects[name] !== undefined)
         .map(([name, labelKey]) => (
-          <Anchored key={name} anchor={anchor} offset={prefab.objects[name]!} direction={camera.direction} geometry={geometry} width={120} height={80}>
+          <Anchored
+            key={name}
+            anchor={anchor}
+            offset={prefab.objects[name]!}
+            direction={camera.direction}
+            geometry={geometry}
+            width={LABEL_BOX_PX.width}
+            height={LABEL_BOX_PX.height}
+            band={tapTarget === name ? labelBand : undefined}
+          >
             <TargetButton
               label={t(labelKey)}
               color={name === 'AlarmCallPoint' ? colors.red : colors.primary}
@@ -354,7 +421,15 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
         ))}
 
       {mode === 'tabletop' && wantedMarker(cur) !== null ? (
-        <Anchored anchor={anchor} offset={VIRTUAL_MARKER_OFFSET} direction={camera.direction} geometry={geometry} width={140} height={80}>
+        <Anchored
+          anchor={anchor}
+          offset={VIRTUAL_MARKER_OFFSET}
+          direction={camera.direction}
+          geometry={geometry}
+          width={LABEL_BOX_PX.width}
+          height={LABEL_BOX_PX.height}
+          band={labelBand}
+        >
           <TargetButton
             label={t('training.object.exit_sign')}
             color={colors.green}
@@ -369,8 +444,18 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       ) : null}
 
       {path?.map((offset, i) => (
-        <Anchored key={`${stepIndex}-${i}`} anchor={anchor} offset={offset} direction={camera.direction} geometry={geometry} width={64} height={64}>
-          <Waypoint index={i} next={i === waypoint} done={i < waypoint} onPress={() => onWaypoint(i, path.length)} />
+        <Anchored
+          key={`${stepIndex}-${i}`}
+          anchor={anchor}
+          offset={offset}
+          direction={camera.direction}
+          geometry={geometry}
+          width={WAYPOINT_PX}
+          height={WAYPOINT_PX}
+          // The next mark is always on screen and clear of the card (pinned to an edge if needed)
+          band={i === waypoint ? waypointBand : undefined}
+        >
+          <Waypoint index={i} next={i === waypoint} done={i < waypoint} onPress={() => onWaypoint(i, path.length, stepIndex)} />
         </Anchored>
       ))}
 
@@ -379,7 +464,10 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
           <Cone
             reading={coneReading(cone.at)}
             removeLabel={t('training.cone.remove')}
-            onPress={() => setCones((placed) => placed.filter((c) => c.id !== cone.id))}
+            onPress={() => {
+              setCones((placed) => placed.filter((c) => c.id !== cone.id));
+              progressed();
+            }}
           />
         </Anchored>
       ))}
@@ -388,7 +476,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
 
       <SafeAreaView style={styles.chrome} pointerEvents="box-none">
         {cur !== null ? (
-          <View style={styles.card}>
+          <View style={styles.card} onLayout={(e) => setCardBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
             {mode === 'tabletop' ? <Text style={styles.mode}>{t('training.tabletop.label')}</Text> : null}
             <Text style={styles.instruction}>{t(cur.step.instructionKey)}</Text>
             {hint !== null ? <Text style={styles.hint}>{hint}</Text> : null}
@@ -411,6 +499,11 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
                 <Text style={styles.chipText}>{t('training.stop.button')}</Text>
               </Pressable>
             </View>
+            {canSkip ? (
+              <Pressable accessibilityRole="button" style={styles.skip} onPress={() => onSkip(cur.index)}>
+                <Text style={styles.skipText}>{t('training.skip.button')}</Text>
+              </Pressable>
+            ) : null}
           </View>
         ) : (
           <View style={styles.card}>
@@ -418,7 +511,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
           </View>
         )}
 
-        <View style={styles.bottom} pointerEvents="box-none">
+        <View style={styles.bottom} pointerEvents="box-none" onLayout={(e) => setPanelTop(e.nativeEvent.layout.y)}>
           {route !== null ? <RouteArrow targetHeading={route} direction={camera.direction} /> : null}
 
           {cur !== null && (interaction === 'choose_one' || interaction === 'decision') ? (
@@ -452,7 +545,10 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: on }}
                       style={({ pressed }) => [styles.option, styles.optionRow, on && styles.optionOn, pressed && styles.optionPressed]}
-                      onPress={() => setPicked((p) => (p.includes(o.id) ? p.filter((id) => id !== o.id) : [...p, o.id]))}
+                      onPress={() => {
+                        setPicked((p) => (p.includes(o.id) ? p.filter((id) => id !== o.id) : [...p, o.id]));
+                        progressed();
+                      }}
                     >
                       <View style={[styles.box, on && styles.boxOn]}>{on ? <Text style={styles.boxTick}>✓</Text> : null}</View>
                       <Text style={[styles.optionText, styles.optionLabel]}>{t(o.labelKey)}</Text>
@@ -527,6 +623,16 @@ const styles = StyleSheet.create({
   stop: { marginLeft: 'auto', backgroundColor: 'rgba(180,35,24,0.85)' },
   chipText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   timer: { color: '#FFD43B', fontSize: 18, fontWeight: '800' },
+  skip: {
+    minHeight: 48,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#FFD43B',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: space.m,
+  },
+  skipText: { color: '#FFD43B', fontSize: 17, fontWeight: '800', textAlign: 'center' },
   bottom: { gap: space.s },
   options: { maxHeight: 320 },
   optionsContent: { gap: space.s },

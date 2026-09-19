@@ -230,7 +230,7 @@ async def test_manifest_lists_content_version_and_scenarios(client: AsyncClient)
 
     assert response.status_code == 200
     assert response.json() == {
-        "contentVersion": "2026.09.3",
+        "contentVersion": "2026.09.4",
         "scenarios": [{"id": "FIRE_01", "version": 1}, {"id": "GAS_01", "version": 1}],
     }
 

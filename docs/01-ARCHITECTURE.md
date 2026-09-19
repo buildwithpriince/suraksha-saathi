@@ -40,6 +40,7 @@ Full format and test vectors: `docs/04-CERTIFICATES.md`.
 ## App flow (screens)
 Boot -> (first run) Device setup (choose site, register) -> Home
 Home -> Kiosk login (scan worker ID QR or pick worker) -> Module list -> Pre-brief (voice)
+  (worker ID card QR text: `SW1:<worker uuid>`, unsigned; printed from the worker page, D-034)
  -> AR training (or Tabletop) -> Result (per-rule feedback) -> [all required passed] Certificate QR
 Home -> Verify (scan certificate QR) -> Result card
 Home -> Settings (language, sync now, device status)

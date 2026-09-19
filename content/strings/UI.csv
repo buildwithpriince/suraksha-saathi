@@ -103,3 +103,18 @@ time.days_ago,{{count}} days ago,{{count}} दिन पहले,{{count}} म�
 home.language.label,Language,भाषा,पारसी,true,language switcher label
 worker.language.label,Worker's language,कामगार की भाषा,कामी होड़ रेयाः पारसी,true,language switcher on the worker page (kiosk)
 lang.sat.pending,Santali text is a draft. A native speaker has not checked it yet.,संताली पाठ अभी मसौदा है। किसी संताली भाषी ने इसे अभी नहीं जाँचा है।,संताली ओल नितोः ड्राफ्ट काना। संताली पारसी होड़ नितोःहों बाङ जांचाव आकादा।,true,"shown whenever sat is chosen, until the native-speaker review (T-72) removes it"
+home.scan_card.button,Scan worker ID card,कामगार पहचान पत्र स्कैन करें,कामी होड़ चिन्हा कार्ड स्कैनमे,true,button on home: kiosk login (D-034)
+worker.card.button,ID card,पहचान पत्र,चिन्हा कार्ड,true,button on the worker page
+card.title,Worker ID card,कामगार पहचान पत्र,कामी होड़ चिन्हा कार्ड,true,screen title and printed card title
+card.code.value,Employee code: {{code}},कर्मचारी कोड: {{code}},कर्मचारी कोड: {{code}},true,line on the card; {{code}} = employee code
+card.site.value,Site: {{site}},साइट: {{site}},साइट: {{site}},true,line on the card; {{site}} = site code
+card.hint,Print this card for the worker. Scan it on the home screen to open their training.,यह कार्ड कामगार के लिए प्रिंट करें। उनका प्रशिक्षण खोलने के लिए होम स्क्रीन पर इसे स्कैन करें।,नोवा कार्ड कामी होड़ लागित् प्रिंटमे। ओनाः ट्रेनिंग झिज लागित् होम स्क्रीन रे स्कैनमे।,true,under the card preview
+card.print.button,Print ID card,पहचान पत्र प्रिंट करें,चिन्हा कार्ड प्रिंटमे,true,button: opens the print dialog (can also save a PDF)
+card.print.failed,Printing did not work. Try again.,प्रिंट नहीं हो पाया। फिर से कोशिश करें।,प्रिंट बाङ होयेना। आरहों कुरुमुटुयमे।,true,shown when the print dialog fails
+scan.title,Scan ID card,पहचान पत्र स्कैन करें,चिन्हा कार्ड स्कैन,true,screen title
+scan.hint,Point the camera at the QR code on the worker's ID card.,कैमरे को कामगार के पहचान पत्र के QR कोड पर रखें।,कैमरा कामी होड़ रेयाः चिन्हा कार्ड रेन QR कोड सेच् दोहोयमे।,true,scanner hint
+scan.camera.body,Allow the camera to scan worker ID cards.,कामगार पहचान पत्र स्कैन करने के लिए कैमरा चालू करें।,चिन्हा कार्ड स्कैन लागित् कैमरा अनुमति एममे।,true,permission text
+scan.not_found,This card's worker is not enrolled on this device. Enrol them first.,इस कार्ड का कामगार इस डिवाइस पर जुड़ा नहीं है। पहले उन्हें जोड़ें।,नोवा कार्ड रेन कामी होड़ नोवा डिवाइस रे बाङ ओल आकाना। पाहिल ओलमे।,true,a worker card for someone not on this device (also spoken)
+scan.certificate,This is a certificate. Use Verify a certificate on the home screen.,यह प्रमाणपत्र है। होम स्क्रीन पर प्रमाणपत्र जाँचें का उपयोग करें।,नोवा सर्टिफिकेट काना। होम स्क्रीन रे सर्टिफिकेट जांचाव बेबहारमे।,true,a certificate QR scanned by mistake (also spoken)
+scan.not_card,This is not a worker ID card.,यह कामगार पहचान पत्र नहीं है।,नोवा कामी होड़ चिन्हा कार्ड बाङ काना।,true,any other QR (also spoken)
+scan.again.button,Scan again,फिर से स्कैन करें,आरहों स्कैनमे,true,button

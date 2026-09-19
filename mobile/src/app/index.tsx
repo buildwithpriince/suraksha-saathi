@@ -36,6 +36,8 @@ export default function HomeScreen() {
       </Body>
       <Card>
         <Title>{t('home.workers.title')}</Title>
+        {/* Kiosk login: scan the worker's ID card, or pick them below (docs/01, D-034) */}
+        {workers.length > 0 ? <Button label={t('home.scan_card.button')} onPress={() => router.push('/scan')} /> : null}
         {workers.length === 0 ? <Body muted>{t('home.workers.empty')}</Body> : null}
         {workers.map((w) => (
           <Pressable
@@ -48,7 +50,7 @@ export default function HomeScreen() {
             <Text style={styles.rowMeta}>{t(`lang.${w.preferredLang}`)}</Text>
           </Pressable>
         ))}
-        <Button label={t('home.enrol.button')} onPress={() => router.push('/enrol')} />
+        <Button kind={workers.length > 0 ? 'secondary' : 'primary'} label={t('home.enrol.button')} onPress={() => router.push('/enrol')} />
       </Card>
       <Button kind="secondary" label={t('home.verify.button')} onPress={() => router.push('/verify')} />
       <Card>

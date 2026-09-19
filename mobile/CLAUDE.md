@@ -16,7 +16,8 @@ Unity, and what we traded away: `docs/DECISIONS.md` D-027.
 - `expo-secure-store`: device Ed25519 private key (Android Keystore-backed)
 - `expo-crypto`: random bytes (keys, UUIDv7)
 - `@noble/ed25519` v3 + `@noble/hashes`: certificate sign/verify (docs/04)
-- `react-native-qrcode-svg`: certificate QR (byte mode, error correction M)
+- `react-native-qrcode-svg`: certificate QR (byte mode, error correction M); worker ID card QR (error correction Q)
+- `expo-print` + `qrcode`: printable worker ID cards, generated offline (D-034)
 - `i18next` + `react-i18next`: `en`, `hi`, `sat`; `expo-font` (Noto Sans Devanagari + Noto Sans);
   `expo-audio` for narration
 - Vitest for `src/core`; `jest-expo` only if a component test is ever needed

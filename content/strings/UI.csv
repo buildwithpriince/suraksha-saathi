@@ -49,3 +49,15 @@ training.object.alarm_call_point,FIRE ALARM,,,false,label on the alarm call poin
 training.object.exit_sign,EXIT,,,false,label on the virtual exit sign (no-camera mode)
 training.detector.label,Gas {{reading}},,,false,detector reading on move_to with a detector
 training.saving.label,Saving your result…,,,false,shown while the attempt is saved
+result.title,Your result,,,false,screen title
+result.score.label,Score {{score}}%,,,false,{{score}} = score percent
+result.threshold.label,Pass mark {{threshold}}%,,,false,{{threshold}} = scenario pass threshold
+result.critical.label,Critical step missed,,,false,rule row tag for a failed critical rule
+result.points.label,{{earned}} / {{max}},,,false,rule row points
+result.rules.title,What you did,,,false,section title
+result.tap_to_hear.hint,Tap a row to hear it.,,,false,hint under the rules title
+result.try_again.button,Try again,,,false,button: new attempt with a new seed
+result.done.button,Done,,,false,button: back to the worker
+result.passed.audio,Well done. You passed.,,,false,spoken when the result opens
+result.not_yet.audio,Not yet. Tap each red row to hear what to do better.,,,false,spoken when the result opens
+result.aborted.label,You stopped the drill early.,,,false,shown when the attempt was stopped

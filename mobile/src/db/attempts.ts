@@ -83,3 +83,12 @@ export function listAttempts<Result extends StoredAttemptResult>(workerId: strin
     )
     .map((r) => fromRow<Result>(r));
 }
+
+/** True when the stored event log holds `attempt_aborted` (the worker pressed Stop). */
+export function wasAborted(id: string): boolean {
+  const row = db().getFirstSync<{ n: number }>(
+    `SELECT instr(events_json, '"type":"attempt_aborted"') AS n FROM attempts WHERE id = ?`,
+    id,
+  );
+  return (row?.n ?? 0) > 0;
+}

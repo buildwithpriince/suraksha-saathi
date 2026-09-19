@@ -142,7 +142,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       events: session.events,
     });
     saveAttempt(workerId, result, session.events, eventsJson);
-    router.replace({ pathname: '/worker/[id]', params: { id: workerId } });
+    router.replace({ pathname: '/result/[attemptId]', params: { attemptId } });
   });
 
   const exitHeadingNow = (): number | null => {

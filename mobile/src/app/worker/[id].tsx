@@ -1,9 +1,9 @@
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text } from 'react-native';
 
-import { playableScenarios } from '@/content/scenarios';
+import { getScenario, playableScenarios } from '@/content/scenarios';
 import { listAttempts, type AttemptRecord } from '@/db/attempts';
 import { getWorker } from '@/db/workers';
 import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
@@ -41,14 +41,19 @@ export default function WorkerScreen() {
         <Title>{t('worker.attempts.title')}</Title>
         {attempts.length === 0 ? <Body muted>{t('worker.attempts.empty')}</Body> : null}
         {attempts.map((a) => (
-          <View key={a.id} style={styles.row}>
-            <Text style={styles.rowTitle}>{a.result.scenarioId}</Text>
+          <Pressable
+            key={a.id}
+            accessibilityRole="button"
+            onPress={() => router.push({ pathname: '/result/[attemptId]', params: { attemptId: a.id } })}
+            style={styles.row}
+          >
+            <Text style={styles.rowTitle}>{t(getScenario(a.result.scenarioId)?.titleKey ?? a.result.scenarioId)}</Text>
             <Text style={styles.rowMeta}>{t('attempt.score.label', { score: a.result.scorePercent })}</Text>
             <Badge
               label={t(a.result.passed ? 'attempt.pass.label' : 'attempt.not_yet.label')}
               tone={a.result.passed ? 'green' : 'red'}
             />
-          </View>
+          </Pressable>
         ))}
       </Card>
     </Screen>

@@ -56,6 +56,7 @@ export default function HomeScreen() {
       <Card>
         <LanguageSwitcher label={t('home.language.label')} />
       </Card>
+      <Button kind="secondary" label={t('home.settings.button')} onPress={() => router.push('/settings')} />
     </Screen>
   );
 }

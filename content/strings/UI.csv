@@ -118,3 +118,21 @@ scan.not_found,This card's worker is not enrolled on this device. Enrol them fir
 scan.certificate,This is a certificate. Use Verify a certificate on the home screen.,यह प्रमाणपत्र है। होम स्क्रीन पर प्रमाणपत्र जाँचें का उपयोग करें।,नोवा सर्टिफिकेट काना। होम स्क्रीन रे सर्टिफिकेट जांचाव बेबहारमे।,true,a certificate QR scanned by mistake (also spoken)
 scan.not_card,This is not a worker ID card.,यह कामगार पहचान पत्र नहीं है।,नोवा कामी होड़ चिन्हा कार्ड बाङ काना।,true,any other QR (also spoken)
 scan.again.button,Scan again,फिर से स्कैन करें,आरहों स्कैनमे,true,button
+home.settings.button,Settings,सेटिंग्स,सेटिंग,true,button on home
+settings.title,Settings,सेटिंग्स,सेटिंग,true,screen title
+settings.device.title,This device,यह डिवाइस,नोवा डिवाइस,true,section title
+settings.site.value,Site: {{site}},साइट: {{site}},साइट: {{site}},true,{{site}} = site code
+settings.device_id.value,Device ID: {{id}},डिवाइस आईडी: {{id}},डिवाइस आईडी: {{id}},true,{{id}} = device UUID (for support)
+settings.status.unregistered,Not registered with the server yet,अभी सर्वर पर पंजीकृत नहीं है,नितोःहों सर्वर रे बाङ ओल आकाना,true,device status (docs/05)
+settings.status.pending,Waiting for approval by an admin,एडमिन की स्वीकृति का इंतज़ार है,एडमिन रेयाः मानाव लागित् तांगी काना,true,device status (docs/05)
+settings.status.approved,Approved by an admin,एडमिन ने स्वीकृत किया है,एडमिन मानाव आकादा,true,device status (docs/05)
+settings.attestation.until,Can issue certificates until {{date}},{{date}} तक प्रमाणपत्र जारी कर सकता है,{{date}} हाबिज सर्टिफिकेट एम दाड़ेयाःआ,true,{{date}} = attestation expiry
+settings.attestation.none,Cannot issue certificates yet,अभी प्रमाणपत्र जारी नहीं कर सकता,नितोःहों सर्टिफिकेट बाङ एम दाड़ेयाःआ,true,no usable attestation
+settings.sync.title,Sync,सिंक,सिंक,true,section title
+settings.last_sync.never,Last sync: never,पिछला सिंक: कभी नहीं,मुचाद् सिंक: जाहाँ ओकतोहों बाङ,true,sync_state.last_success_at is empty
+settings.last_sync.value,Last sync: {{date}},पिछला सिंक: {{date}},मुचाद् सिंक: {{date}},true,{{date}} = last successful sync
+settings.sync_now.button,Sync now,अभी सिंक करें,नितोः सिंकमे,true,"button (disabled until the sync client, T-57)"
+settings.sync.unavailable,Sync with the server is not available in this version yet.,सर्वर के साथ सिंक इस संस्करण में अभी उपलब्ध नहीं है।,सर्वर सांव सिंक नोवा भर्शन रे नितोःहों बानुःआ।,true,under the disabled Sync now button
+settings.about.title,About,जानकारी,खोबोर,true,section title
+settings.app_version.value,App version {{version}},ऐप संस्करण {{version}},ऐप भर्शन {{version}},true,{{version}} = app version
+settings.content_version.value,Training content {{version}},प्रशिक्षण सामग्री {{version}},ट्रेनिंग जिनिस {{version}},true,{{version}} = content/manifest.json contentVersion

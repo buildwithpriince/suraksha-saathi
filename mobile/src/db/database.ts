@@ -58,3 +58,8 @@ export function enqueueOutbox(kind: OutboxKind, recordId: string, payload: unkno
 export function outboxCount(): number {
   return db().getFirstSync<{ n: number }>('SELECT COUNT(*) AS n FROM outbox')?.n ?? 0;
 }
+
+/** docs/05 `sync_state.last_success_at`, or null if this device has never synced. */
+export function lastSyncAt(): number | null {
+  return db().getFirstSync<{ at: number | null }>('SELECT last_success_at AS at FROM sync_state WHERE id = 1')?.at ?? null;
+}

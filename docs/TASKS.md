@@ -48,7 +48,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 
 ## M4 — Worker journey, persistence, certificates (target: ____)
 - [x] T-40 [A] `expo-sqlite` layer + repositories + outbox-in-same-transaction (docs/05); device key pair generated on first launch, private key in `expo-secure-store` (supersedes D-004's package choice)
-- [ ] T-41 [C] Screens: device setup, home, kiosk login (scan worker ID QR / pick), enrol worker, module list, settings
+- [x] T-41 [C] Screens: device setup, home, kiosk login (scan worker ID QR / pick), enrol worker, module list, settings
 - [x] T-42 [A] Certificate issuance flow + QR render (`react-native-qrcode-svg`, error correction M; docs/04 issuance) (deps: T-13, T-40)
 - [x] T-43 [C] Verify screen: `expo-camera` QR scan + status card + revocation freshness line (deps: T-13)
 - [ ] T-44 [F] Airplane-mode test of full journey — Done when: zero network calls needed, no crashes

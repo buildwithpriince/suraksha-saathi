@@ -76,6 +76,10 @@ files); never hand-edit it.
 | `exitBehind` | Heading when the exit marker was found vs heading at arrival: angle > `minAngleDeg` |
 | `mark_zone` | Tap cone positions on the placed overlay; radius in the overlay's metre scale |
 
+Markers: a printed marker is a QR code whose text is exactly the marker id (`EXIT_A`).
+`npm run markers` writes printable 150 mm SVGs to `assets/markers/`. Prefab layouts (object,
+zone and waypoint angles) live in `src/core/player/prefabs.ts`; `PREVIEW_HFOV_DEG` in
+`src/training/TrainingRun.tsx` maps degrees to pixels. Tune both on a phone (T-28).
 Anchoring: overlays keep a fixed direction as the phone rotates (3DoF, from device orientation).
 There is no position tracking, so overlays drift if the worker walks; steps that need walking use
 printed markers or waypoints instead.
@@ -84,6 +88,7 @@ printed markers or waypoints instead.
 - Core tests: `npm test` (Vitest; run after every `src/core` change)
 - `npm run typecheck`, `npm run lint`
 - Dev on a phone: `npx expo start` (Expo Go or a dev build)
+- Printable exit markers: `npm run markers`
 - Strings: `npm run l10n:build` (CSV -> JSON), `npm run l10n:report` (missing keys/audio per locale)
 - APK: `eas build -p android --profile preview` (human: needs an expo.dev login). Run
   `git lfs pull` first: EAS uploads the working tree, and LFS pointers would ship as broken assets.

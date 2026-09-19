@@ -28,3 +28,24 @@ worker.certificate.button,Certificate,,,false,button
 attempt.score.label,{{score}}%,,,false,{{score}} = score percent
 attempt.pass.label,PASS,,,false,result badge
 attempt.not_yet.label,NOT YET,,,false,result badge
+worker.modules.title,Training modules,,,false,section title
+training.replay.button,Replay,,,false,button: hear the instruction again
+training.stop.button,Stop,,,false,button: end the drill early
+training.continue.button,Continue,,,false,button
+training.hold.button,Hold to spray,,,false,press-and-hold button for aim_and_hold
+training.held.label,Sprayed {{held}} of {{total}} s,,,false,hold progress
+training.time_left.label,{{seconds}} s,,,false,step countdown
+training.camera.title,Camera needed,,,false,permission card title
+training.camera.body,The drill shows the fire on your real floor through the camera.,,,false,permission card text
+training.camera.allow.button,Allow camera,,,false,button
+training.camera.skip.button,Train without camera,,,false,button: tabletop mode
+training.tabletop.label,Virtual room: no camera,,,false,mode banner
+training.hint.scan_marker,Scan the printed exit sign with the camera.,,,false,find_marker / move_to marker hint (camera)
+training.hint.tap_marker,Turn around and tap the exit sign.,,,false,find_marker / move_to marker hint (no camera)
+training.hint.waypoints,Tap the marks on the floor one by one.,,,false,move_to waypoint hint
+training.hint.hold,Press and hold the button to spray.,,,false,aim_and_hold hint
+training.hint.target,Tap it.,,,false,tap_target hint
+training.object.alarm_call_point,FIRE ALARM,,,false,label on the alarm call point overlay
+training.object.exit_sign,EXIT,,,false,label on the virtual exit sign (no-camera mode)
+training.detector.label,Gas {{reading}},,,false,detector reading on move_to with a detector
+training.saving.label,Saving your result…,,,false,shown while the attempt is saved

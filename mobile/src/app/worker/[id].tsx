@@ -1,15 +1,17 @@
-import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { playableScenarios } from '@/content/scenarios';
 import { listAttempts, type AttemptRecord } from '@/db/attempts';
 import { getWorker } from '@/db/workers';
-import { Badge, Body, Card, Screen, Title } from '@/ui/components';
+import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
 import { colors, space } from '@/ui/theme';
 
 export default function WorkerScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [worker] = useState(() => getWorker(id));
   const [attempts, setAttempts] = useState<AttemptRecord[]>([]);
@@ -25,6 +27,16 @@ export default function WorkerScreen() {
   return (
     <Screen>
       <Stack.Screen options={{ title: worker.displayName }} />
+      <Card>
+        <Title>{t('worker.modules.title')}</Title>
+        {playableScenarios().map((s) => (
+          <Button
+            key={s.id}
+            label={t('worker.train.button', { module: t(s.titleKey) })}
+            onPress={() => router.push({ pathname: '/train/[scenarioId]', params: { scenarioId: s.id, workerId: worker.id } })}
+          />
+        ))}
+      </Card>
       <Card>
         <Title>{t('worker.attempts.title')}</Title>
         {attempts.length === 0 ? <Body muted>{t('worker.attempts.empty')}</Body> : null}

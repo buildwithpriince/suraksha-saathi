@@ -21,12 +21,18 @@ export interface Zone {
 export interface Prefab {
   /** Named objects the worker can see or tap (`tap_target` targets, drawn props). */
   objects: Record<string, Offset>;
+  /** Localization keys of the objects drawn as labelled overlays; others are not drawn as labels. */
+  labels: Record<string, string>;
   /** Named aim zones for `aim_and_hold`, first match wins. */
   zones: Record<string, Zone>;
   /** Waypoints for `move_to` a scene anchor, tapped in order; the last one is the anchor. */
   paths: Record<string, Offset[]>;
+  /** Overlay metre scale: metres per degree of offset, for `mark_zone` cone radii (D-031). */
+  metresPerDeg?: number;
+  /** A gas cloud drawn around a named object, visible once a step effect sets `gasLevel`. */
+  cloud?: { at: string; sizeDeg: number };
   /** Presentation changes when a step starts, e.g. docs/02 FIRE_01 "fire spreads (scripted)". */
-  stepEffects?: Record<string, { fireLevel?: number }>;
+  stepEffects?: Record<string, { fireLevel?: number; gasLevel?: number }>;
 }
 
 /** Where a printed marker's stand-in sign sits in tabletop mode: behind the worker. */
@@ -38,6 +44,7 @@ export const PREFABS: Record<string, Prefab> = {
       Fire: { dh: 0, de: 6 },
       AlarmCallPoint: { dh: 18, de: 10 },
     },
+    labels: { AlarmCallPoint: 'training.object.alarm_call_point' },
     zones: {
       FireBase: { dh: [-7, 7], de: [-3, 5] },
       FlameTop: { dh: [-7, 7], de: [5, 15] },
@@ -53,7 +60,12 @@ export const PREFABS: Record<string, Prefab> = {
   },
   ConfinedAreaEntrance: {
     objects: { Entrance: { dh: 0, de: 6 }, LeakSource: { dh: 8, de: 2 } },
+    labels: { Entrance: 'training.object.entrance', LeakSource: 'training.object.leak_source' },
     zones: {},
+    // 10 degrees = 1.5 m: the minor alert radius spans a third of the preview width (tune in T-33)
+    metresPerDeg: 0.15,
+    cloud: { at: 'LeakSource', sizeDeg: 14 },
+    stepEffects: { detect: { gasLevel: 1 } },
     paths: {
       LeakSource: [
         { dh: -10, de: -20 },

@@ -8,10 +8,10 @@ import type { Scenario } from '@/core/scenarios/types';
 const ALL: readonly Scenario[] = [loadScenario(fire), loadScenario(gas)];
 
 /**
- * Scenarios this build can play. GAS_01 needs `choose_many`, `checklist` and `mark_zone`
- * (T-30); until then only FIRE_01 is offered, and certificates require only playable modules (D-029).
+ * Scenarios this build can play. Certificates require a pass in each of them (D-029), so with
+ * GAS_01 playable (T-30) both docs/04 required modules are needed again.
  */
-export const PLAYABLE_SCENARIO_IDS: readonly string[] = ['FIRE_01'];
+export const PLAYABLE_SCENARIO_IDS: readonly string[] = ['FIRE_01', 'GAS_01'];
 
 export function getScenario(id: string): Scenario | null {
   return ALL.find((s) => s.id === id) ?? null;

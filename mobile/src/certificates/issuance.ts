@@ -19,7 +19,7 @@ export type IssueResult =
   | { kind: 'not_approved' }
   | { kind: 'untrusted' };
 
-/** D-029: the modules this build can play (FIRE_01 until GAS_01 is playable). */
+/** D-029: the modules this build can play (FIRE_01 and GAS_01 since T-30). */
 export function requiredModules(): RequiredModule[] {
   return playableScenarios().map((s) => ({ id: s.id, version: s.version, validityDays: s.validityDays }));
 }

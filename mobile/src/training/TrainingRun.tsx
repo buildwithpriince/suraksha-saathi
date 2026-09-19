@@ -9,9 +9,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { buildAttemptResult } from '@/core/assessment/result';
 import type { AttemptMode } from '@/core/assessment/types';
 import { isBehind, type Direction } from '@/core/orientation';
-import { PREFABS, VIRTUAL_MARKER_OFFSET, offsetFrom, zoneAt, type Prefab } from '@/core/player/prefabs';
+import { PREFABS, VIRTUAL_MARKER_OFFSET, offsetFrom, zoneAt, type Offset, type Prefab } from '@/core/player/prefabs';
 import { HOLD_SAMPLE_SEC, ScenarioSession, type CurrentStep } from '@/core/player/session';
-import type { Scenario } from '@/core/scenarios/types';
+import { distanceM, hazardDetector, markedRadiusM, readingAt } from '@/core/player/zone';
+import { MULTI_SELECT, type Scenario } from '@/core/scenarios/types';
 import { pickVariant, stepOptions } from '@/core/scenarios/variants';
 import { saveAttempt } from '@/db/attempts';
 import { newId, nowSeconds } from '@/db/database';
@@ -19,13 +20,13 @@ import { speakKey, stopSpeaking } from '@/i18n/speech';
 import { randomBytes } from '@/platform/random';
 import { colors, space } from '@/ui/theme';
 
-import { Anchored, Fire, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
+import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
 import { useCameraDirection } from './useCameraDirection';
 
 /** Horizontal field of view assumed for the portrait camera preview. Tune on device (T-28). */
 const PREVIEW_HFOV_DEG = 50;
 const FIRE_HEIGHT_DEG = 18;
-const EMPTY_PREFAB: Prefab = { objects: {}, zones: {}, paths: {} };
+const EMPTY_PREFAB: Prefab = { objects: {}, labels: {}, zones: {}, paths: {} };
 
 function randomSeed(): number {
   const b = randomBytes(4);
@@ -60,6 +61,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const camera = useCameraDirection();
   const anchor = useSharedValue<Direction | null>(null);
   const fireLevel = useSharedValue(1);
+  const gasLevel = useSharedValue(0);
 
   const attempt = useRef<Attempt | null>(null);
   if (attempt.current === null) attempt.current = startAttempt(scenario);
@@ -80,6 +82,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const [waypoint, setWaypoint] = useState(0);
   const [held, setHeld] = useState(0);
   const [holding, setHolding] = useState(false);
+  const [picked, setPicked] = useState<string[]>([]);
+  const [cones, setCones] = useState<{ id: number; at: Offset }[]>([]);
+  const nextConeId = useRef(0);
   const [, setTick] = useState(0);
 
   // Each new step: reset per-step state, apply prefab effects, speak the instruction
@@ -88,8 +93,11 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     setWaypoint(0);
     setHeld(0);
     setHolding(false);
+    setPicked([]);
+    setCones([]);
     const effect = prefab.stepEffects?.[cur.step.id];
     if (effect?.fireLevel !== undefined) fireLevel.value = withTiming(effect.fireLevel, { duration: 1500 });
+    if (effect?.gasLevel !== undefined) gasLevel.value = withTiming(effect.gasLevel, { duration: 2500 });
     speakKey(cur.step.audioKey, () => {
       // narration auto-advances when its audio ends (docs/02)
       const now = session.current();
@@ -180,16 +188,50 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     markerReached(c, marker);
   };
 
-  const onPlace = (e: GestureResponderEvent) => {
-    const c = session.current();
-    if (c?.step.interaction !== 'place_on_plane') return;
+  /** The world direction under a screen tap. */
+  const tapDirection = (e: GestureResponderEvent): Direction => {
     const cam = camera.read();
-    const placed = {
+    return {
       headingDeg: (cam.headingDeg + (e.nativeEvent.locationX - geometry.cx) / geometry.pxPerDeg + 360) % 360,
       elevationDeg: cam.elevationDeg - (e.nativeEvent.locationY - geometry.cy) / geometry.pxPerDeg,
     };
+  };
+
+  const onPlace = (e: GestureResponderEvent) => {
+    const c = session.current();
+    if (c?.step.interaction !== 'place_on_plane') return;
+    const placed = tapDirection(e);
     anchor.set(placed);
     session.complete({ headingDeg: round1(placed.headingDeg), elevationDeg: round1(placed.elevationDeg) });
+    refresh();
+  };
+
+  const onCone = (e: GestureResponderEvent) => {
+    const a = anchor.get();
+    if (session.current()?.step.interaction !== 'mark_zone' || a === null) return;
+    const at = offsetFrom(a, tapDirection(e));
+    nextConeId.current += 1;
+    setCones((placed) => [...placed, { id: nextConeId.current, at }]);
+  };
+
+  /** mark_zone Done: the mean cone distance becomes `zone_marked.radiusM` (D-031). */
+  const finishZone = () => {
+    const c = session.current();
+    if (c?.step.interaction !== 'mark_zone' || cones.length < Number(c.params.minCones ?? 1)) return;
+    const radiusM = markedRadiusM(prefab, String(c.params.hazard), cones.map((cone) => cone.at));
+    session.record('zone_marked', { radiusM });
+    session.complete();
+    refresh();
+  };
+
+  /**
+   * choose_many / checklist Done: the picked options, in the step's option order. `index` is the
+   * step the button was drawn for, so a double tap can't answer the next step with this selection.
+   */
+  const finishChoice = (index: number) => {
+    const c = session.current();
+    if (c?.index !== index || !MULTI_SELECT.includes(c.step.interaction)) return;
+    session.chooseMany(stepOptions(c.step).map((o) => o.id).filter((id) => picked.includes(id)));
     refresh();
   };
 
@@ -220,6 +262,30 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const stepStart = cur === null ? 0 : ([...session.events].reverse().find((e) => e.type === 'step_started')?.t ?? 0);
   const remaining = cur?.step.timeLimitSec === undefined ? null : Math.max(0, Math.ceil(cur.step.timeLimitSec - (session.now() - stepStart)));
   const detector = interaction === 'move_to' ? (cur?.params.detector as { peakReading: number } | undefined) : undefined;
+  const multiSelect = cur !== null && MULTI_SELECT.includes(cur.step.interaction);
+  const zoneHazard = interaction === 'mark_zone' && cur !== null ? String(cur.params.hazard) : null;
+  const minCones = interaction === 'mark_zone' && cur !== null ? Number(cur.params.minCones ?? 1) : 0;
+  const zoneDetector = useMemo(
+    () => (zoneHazard === null ? null : hazardDetector(scenario, session.variantId, zoneHazard)),
+    [zoneHazard, scenario, session],
+  );
+  const coneReading = (at: Offset): string | null => {
+    if (zoneHazard === null || zoneDetector === null || cur === null) return null;
+    const reading = readingAt(distanceM(prefab, zoneHazard, at), zoneDetector, Number(cur.params.trueRadiusM));
+    return t('training.detector.label', { reading });
+  };
+  const cloudAt = prefab.cloud === undefined ? undefined : prefab.objects[prefab.cloud.at];
+  const cloudSize = (prefab.cloud?.sizeDeg ?? 0) * geometry.pxPerDeg;
+
+  // showRoute: towards the exit marker, or towards the next waypoint of a scene-anchor path
+  const routeHeading = (): number | null => {
+    if (cur === null || interaction !== 'move_to' || cur.params.showRoute !== true) return null;
+    if (wantedMarker(cur) !== null) return exitHeadingNow();
+    const a = anchor.get();
+    const next = path?.[waypoint];
+    return a === null || next === undefined ? null : (a.headingDeg + next.dh + 360) % 360;
+  };
+  const route = routeHeading();
 
   const hint = (() => {
     if (cur === null) return null;
@@ -227,6 +293,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     if (path !== undefined) return t('training.hint.waypoints');
     if (interaction === 'aim_and_hold') return t('training.hint.hold');
     if (interaction === 'tap_target') return t('training.hint.target');
+    if (interaction === 'choose_many') return t('training.hint.choose_many');
+    if (interaction === 'checklist') return t('training.hint.checklist');
+    if (interaction === 'mark_zone') return t('training.hint.mark_zone');
     return null;
   })();
 
@@ -244,6 +313,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       )}
 
       {interaction === 'place_on_plane' ? <Pressable style={StyleSheet.absoluteFill} onPress={onPlace} /> : null}
+      {interaction === 'mark_zone' ? (
+        <Pressable style={StyleSheet.absoluteFill} accessibilityLabel={t('training.hint.mark_zone')} onPress={onCone} />
+      ) : null}
 
       {prefab.objects.Fire !== undefined ? (
         <Anchored anchor={anchor} offset={prefab.objects.Fire} direction={camera.direction} geometry={geometry} width={fireSize} height={fireSize}>
@@ -251,12 +323,18 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
         </Anchored>
       ) : null}
 
-      {Object.entries(prefab.objects)
-        .filter(([name]) => name !== 'Fire')
-        .map(([name, offset]) => (
-          <Anchored key={name} anchor={anchor} offset={offset} direction={camera.direction} geometry={geometry} width={120} height={80}>
+      {cloudAt !== undefined ? (
+        <Anchored anchor={anchor} offset={cloudAt} direction={camera.direction} geometry={geometry} width={cloudSize} height={cloudSize}>
+          <GasCloud size={cloudSize} level={gasLevel} />
+        </Anchored>
+      ) : null}
+
+      {Object.entries(prefab.labels)
+        .filter(([name]) => prefab.objects[name] !== undefined)
+        .map(([name, labelKey]) => (
+          <Anchored key={name} anchor={anchor} offset={prefab.objects[name]!} direction={camera.direction} geometry={geometry} width={120} height={80}>
             <TargetButton
-              label={name === 'AlarmCallPoint' ? t('training.object.alarm_call_point') : name}
+              label={t(labelKey)}
               color={name === 'AlarmCallPoint' ? colors.red : colors.primary}
               active={tapTarget === name}
               onPress={() => {
@@ -288,6 +366,16 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       {path?.map((offset, i) => (
         <Anchored key={`${stepIndex}-${i}`} anchor={anchor} offset={offset} direction={camera.direction} geometry={geometry} width={64} height={64}>
           <Waypoint index={i} next={i === waypoint} done={i < waypoint} onPress={() => onWaypoint(i, path.length)} />
+        </Anchored>
+      ))}
+
+      {cones.map((cone) => (
+        <Anchored key={cone.id} anchor={anchor} offset={cone.at} direction={camera.direction} geometry={geometry} width={72} height={72}>
+          <Cone
+            reading={coneReading(cone.at)}
+            removeLabel={t('training.cone.remove')}
+            onPress={() => setCones((placed) => placed.filter((c) => c.id !== cone.id))}
+          />
         </Anchored>
       ))}
 
@@ -326,9 +414,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
         )}
 
         <View style={styles.bottom} pointerEvents="box-none">
-          {interaction === 'move_to' && cur?.params.showRoute === true && exitHeadingNow() !== null ? (
-            <RouteArrow targetHeading={exitHeadingNow()!} direction={camera.direction} />
-          ) : null}
+          {route !== null ? <RouteArrow targetHeading={route} direction={camera.direction} /> : null}
 
           {cur !== null && (interaction === 'choose_one' || interaction === 'decision') ? (
             <ScrollView style={styles.options} contentContainerStyle={styles.optionsContent}>
@@ -338,6 +424,8 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
                   accessibilityRole="button"
                   style={({ pressed }) => [styles.option, pressed && styles.optionPressed]}
                   onPress={() => {
+                    // GAS_01 has decisions back to back: a double tap must not answer the next one
+                    if (session.current()?.index !== cur.index) return;
                     session.choose(o.id);
                     refresh();
                   }}
@@ -346,6 +434,46 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
                 </Pressable>
               ))}
             </ScrollView>
+          ) : null}
+
+          {cur !== null && multiSelect ? (
+            <>
+              <ScrollView style={styles.options} contentContainerStyle={styles.optionsContent}>
+                {stepOptions(cur.step).map((o) => {
+                  const on = picked.includes(o.id);
+                  return (
+                    <Pressable
+                      key={o.id}
+                      accessibilityRole="checkbox"
+                      accessibilityState={{ checked: on }}
+                      style={({ pressed }) => [styles.option, styles.optionRow, on && styles.optionOn, pressed && styles.optionPressed]}
+                      onPress={() => setPicked((p) => (p.includes(o.id) ? p.filter((id) => id !== o.id) : [...p, o.id]))}
+                    >
+                      <View style={[styles.box, on && styles.boxOn]}>{on ? <Text style={styles.boxTick}>✓</Text> : null}</View>
+                      <Text style={[styles.optionText, styles.optionLabel]}>{t(o.labelKey)}</Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+              <Pressable accessibilityRole="button" style={styles.done} onPress={() => finishChoice(cur.index)}>
+                <Text style={styles.doneText}>{t('training.done.button')}</Text>
+              </Pressable>
+            </>
+          ) : null}
+
+          {interaction === 'mark_zone' ? (
+            <View style={styles.holdBox}>
+              <Text style={styles.hint}>{t('training.cones.label', { count: cones.length, min: minCones })}</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ disabled: cones.length < minCones }}
+                disabled={cones.length < minCones}
+                style={[styles.done, cones.length < minCones && styles.doneDisabled]}
+                onPress={finishZone}
+              >
+                <Text style={styles.doneText}>{t('training.done.button')}</Text>
+              </Pressable>
+            </View>
           ) : null}
 
           {interaction === 'aim_and_hold' && cur !== null ? (
@@ -400,6 +528,15 @@ const styles = StyleSheet.create({
   option: { minHeight: 60, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.95)', justifyContent: 'center', paddingHorizontal: space.l },
   optionPressed: { backgroundColor: '#D9E2EC' },
   optionText: { color: colors.text, fontSize: 18, fontWeight: '600' },
+  optionRow: { flexDirection: 'row', alignItems: 'center', gap: space.m },
+  optionOn: { backgroundColor: '#E3F0FB' },
+  optionLabel: { flex: 1 },
+  box: { width: 30, height: 30, borderRadius: 6, borderWidth: 2, borderColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  boxOn: { backgroundColor: colors.primary },
+  boxTick: { color: '#FFFFFF', fontSize: 20, fontWeight: '800', lineHeight: 24 },
+  done: { minHeight: 60, borderRadius: 12, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+  doneDisabled: { opacity: 0.45 },
+  doneText: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
   holdBox: { gap: space.s, backgroundColor: colors.overlay, borderRadius: 14, padding: space.m },
   holdButton: { minHeight: 72, borderRadius: 36, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' },
   holdButtonActive: { backgroundColor: '#7A1A12' },

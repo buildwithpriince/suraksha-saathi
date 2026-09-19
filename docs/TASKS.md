@@ -41,7 +41,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [ ] T-28 [F] Device test: full FIRE_01 run on 2 phones, bug list filed as tasks
 
 ## M3 — GAS_01 + fallback (target: ____)
-- [ ] T-30 [B] Interactions: `choose_many`, `checklist`, `mark_zone` (cones on the placed overlay, radius in overlay metres); gas cloud overlay + detector reading by waypoint progress
+- [x] T-30 [B] Interactions: `choose_many`, `checklist`, `mark_zone` (cones on the placed overlay, radius in overlay metres); gas cloud overlay + detector reading by waypoint progress
 - [ ] T-31 [B] GAS_01 fully playable in camera mode, both variants
 - [ ] T-32 [A] Tabletop mode: drawn virtual room instead of the camera feed, touch-only versions of all interaction types, same player and scoring
 - [ ] T-33 [F] Device test GAS_01 + tabletop run of both modules

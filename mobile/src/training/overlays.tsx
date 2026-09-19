@@ -74,12 +74,42 @@ export function Fire({ size, level }: { size: number; level: SharedValue<number>
   );
 }
 
+/** Gas drifting around the leak; `level` fades it in when the leak develops (GAS_01 `detect`). */
+export function GasCloud({ size, level }: { size: number; level: SharedValue<number> }) {
+  const drift = useSharedValue(1);
+  useEffect(() => {
+    drift.value = withRepeat(withTiming(1.12, { duration: 1800, easing: Easing.inOut(Easing.sin) }), -1, true);
+  }, [drift]);
+  const style = useAnimatedStyle(() => ({
+    opacity: level.value,
+    transform: [{ scale: drift.value * (0.5 + 0.5 * level.value) }],
+  }));
+  return (
+    <Animated.View style={[styles.center, { width: size, height: size }, style]} pointerEvents="none">
+      <View style={[styles.gas, { width: size, height: size, borderRadius: size / 2 }]} />
+      <View style={[styles.gas, styles.gasCore, { width: size * 0.55, height: size * 0.55, borderRadius: size * 0.275 }]} />
+    </Animated.View>
+  );
+}
+
+/** A `mark_zone` cone; tap it to remove it. `reading` is the detector reading where it stands. */
+export function Cone({ reading, removeLabel, onPress }: { reading: string | null; removeLabel: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={removeLabel} hitSlop={8} onPress={onPress} style={styles.center}>
+      <Text style={styles.coneIcon}>▲</Text>
+      {reading !== null ? <Text style={styles.coneReading}>{reading}</Text> : null}
+    </Pressable>
+  );
+}
+
 export function TargetButton({ label, onPress, active, color }: { label: string; onPress: () => void; active: boolean; color: string }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
       disabled={!active}
+      // Inactive labels let taps through, so cones can be placed around them (mark_zone)
+      pointerEvents={active ? 'auto' : 'none'}
       onPress={onPress}
       style={[styles.target, { backgroundColor: color }, active && styles.targetActive]}
     >
@@ -107,7 +137,7 @@ export function Reticle({ geometry }: { geometry: ScreenGeometry }) {
   return <View pointerEvents="none" style={[styles.reticle, { left: geometry.cx - 28, top: geometry.cy - 28 }]} />;
 }
 
-/** Arrow at the bottom of the screen pointing towards a heading (the exit), for `showRoute`. */
+/** Arrow at the bottom of the screen pointing towards a heading (the exit or next waypoint), for `showRoute`. */
 export function RouteArrow({ targetHeading, direction }: { targetHeading: number; direction: SharedValue<Direction> }) {
   const style = useAnimatedStyle(() => ({
     transform: [{ rotate: `${angleDiff(targetHeading, direction.value.headingDeg)}deg` }],
@@ -122,6 +152,18 @@ export function RouteArrow({ targetHeading, direction }: { targetHeading: number
 const styles = StyleSheet.create({
   anchored: { position: 'absolute', left: 0, top: 0, alignItems: 'center', justifyContent: 'center' },
   center: { alignItems: 'center', justifyContent: 'center' },
+  gas: { position: 'absolute', backgroundColor: 'rgba(190,214,60,0.35)' },
+  gasCore: { backgroundColor: 'rgba(214,226,70,0.45)' },
+  coneIcon: { color: '#FF7A00', fontSize: 40, lineHeight: 44, textShadowColor: '#000', textShadowRadius: 3 },
+  coneReading: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '800',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    overflow: 'hidden',
+  },
   target: {
     minWidth: 96,
     minHeight: 64,

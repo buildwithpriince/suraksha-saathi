@@ -59,6 +59,8 @@ files); never hand-edit it.
 - Everything the worker does works in airplane mode. `/content` is bundled at build time (Metro
   `watchFolders`); no runtime downloads. Network is only for sync.
 - All user-facing text through i18next keys; missing `sat` falls back to `hi`, never a raw key.
+- Render text with `Text` / `TextInput` from `@/ui/Text` (bundled Noto Sans Devanagari, D-032), never
+  react-native's own, so Hindi and Santali render the same on every phone.
 - Timestamps: monotonic clock (`performance.now()`) for event `t`, UTC unix seconds for records.
 - No work on the JS thread per camera frame; sensor and animation work on the UI thread
   (Reanimated worklets). Target: 30 fps on a 4 GB Snapdragon 6-series phone.

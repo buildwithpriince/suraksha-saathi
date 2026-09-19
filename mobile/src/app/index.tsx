@@ -1,7 +1,7 @@
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import type { WorkerRecord } from '@/core/sync/payloads';
 import { outboxCount } from '@/db/database';
@@ -9,6 +9,7 @@ import { getDevice } from '@/db/device';
 import { listWorkers } from '@/db/workers';
 import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
 import { Body, Button, Card, Screen, Title } from '@/ui/components';
+import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
 export default function HomeScreen() {

@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { getScenario } from '@/content/scenarios';
 import { sortRulesForDisplay } from '@/core/assessment/result';
@@ -9,6 +9,7 @@ import type { AttemptResult, RuleResult } from '@/core/assessment/types';
 import { getAttempt, wasAborted } from '@/db/attempts';
 import { speakKey, stopSpeaking } from '@/i18n/speech';
 import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
+import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
 /** docs/03 "Result screen requirements". */

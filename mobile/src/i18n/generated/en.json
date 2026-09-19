@@ -123,7 +123,7 @@
   "lang.en": "English",
   "lang.hi": "हिन्दी",
   "lang.sat": "संताली",
-  "lang.sat.pending": "Santali translation is not ready yet. Showing Hindi for now.",
+  "lang.sat.pending": "Santali text is a draft. A native speaker has not checked it yet.",
   "result.aborted.label": "You stopped the drill early.",
   "result.critical.label": "Critical step missed",
   "result.done.button": "Done",

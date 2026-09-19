@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { DEMO_KEYS } from '@/device/trust';
 
+import { Text } from './Text';
 import { colors, space } from './theme';
 
 /** D-030: shown on every certificate and verify screen while the build trusts the TEST root. */

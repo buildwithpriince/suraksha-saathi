@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { LOCALES, isIncomplete, isLocale, setLocale, type Locale } from '@/i18n';
+import { LOCALES, isLocale, setLocale, type Locale } from '@/i18n';
 
 import { Body, Segmented } from './components';
 
@@ -22,7 +22,8 @@ export function LanguageSwitcher({ label, onChange }: { label: string; onChange?
           onChange?.(l);
         }}
       />
-      {current === 'sat' && isIncomplete('sat') ? <Body muted>{t('lang.sat.pending')}</Body> : null}
+      {/* Santali strings are unreviewed drafts until T-72; say so rather than present them as final */}
+      {current === 'sat' ? <Body muted>{t('lang.sat.pending')}</Body> : null}
     </>
   );
 }

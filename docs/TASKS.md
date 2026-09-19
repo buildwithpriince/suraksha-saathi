@@ -74,7 +74,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 
 ## M7 — Localization + audio (target: ____)
 - [ ] T-70 [C] `npm run l10n:build` (content/strings CSV -> i18next JSON, `sat` falls back to `hi`) + `npm run l10n:report` (missing keys and narration audio per locale) (docs/07)
-- [ ] T-71 [F] `content/strings/*.csv` complete in en/hi; sat drafted
+- [x] T-71 [F] `content/strings/*.csv` complete in en/hi; sat drafted
 - [ ] T-72 [F] Santali native-speaker review; `needsReview` cleared for demo scenarios
 - [ ] T-73 [F] Narration audio recorded and bundled for hi and sat; report shows zero missing
 

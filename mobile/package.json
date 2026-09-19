@@ -13,6 +13,7 @@
     "markers": "node scripts/markers.mjs"
   },
   "dependencies": {
+    "@expo-google-fonts/noto-sans-devanagari": "^0.4.1",
     "@noble/ed25519": "^3.2.0",
     "@noble/hashes": "^2.4.0",
     "expo": "~57.0.24",

@@ -2,7 +2,7 @@ import { CameraView, type BarcodeScanningResult } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions, type GestureResponderEvent } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions, type GestureResponderEvent } from 'react-native';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -18,6 +18,7 @@ import { saveAttempt } from '@/db/attempts';
 import { newId, nowSeconds } from '@/db/database';
 import { speakKey, stopSpeaking } from '@/i18n/speech';
 import { randomBytes } from '@/platform/random';
+import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
 import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
@@ -60,6 +61,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const geometry: ScreenGeometry = useMemo(() => ({ cx: width / 2, cy: height / 2, pxPerDeg: width / PREVIEW_HFOV_DEG }), [width, height]);
   const camera = useCameraDirection();
   const anchor = useSharedValue<Direction | null>(null);
+  // The same anchor for the JS thread: render and handlers read this, worklets read `anchor`
+  // (Reanimated warns when a shared value is read during render)
+  const placedAnchor = useRef<Direction | null>(null);
   const fireLevel = useSharedValue(1);
   const gasLevel = useSharedValue(0);
 
@@ -121,7 +125,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     if (!holding || cur?.step.interaction !== 'aim_and_hold') return;
     const index = cur.index;
     const id = setInterval(() => {
-      const a = anchor.get();
+      const a = placedAnchor.current;
       const zone = a === null ? 'none' : zoneAt(prefab, offsetFrom(a, camera.read()));
       setHeld(session.holdSample(zone));
       if (session.current()?.index !== index) {
@@ -130,7 +134,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       }
     }, HOLD_SAMPLE_SEC * 1000);
     return () => clearInterval(id);
-  }, [holding, cur?.index, cur?.step.interaction, anchor, camera, prefab, session, refresh]);
+  }, [holding, cur?.index, cur?.step.interaction, camera, prefab, session, refresh]);
 
   // Finished (all steps done or stopped): score, store with its outbox row, show the result
   const saved = useRef(false);
@@ -155,7 +159,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
 
   const exitHeadingNow = (): number | null => {
     if (exitHeading.current !== null) return exitHeading.current;
-    const a = anchor.get();
+    const a = placedAnchor.current;
     // Tabletop: the stand-in exit sign's direction
     return mode === 'tabletop' && a !== null ? (a.headingDeg + VIRTUAL_MARKER_OFFSET.dh) % 360 : null;
   };
@@ -202,12 +206,13 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     if (c?.step.interaction !== 'place_on_plane') return;
     const placed = tapDirection(e);
     anchor.set(placed);
+    placedAnchor.current = placed;
     session.complete({ headingDeg: round1(placed.headingDeg), elevationDeg: round1(placed.elevationDeg) });
     refresh();
   };
 
   const onCone = (e: GestureResponderEvent) => {
-    const a = anchor.get();
+    const a = placedAnchor.current;
     if (session.current()?.step.interaction !== 'mark_zone' || a === null) return;
     const at = offsetFrom(a, tapDirection(e));
     nextConeId.current += 1;
@@ -281,7 +286,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const routeHeading = (): number | null => {
     if (cur === null || interaction !== 'move_to' || cur.params.showRoute !== true) return null;
     if (wantedMarker(cur) !== null) return exitHeadingNow();
-    const a = anchor.get();
+    const a = placedAnchor.current;
     const next = path?.[waypoint];
     return a === null || next === undefined ? null : (a.headingDeg + next.dh + 360) % 360;
   };

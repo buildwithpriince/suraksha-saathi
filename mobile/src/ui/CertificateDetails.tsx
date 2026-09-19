@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { getScenario } from '@/content/scenarios';
 import type { CertificateBody } from '@/core/certificates/bodies';
 import { statusDisplay, type VerifyStatus } from '@/core/certificates/verify';
 
 import { Badge } from './components';
+import { Text } from './Text';
 import { colors, space } from './theme';
 
 export function formatDate(unixSeconds: number): string {

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View, type TextInputProps } from 'react-native';
 
+import { Text, TextInput } from './Text';
 import { colors, space } from './theme';
 
 export function Screen({ children, scroll = true }: { children: ReactNode; scroll?: boolean }) {

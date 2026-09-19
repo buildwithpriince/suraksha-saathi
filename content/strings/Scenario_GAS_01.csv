@@ -1,52 +1,52 @@
 key,en,hi,sat,needsReview,notes
-gas01.title,Gas leak and confined space,,,true,scenario title
-gas01.brief.instruction,You and your buddy will work in a confined area.,,,true,step caption
-gas01.brief.audio,You and your buddy are about to enter a confined work area.,,,true,narration script
-gas01.place_area.instruction,Tap the floor to place the work area.,,,true,step caption
-gas01.place_area.audio,Point your camera at the floor. Tap to place the work area.,,,true,narration script
-gas01.ppe.instruction,Pick the equipment you need before you go in.,,,true,step caption
-gas01.ppe.audio,Pick everything you need to take in. Then press Done.,,,true,narration script
-gas01.ppe.option.self_rescuer,Self-rescuer,,,true,option label
-gas01.ppe.option.gas_detector,Gas detector,,,true,option label
-gas01.ppe.option.helmet_cap_lamp,Helmet with cap lamp,,,true,option label
-gas01.ppe.option.dust_mask,Dust mask,,,true,option label
-gas01.ppe.option.matches_lighter,Matches or lighter,,,true,option label
-gas01.buddy_check.instruction,Check your buddy. Tap each item.,,,true,step caption
-gas01.buddy_check.audio,Check your buddy before you go in. Tap each item.,,,true,narration script
-gas01.buddy_check.option.detector_on,Gas detector is on,,,true,checklist item
-gas01.buddy_check.option.self_rescuer_carried,Self-rescuer is carried,,,true,checklist item
-gas01.buddy_check.option.lamp_working,Cap lamp is working,,,true,checklist item
-gas01.buddy_check.option.hand_signals_agreed,Hand signals are agreed,,,true,checklist item
-gas01.detect.instruction,Walk toward the area. Watch the gas detector.,,,true,step caption
-gas01.detect.audio,Walk toward the area and watch the gas detector reading.,,,true,narration script
-gas01.mark_zone.instruction,Place cones where the detector reaches alert level.,,,true,step caption
-gas01.mark_zone.audio,The detector shows alert level here. Tap the floor to place cones.,,,true,narration script
-gas01.ignition_trap.instruction,Should you switch on the fan or light here?,,,true,step caption
-gas01.ignition_trap.audio,Should you switch on the fan or the light here?,,,true,narration script
-gas01.ignition_trap.option.operate_switch,Operate the switch,,,true,option label
-gas01.ignition_trap.option.do_not_touch,Do not touch it and move away,,,true,option label
-gas01.self_rescuer.instruction,The detector shows danger level. What do you do?,,,true,step caption (major variant only)
-gas01.self_rescuer.audio,The detector shows danger level. What do you do now?,,,true,narration script (major variant only)
-gas01.self_rescuer.option.don_now,Put on the self-rescuer now,,,true,option label
-gas01.self_rescuer.option.continue_without,Continue without it,,,true,option label
-gas01.enter_or_retreat.instruction,There is gas in the area. What do you do?,,,true,step caption
-gas01.enter_or_retreat.audio,There is gas in the area. What do you do now?,,,true,narration script
-gas01.enter_or_retreat.option.retreat_signal,Retreat to fresh air and signal your buddy,,,true,option label
-gas01.enter_or_retreat.option.enter_alone,Enter alone to fix it quickly,,,true,option label
-gas01.enter_or_retreat.option.hold_breath,Hold your breath and continue,,,true,option label
-gas01.retreat.instruction,Move to the fresh-air point with your buddy.,,,true,step caption
-gas01.retreat.audio,Go to the fresh-air point now. Take your buddy with you.,,,true,narration script
-gas01.report.instruction,You are in fresh air. What do you do next?,,,true,step caption
-gas01.report.audio,You and your buddy are in fresh air. What do you do next?,,,true,narration script
-gas01.report.option.report_barricade,Report it and keep the area barricaded,,,true,option label
-gas01.report.option.reenter_after_5min,Go back in after 5 minutes,,,true,option label
-gas01.report.option.tell_no_one,Tell no one,,,true,option label
-gas01.rule.ppe,"Take a self-rescuer, gas detector and cap lamp. Never carry matches.",,,true,rule feedback
-gas01.rule.buddy_check,Check all four items on your buddy.,,,true,rule feedback
-gas01.rule.zone_accuracy,Mark the zone where the detector reaches alert level.,,,true,rule feedback
-gas01.rule.no_ignition,Never operate a switch near a gas leak.,,,true,rule feedback
-gas01.rule.self_rescuer,"At danger level, put on your self-rescuer at once.",,,true,rule feedback
-gas01.rule.order_rescuer_retreat,Put on the self-rescuer before you retreat.,,,true,rule feedback
-gas01.rule.retreat_decision,Retreat to fresh air and signal your buddy. Never enter alone.,,,true,rule feedback
-gas01.rule.retreat_time,Retreat to fresh air quickly.,,,true,rule feedback
-gas01.rule.report,Report the leak and keep the area barricaded.,,,true,rule feedback
+gas01.title,Gas leak and confined space,गैस रिसाव और बंद जगह,गैस लिक आर बोंद ठाँव,true,scenario title
+gas01.brief.instruction,You and your buddy will work in a confined area.,आप और आपका साथी एक बंद जगह में काम करेंगे।,आम आर आमाः गाते मित् बोंद ठाँव रे कामीयाबेन।,true,step caption
+gas01.brief.audio,You and your buddy are about to enter a confined work area.,आप और आपका साथी एक बंद कार्य-स्थल में जाने वाले हैं।,आम आर आमाः गाते मित् बोंद कामी ठाँव रे बोलोःक लागित् तायार मेनाबेन।,true,narration script
+gas01.place_area.instruction,Tap the floor to place the work area.,काम की जगह रखने के लिए फ़र्श को छुएँ।,कामी ठाँव दोहो लागित् ओते टिपावमे।,true,step caption
+gas01.place_area.audio,Point your camera at the floor. Tap to place the work area.,कैमरा फ़र्श की ओर करें। काम की जगह रखने के लिए छुएँ।,कैमरा ओते सेच् दोहोयमे। कामी ठाँव दोहो लागित् टिपावमे।,true,narration script
+gas01.ppe.instruction,Pick the equipment you need before you go in.,अंदर जाने से पहले ज़रूरी उपकरण चुनें।,भितरी बोलोःक लाहा रे लाकती जिनिस बाछावमे।,true,step caption
+gas01.ppe.audio,Pick everything you need to take in. Then press Done.,अंदर ले जाने के लिए ज़रूरी सब कुछ चुनें। फिर हो गया दबाएँ।,भितरी इदी लागित् लाकती सानाम जिनिस बाछावमे। आर चाबाक् टिपावमे।,true,narration script
+gas01.ppe.option.self_rescuer,Self-rescuer,सेल्फ़-रेस्क्यूअर,सेल्फ-रेस्क्युअर,true,option label
+gas01.ppe.option.gas_detector,Gas detector,गैस डिटेक्टर,गैस डिटेक्टर,true,option label
+gas01.ppe.option.helmet_cap_lamp,Helmet with cap lamp,कैप लैंप वाला हेलमेट,कैप लैंप मेनाः हेलमेट,true,option label
+gas01.ppe.option.dust_mask,Dust mask,धूल का मास्क,धुरी मास्क,true,option label
+gas01.ppe.option.matches_lighter,Matches or lighter,माचिस या लाइटर,माचिस से लाइटर,true,option label
+gas01.buddy_check.instruction,Check your buddy. Tap each item.,अपने साथी की जाँच करें। हर चीज़ को छुएँ।,आमाः गाते जांचावमे। मित् मित् जिनिस टिपावमे।,true,step caption
+gas01.buddy_check.audio,Check your buddy before you go in. Tap each item.,अंदर जाने से पहले अपने साथी की जाँच करें। हर चीज़ को छुएँ।,भितरी बोलोःक लाहा रे आमाः गाते जांचावमे। मित् मित् जिनिस टिपावमे।,true,narration script
+gas01.buddy_check.option.detector_on,Gas detector is on,गैस डिटेक्टर चालू है,गैस डिटेक्टर चालू मेनाःआ,true,checklist item
+gas01.buddy_check.option.self_rescuer_carried,Self-rescuer is carried,सेल्फ़-रेस्क्यूअर साथ में है,सेल्फ-रेस्क्युअर सांव रे मेनाःआ,true,checklist item
+gas01.buddy_check.option.lamp_working,Cap lamp is working,कैप लैंप काम कर रहा है,कैप लैंप थिक ते जुलोः काना,true,checklist item
+gas01.buddy_check.option.hand_signals_agreed,Hand signals are agreed,हाथ के इशारे तय हैं,ती इसारा थिक आकाना,true,checklist item
+gas01.detect.instruction,Walk toward the area. Watch the gas detector.,उस जगह की ओर चलें। गैस डिटेक्टर देखते रहें।,ठाँव सेच् सेनोःमे। गैस डिटेक्टर ञेल ताहेंमे।,true,step caption
+gas01.detect.audio,Walk toward the area and watch the gas detector reading.,उस जगह की ओर चलें और गैस डिटेक्टर की रीडिंग देखते रहें।,ठाँव सेच् सेनोःमे आर गैस डिटेक्टर रेयाः रिडिंग ञेल ताहेंमे।,true,narration script
+gas01.mark_zone.instruction,Place cones where the detector reaches alert level.,"जहाँ डिटेक्टर अलर्ट स्तर पर पहुँचे, वहाँ कोन रखें।","ओकारे डिटेक्टर होसियार लेभेल हाबिज सेटेरोःआ, उंडे कोन दोहोयमे।",true,step caption
+gas01.mark_zone.audio,The detector shows alert level here. Tap the floor to place cones.,डिटेक्टर यहाँ अलर्ट स्तर दिखा रहा है। कोन रखने के लिए फ़र्श को छुएँ।,नोंडे डिटेक्टर होसियार लेभेल उदुःएदा। कोन दोहो लागित् ओते टिपावमे।,true,narration script
+gas01.ignition_trap.instruction,Should you switch on the fan or light here?,क्या आपको यहाँ पंखा या लाइट चालू करनी चाहिए?,नोंडे पंखा से मारसाल चालू लाकती?,true,step caption
+gas01.ignition_trap.audio,Should you switch on the fan or the light here?,क्या आपको यहाँ पंखा या लाइट चालू करनी चाहिए?,आम नोंडे पंखा से मारसाल चालू लाकती?,true,narration script
+gas01.ignition_trap.option.operate_switch,Operate the switch,स्विच चलाएँ,स्विच चालावमे,true,option label
+gas01.ignition_trap.option.do_not_touch,Do not touch it and move away,उसे न छुएँ और दूर हट जाएँ,"आलोम टिपावा, सांगिञ सेनोःमे",true,option label
+gas01.self_rescuer.instruction,The detector shows danger level. What do you do?,डिटेक्टर खतरे का स्तर दिखा रहा है। आप क्या करेंगे?,डिटेक्टर खातोरा लेभेल उदुःएदा। आम चेद् बेनावाम?,true,step caption (major variant only)
+gas01.self_rescuer.audio,The detector shows danger level. What do you do now?,डिटेक्टर खतरे का स्तर दिखा रहा है। अब आप क्या करेंगे?,डिटेक्टर खातोरा लेभेल उदुःएदा। नितोः आम चेद् बेनावाम?,true,narration script (major variant only)
+gas01.self_rescuer.option.don_now,Put on the self-rescuer now,अभी सेल्फ़-रेस्क्यूअर पहन लें,नितोः सेल्फ-रेस्क्युअर लागावमे,true,option label
+gas01.self_rescuer.option.continue_without,Continue without it,उसके बिना आगे बढ़ें,ओना बेगोर ते आगु सेनोःमे,true,option label
+gas01.enter_or_retreat.instruction,There is gas in the area. What do you do?,इस जगह में गैस है। आप क्या करेंगे?,ठाँव रे गैस मेनाःआ। आम चेद् बेनावाम?,true,step caption
+gas01.enter_or_retreat.audio,There is gas in the area. What do you do now?,इस जगह में गैस है। अब आप क्या करेंगे?,ठाँव रे गैस मेनाःआ। नितोः आम चेद् बेनावाम?,true,narration script
+gas01.enter_or_retreat.option.retreat_signal,Retreat to fresh air and signal your buddy,ताज़ी हवा में लौटें और साथी को इशारा करें,साफा होय ठाँव रुवाड़मे आर गाते इसारामे,true,option label
+gas01.enter_or_retreat.option.enter_alone,Enter alone to fix it quickly,जल्दी ठीक करने के लिए अकेले अंदर जाएँ,जोलदी थिकाव लागित् एसकार भितरी बोलोःमे,true,option label
+gas01.enter_or_retreat.option.hold_breath,Hold your breath and continue,साँस रोककर आगे बढ़ें,साँस सापाः काते आगु सेनोःमे,true,option label
+gas01.retreat.instruction,Move to the fresh-air point with your buddy.,अपने साथी के साथ ताज़ी हवा वाली जगह पर जाएँ।,आमाः गाते सांव साफा होय ठाँव सेनोःमे।,true,step caption
+gas01.retreat.audio,Go to the fresh-air point now. Take your buddy with you.,अभी ताज़ी हवा वाली जगह पर जाएँ। अपने साथी को साथ ले जाएँ।,नितोः साफा होय ठाँव सेनोःमे। आमाः गाते हों सांव रे इदीयेमे।,true,narration script
+gas01.report.instruction,You are in fresh air. What do you do next?,आप ताज़ी हवा में हैं। आगे क्या करेंगे?,आम साफा होय रे मेनामा। तायोम चेद् बेनावाम?,true,step caption
+gas01.report.audio,You and your buddy are in fresh air. What do you do next?,आप और आपका साथी ताज़ी हवा में हैं। आगे आप क्या करेंगे?,आम आर आमाः गाते साफा होय रे मेनाबेन। तायोम चेद् बेनावाम?,true,narration script
+gas01.report.option.report_barricade,Report it and keep the area barricaded,रिपोर्ट करें और जगह को घेरकर रखें,लायमे आर ठाँव घेराव ते दोहोयमे,true,option label
+gas01.report.option.reenter_after_5min,Go back in after 5 minutes,5 मिनट बाद फिर अंदर जाएँ,5 मिनिट तायोम आरहों भितरी बोलोःमे,true,option label
+gas01.report.option.tell_no_one,Tell no one,किसी को न बताएँ,जाहाँयहों आलोम लाया,true,option label
+gas01.rule.ppe,"Take a self-rescuer, gas detector and cap lamp. Never carry matches.","सेल्फ़-रेस्क्यूअर, गैस डिटेक्टर और कैप लैंप साथ लें। माचिस कभी न ले जाएँ।","सेल्फ-रेस्क्युअर, गैस डिटेक्टर आर कैप लैंप इदीयमे। माचिस जाहाँ ओकतोहों आलोम इदीया।",true,rule feedback
+gas01.rule.buddy_check,Check all four items on your buddy.,अपने साथी की चारों चीज़ें जाँचें।,आमाः गाते रेयाः पोनेया जिनिस जांचावमे।,true,rule feedback
+gas01.rule.zone_accuracy,Mark the zone where the detector reaches alert level.,"जहाँ डिटेक्टर अलर्ट स्तर पर पहुँचे, वहाँ तक की जगह चिह्नित करें।","ओकारे डिटेक्टर होसियार लेभेल हाबिज सेटेरोःआ, उना ठाँव चिन्हावमे।",true,rule feedback
+gas01.rule.no_ignition,Never operate a switch near a gas leak.,गैस रिसाव के पास कभी कोई स्विच न चलाएँ।,गैस लिक सोरे जाहाँ ओकतोहों स्विच आलोम चालावा।,true,rule feedback
+gas01.rule.self_rescuer,"At danger level, put on your self-rescuer at once.",खतरे के स्तर पर तुरंत अपना सेल्फ़-रेस्क्यूअर पहनें।,खातोरा लेभेल रे जोलदी आमाः सेल्फ-रेस्क्युअर लागावमे।,true,rule feedback
+gas01.rule.order_rescuer_retreat,Put on the self-rescuer before you retreat.,पीछे हटने से पहले सेल्फ़-रेस्क्यूअर पहनें।,रुवाड़ लाहा रे सेल्फ-रेस्क्युअर लागावमे।,true,rule feedback
+gas01.rule.retreat_decision,Retreat to fresh air and signal your buddy. Never enter alone.,ताज़ी हवा में लौटें और साथी को इशारा करें। कभी अकेले अंदर न जाएँ।,साफा होय ठाँव रुवाड़मे आर गाते इसारामे। जाहाँ ओकतोहों एसकार आलोम बोलोःआ।,true,rule feedback
+gas01.rule.retreat_time,Retreat to fresh air quickly.,जल्दी ताज़ी हवा में लौटें।,जोलदी साफा होय ठाँव रुवाड़मे।,true,rule feedback
+gas01.rule.report,Report the leak and keep the area barricaded.,रिसाव की रिपोर्ट करें और जगह को घेरकर रखें।,गैस लिक रेयाः खोबोर लायमे आर ठाँव घेराव ते दोहोयमे।,true,rule feedback

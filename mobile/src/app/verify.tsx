@@ -2,7 +2,7 @@ import { CameraView, useCameraPermissions, type BarcodeScanningResult } from 'ex
 import { Stack } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { statusDisplay, verifyCertificate, type CertificateVerification } from '@/core/certificates/verify';
 import { nowSeconds } from '@/db/database';
@@ -12,6 +12,7 @@ import { speakKey, stopSpeaking } from '@/i18n/speech';
 import { CertificateDetails } from '@/ui/CertificateDetails';
 import { DemoKeysBanner } from '@/ui/DemoKeysBanner';
 import { Body, Button, Card, Screen } from '@/ui/components';
+import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
 const REASON: Partial<Record<CertificateVerification['status'], string>> = {

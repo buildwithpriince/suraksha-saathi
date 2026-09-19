@@ -40,7 +40,7 @@ def test_catalog_reads_the_repo_content(catalog: ContentCatalog) -> None:
     assert (fire.pass_threshold_percent, fire.validity_days) == (70, 365)
     assert sum(rule.points for rule in fire.rules.values()) == 100
     assert [s.id for s in catalog.latest()] == ["FIRE_01", "GAS_01"]
-    assert catalog.content_version == "2026.09.2"
+    assert catalog.content_version == "2026.09.3"
     assert gas.rules["R_PPE"].critical_on == "forbidden"
     assert gas.rules["R_SELF_RESCUER"].variants == frozenset({"major"})
 

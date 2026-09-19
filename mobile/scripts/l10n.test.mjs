@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync } from 'node:fs';
+
 import { describe, expect, test } from 'vitest';
 
 import { buildLocales, parseCsv, readTable } from './l10n.mjs';
@@ -30,5 +32,19 @@ describe('buildLocales', () => {
   test('rejects a bad header and a bad key', () => {
     expect(() => readTable('key,en\n', 'x.csv')).toThrow(/header/);
     expect(() => readTable(`${HEADER}Bad Key,A,,,false,\n`, 'x.csv')).toThrow(/bad key/);
+  });
+});
+
+describe('committed string tables', () => {
+  const placeholders = (s) => [...s.matchAll(/\{\{\s*(\w+)\s*\}\}/g)].map((m) => m[1]).sort();
+  const dir = new URL('../../content/strings/', import.meta.url);
+  const tables = readdirSync(dir).filter((f) => f.endsWith('.csv'));
+
+  test.each(tables)('%s: every translation keeps the English {{placeholders}}', (table) => {
+    for (const row of readTable(readFileSync(new URL(table, dir), 'utf8'), table)) {
+      for (const locale of ['hi', 'sat']) {
+        if (row[locale] !== '') expect(placeholders(row[locale]), `${row.key} ${locale}`).toEqual(placeholders(row.en));
+      }
+    }
   });
 });

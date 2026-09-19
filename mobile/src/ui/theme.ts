@@ -16,3 +16,15 @@ export const colors = {
 } as const;
 
 export const space = { xs: 4, s: 8, m: 12, l: 16, xl: 24 } as const;
+
+/**
+ * Noto Sans Devanagari faces (docs/07), loaded by the root layout. The font also covers the Latin
+ * text, so en, hi and sat all use it. Runtime-loaded fonts get one family name per weight, so
+ * `ui/Text` picks the face from `fontWeight`.
+ */
+export const fonts = {
+  regular: 'NotoSansDevanagari_400Regular',
+  semiBold: 'NotoSansDevanagari_600SemiBold',
+  bold: 'NotoSansDevanagari_700Bold',
+  extraBold: 'NotoSansDevanagari_800ExtraBold',
+} as const;

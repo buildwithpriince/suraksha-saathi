@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -12,6 +12,7 @@ import Animated, {
 
 import { angleDiff, screenOffset, type Direction } from '@/core/orientation';
 import type { Offset } from '@/core/player/prefabs';
+import { Text } from '@/ui/Text';
 import { colors } from '@/ui/theme';
 
 export interface ScreenGeometry {

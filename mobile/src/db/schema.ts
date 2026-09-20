@@ -74,4 +74,8 @@ export const MIGRATIONS: readonly string[] = [
     content_version TEXT
   );
   `,
+  // 2: soft delete of workers (docs/05, D-035). NULL = active; never cleared once set
+  `
+  ALTER TABLE workers ADD COLUMN deleted_at INTEGER;
+  `,
 ];

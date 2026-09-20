@@ -34,13 +34,15 @@ Res 200: `{"status":"pending|approved|revoked","attestation":"SA1...|null","expi
 Req:
 ```json
 {"items":[
-  {"kind":"worker","id":"uuid","payload":{"displayName":"Ravi Munda","employeeCode":null,"siteCode":"DHN-01","preferredLang":"hi","updatedAt":1789000000}},
+  {"kind":"worker","id":"uuid","payload":{"displayName":"Ravi Munda","employeeCode":null,"siteCode":"DHN-01","preferredLang":"hi","updatedAt":1789000000,"deletedAt":null}},
   {"kind":"attempt","id":"uuid","payload":{"workerId":"uuid","result":{"...AttemptResult (docs/03)":""},"events":[]}},
   {"kind":"certificate","id":"uuid","payload":{"workerId":"uuid","token":"SS1..."}}
 ]}
 ```
 Res 200: `{"accepted":["uuid"],"rejected":[{"id":"uuid","code":"missing_worker","retryable":true}]}`
 Max 50 items, max body 2 MB.
+Worker `deletedAt` (D-035): null, or unix seconds of the soft delete (then equal to `updatedAt`). Until T-65 the
+backend ignores it (unknown fields are dropped), so a deleted worker stays visible on the dashboard.
 Rejection codes: `missing_worker` (retryable) · `conflict_immutable` · `invalid_payload` · `unknown_scenario` ·
 `invalid_certificate` (none of the last four are retryable). Ids are echoed exactly as sent. Whole-request
 errors: 422 `validation_error` (envelope), 413 `payload_too_large`. Rules: docs/05 "Sync ingest rules".

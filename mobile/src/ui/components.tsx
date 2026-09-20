@@ -25,7 +25,7 @@ export function Card({ children }: { children: ReactNode }) {
   return <View style={styles.card}>{children}</View>;
 }
 
-type ButtonKind = 'primary' | 'secondary';
+type ButtonKind = 'primary' | 'secondary' | 'danger';
 
 export function Button({
   label,
@@ -47,6 +47,7 @@ export function Button({
       style={({ pressed }) => [
         styles.button,
         kind === 'secondary' && styles.buttonSecondary,
+        kind === 'danger' && styles.buttonDanger,
         (pressed || disabled) && styles.buttonDim,
       ]}
     >
@@ -124,6 +125,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.l,
   },
   buttonSecondary: { backgroundColor: colors.surface, borderWidth: 1.5, borderColor: colors.primary },
+  buttonDanger: { backgroundColor: colors.red },
   buttonDim: { opacity: 0.6 },
   buttonText: { fontSize: 18, fontWeight: '600', color: colors.primaryText },
   buttonTextSecondary: { color: colors.primary },

@@ -10,6 +10,8 @@ export interface WorkerRecord {
   preferredLang: string;
   createdAt: number;
   updatedAt: number;
+  /** Soft delete (docs/05, D-035): set once, never cleared. Null for an active worker. */
+  deletedAt: number | null;
 }
 
 export interface WorkerPayload {
@@ -18,6 +20,7 @@ export interface WorkerPayload {
   siteCode: string;
   preferredLang: string;
   updatedAt: number;
+  deletedAt: number | null;
 }
 
 export function workerPayload(w: WorkerRecord): WorkerPayload {
@@ -27,6 +30,7 @@ export function workerPayload(w: WorkerRecord): WorkerPayload {
     siteCode: w.siteCode,
     preferredLang: w.preferredLang,
     updatedAt: w.updatedAt,
+    deletedAt: w.deletedAt,
   };
 }
 

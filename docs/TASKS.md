@@ -70,6 +70,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [x] T-61 [E] Overview + Compliance heatmap
 - [x] T-62 [E] Workers, worker detail, attempts, attempt detail
 - [x] T-63 [E] Certificates (revoke), Recertification (CSV), Devices (approve)
+- [ ] T-65 [D/E] Store and honour worker `deletedAt` (D-035): server `workers.deleted_at` + Alembic migration; `WorkerPayload.deletedAt` in sync ingest (last-write-wins like the other fields, never cleared); admin worker lists, recertification-due and the dashboard mock hide deleted workers while their attempts and certificates stay in compliance history — Done when: backend tests cover a synced delete and the dashboard no longer lists that worker
 - [ ] T-64 [E] Public `/verify` (camera scan, offline check, online status); deploy to Vercel — page, root `vercel.json` and tests done; the first deploy waits on a Vercel login (`npx vercel --prod` from the repo root)
 
 ## M7 — Localization + audio (target: ____)

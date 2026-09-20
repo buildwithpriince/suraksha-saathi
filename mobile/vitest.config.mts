@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['src/core/**/*.test.ts', 'scripts/**/*.test.mjs'],
+    include: ['src/core/**/*.test.ts', 'src/db/**/*.test.ts', 'scripts/**/*.test.mjs'],
     environment: 'node',
   },
 });

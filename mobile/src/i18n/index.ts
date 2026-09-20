@@ -2,19 +2,16 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import Storage from 'expo-sqlite/kv-store';
 
+import { isLocale, type Locale } from '@/core/locales';
+
 import en from './generated/en.json';
 import hi from './generated/hi.json';
 import sat from './generated/sat.json';
 
-export const LOCALES = ['en', 'hi', 'sat'] as const;
-export type Locale = (typeof LOCALES)[number];
+export { LOCALES, isLocale, type Locale } from '@/core/locales';
 
 const LANGUAGE_KEY = 'app_language';
 const DEFAULT_LOCALE: Locale = 'hi'; // docs/07: default locale on first launch
-
-export function isLocale(value: string | null): value is Locale {
-  return value !== null && (LOCALES as readonly string[]).includes(value);
-}
 
 function savedLocale(): Locale {
   try {

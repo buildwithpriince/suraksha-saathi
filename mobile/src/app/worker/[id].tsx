@@ -16,7 +16,7 @@ export default function WorkerScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [worker] = useState(() => getWorker(id));
+  const [worker, setWorker] = useState(() => getWorker(id));
   const [attempts, setAttempts] = useState<AttemptRecord[]>([]);
 
   // docs/07: the kiosk switches to the worker's preferred language when they are picked
@@ -26,6 +26,8 @@ export default function WorkerScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      // Reload on return, so an edit shows (D-035)
+      setWorker(getWorker(id));
       setAttempts(listAttempts(id));
     }, [id]),
   );
@@ -49,6 +51,11 @@ export default function WorkerScreen() {
           kind="secondary"
           label={t('worker.certificate.button')}
           onPress={() => router.push({ pathname: '/certificate/[workerId]', params: { workerId: worker.id } })}
+        />
+        <Button
+          kind="secondary"
+          label={t('worker.edit.button')}
+          onPress={() => router.push({ pathname: '/worker-edit/[id]', params: { id: worker.id } })}
         />
         <Button
           kind="secondary"

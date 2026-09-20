@@ -136,3 +136,14 @@ settings.sync.unavailable,Sync with the server is not available in this version 
 settings.about.title,About,जानकारी,खोबोर,true,section title
 settings.app_version.value,App version {{version}},ऐप संस्करण {{version}},ऐप भर्शन {{version}},true,{{version}} = app version
 settings.content_version.value,Training content {{version}},प्रशिक्षण सामग्री {{version}},ट्रेनिंग जिनिस {{version}},true,{{version}} = content/manifest.json contentVersion
+worker.edit.button,Edit worker,कामगार की जानकारी बदलें,कामी होड़ बोदोलमे,true,button on the worker page
+edit.title,Edit worker,जानकारी बदलें,कामी होड़ बोदोल,true,screen title
+edit.save.button,Save changes,बदलाव सेव करें,बोदोल सेवमे,true,button
+edit.name.note,Certificates already issued keep the old name.,पहले से जारी प्रमाणपत्रों पर पुराना नाम ही रहेगा।,आगु एम आकान सर्टिफिकेट रे पुराना ञुतुम गे ताहेंआ।,true,on the edit form: issued certificates are signed and cannot change
+edit.delete.button,Delete worker,कामगार हटाएँ,कामी होड़ हातावमे,true,danger button on the edit screen
+edit.delete.title,Delete {{name}}?,{{name}} को हटाएँ?,{{name}} हातावमे?,true,confirmation dialog title; {{name}} = worker name
+edit.delete.body,They will disappear from the worker list and their ID card will stop working. Their training results and certificates are kept.,वे कामगार सूची से हट जाएँगे और उनका पहचान पत्र काम नहीं करेगा। उनके प्रशिक्षण परिणाम और प्रमाणपत्र बने रहेंगे।,उनी कामी होड़ लिस्ट खोन हातावोःआ आर ओनाः चिन्हा कार्ड बाङ कामियाः। ओनाः ट्रेनिंग फोल आर सर्टिफिकेट ताहेंआ।,true,"confirmation dialog text (soft delete, D-035)"
+edit.delete.confirm,Delete,हटाएँ,हातावमे,true,dialog button (destructive)
+edit.delete.cancel,Cancel,रद्द करें,"बाङ, रुवाड़मे",true,dialog button
+enrol.employee_code.too_long,Use up to 40 letters or digits.,40 अक्षर या अंक तक लिखें।,40 आखोर से अंक हाबिज ओलमे।,true,validation error
+enrol.language.required,Pick a language.,एक भाषा चुनें।,मित् पारसी बाछावमे।,true,validation error

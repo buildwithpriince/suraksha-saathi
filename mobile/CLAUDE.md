@@ -20,7 +20,8 @@ Unity, and what we traded away: `docs/DECISIONS.md` D-027.
 - `expo-print` + `qrcode`: printable worker ID cards, generated offline (D-034)
 - `i18next` + `react-i18next`: `en`, `hi`, `sat`; `expo-font` (Noto Sans Devanagari + Noto Sans);
   `expo-audio` for narration
-- Vitest for `src/core`; `jest-expo` only if a component test is ever needed
+- Vitest for `src/core`, and for `src/db` with the real schema and SQL on Node's `node:sqlite` behind the
+  expo-sqlite API (`db/sqliteForTests.ts`, D-035); `jest-expo` only if a component test is ever needed
 
 ## Folder layout (create exactly this)
 ```

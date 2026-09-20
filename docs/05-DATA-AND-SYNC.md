@@ -10,13 +10,16 @@
 | Table | Columns |
 |---|---|
 | `device` (1 row) | id, site_code, public_key, private_key_enc, attestation_token NULL, status (`unregistered/pending/approved`), created_at |
-| `workers` | id, display_name, employee_code NULL, site_code, preferred_lang, selfie_sha256 NULL, created_at, updated_at |
+| `workers` | id, display_name, employee_code NULL, site_code, preferred_lang, selfie_sha256 NULL, created_at, updated_at, deleted_at NULL (D-035) |
 | `attempts` | id, worker_id, scenario_id, scenario_version, variant, seed, mode (`ar/tabletop`), started_at, duration_sec, score_percent, passed, result_json, events_json, created_at |
 | `certificates` | id (=cid), worker_id, token, issued_at, expires_at, status_cache (`valid/revoked`), created_at |
 | `outbox` | id, kind (`worker/attempt/certificate`), record_id, payload_json, attempts, last_error NULL, next_try_at, created_at |
 | `revocations` (1 row) | token, iat, fetched_at |
 | `sync_state` (1 row) | last_success_at, last_error NULL, content_version |
-Rules: any insert into `workers/attempts/certificates` inserts its `outbox` row in the same transaction.
+Rules: any insert into `workers/attempts/certificates` inserts its `outbox` row in the same transaction; so
+does any worker edit or soft delete (D-035). A soft-deleted worker (`deleted_at` set) is hidden from every
+screen; its row, attempts and certificates stay. Each worker change gets an `updated_at` strictly later than
+the previous one, so the server's last-write-wins never drops a same-second edit.
 `private_key_enc`: prototype stores key bytes obfuscated with a per-install random key; documented limitation.
 
 ## Server PostgreSQL (backend)
@@ -24,7 +27,7 @@ Rules: any insert into `workers/attempts/certificates` inserts its `outbox` row 
 |---|---|
 | `sites` | id, code (unique, e.g. `DHN-01`), name, district, sector (`coal/steel/mica/iti`) |
 | `devices` | id (from device), site_id, label, public_key, status (`pending/approved/revoked`), attestation_token, approved_by, approved_at, last_seen_at |
-| `workers` | id, site_id, display_name, employee_code, preferred_lang, created_by_device_id, created_at, updated_at |
+| `workers` | id, site_id, display_name, employee_code, preferred_lang, created_by_device_id, created_at, updated_at, deleted_at NULL (D-035, T-65) |
 | `attempts` | id, worker_id, device_id, scenario_id, scenario_version, variant, seed, mode, started_at, duration_sec, score_percent, passed, result_json (jsonb), events_json (jsonb), flagged bool, flag_reason, received_at |
 | `certificates` | id (cid), worker_id, device_id, token, issued_at, expires_at, revoked_at NULL, revoked_reason NULL, revoked_by NULL |
 | `admin_profiles` | user_id (Supabase auth uid), role (`admin/supervisor`), site_ids uuid[] |
@@ -76,6 +79,7 @@ Trigger: app resume, "Sync now" button, every 10 minutes while app is open and o
   - Item `id` not a UUID, or `payload` failing its schema (strict JSON types) -> `invalid_payload`, not retryable.
   - Worker `siteCode` unknown or not the sending device's site, or an existing worker at another site ->
     `invalid_payload`. LWW: a strictly newer `updatedAt` overwrites; older or equal is accepted unchanged.
+    `deletedAt` (D-035) is one of the fields LWW applies; once set it is never cleared (T-65).
   - Attempt: `result.attemptId` must equal the item id (`invalid_payload`); `scenarioId`+`scenarioVersion` must
     exist in `/content` (`unknown_scenario`, not retryable). Identical = same workerId, result and events.
   - Attempt recheck: the server trusts per-rule `earned`/`passed` but takes rule `max`, `critical` and

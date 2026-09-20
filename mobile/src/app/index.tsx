@@ -1,4 +1,4 @@
-import { Redirect, useFocusEffect, useRouter } from 'expo-router';
+import { Redirect, Stack, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet } from 'react-native';
@@ -7,6 +7,7 @@ import type { WorkerRecord } from '@/core/sync/payloads';
 import { outboxCount } from '@/db/database';
 import { getDevice } from '@/db/device';
 import { listWorkers } from '@/db/workers';
+import { AppTitle } from '@/ui/AppTitle';
 import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
 import { Body, Button, Card, Screen, Title } from '@/ui/components';
 import { Text } from '@/ui/Text';
@@ -31,6 +32,8 @@ export default function HomeScreen() {
 
   return (
     <Screen>
+      {/* Home is the only screen that shows the app name, so it is the only one carrying the mark */}
+      <Stack.Screen options={{ headerTitle: () => <AppTitle /> }} />
       <Body muted>
         {t('home.site.label', { site: device.siteCode })} · {t('home.pending_sync.label', { count: pending })}
       </Body>

@@ -136,9 +136,13 @@ await monochrome(mark, 1024, SAFE, asset('adaptive-icon-monochrome.png'));
 // The splash image is sized by `imageWidth` in app.json, so it carries no padding of its own
 await compose(mark, 1024, 1, CLEAR, asset('splash.png'));
 
+// The bare mark for the app header lockup. 128 px covers 32 dp on an xxxhdpi phone without
+// making the header decode a 1024 px icon on every screen
+await compose(mark, 128, 1, CLEAR, asset('logo-mark.png'));
+
 // Dashboard: a favicon on a navy plate reads on light and dark tab bars; the lockup mark is bare
 await compose(mark, 180, 0.8, WHITE, join(DASHBOARD, 'public', 'favicon.png'));
 await compose(mark, 512, 1, CLEAR, join(DASHBOARD, 'public', 'logo-mark.png'));
-console.log('wrote mobile/assets/{icon,adaptive-icon-foreground,adaptive-icon-background,adaptive-icon-monochrome,splash}.png');
+console.log('wrote mobile/assets/{icon,adaptive-icon-foreground,adaptive-icon-background,adaptive-icon-monochrome,splash,logo-mark}.png');
 console.log('wrote dashboard/public/{favicon.png,logo-mark.png}');
 console.log(`navy reference ${NAVY.r},${NAVY.g},${NAVY.b} (unused when the mark keeps its own colours)`);

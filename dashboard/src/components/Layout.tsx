@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router";
 import { backend } from "../api";
+import { Lockup } from "./Logo";
 import { useAuth } from "../auth/AuthContext";
 
 const NAV = [
@@ -28,12 +29,8 @@ export function Layout() {
       <DemoBanner />
       <div className="flex flex-1 flex-col md:flex-row">
         <aside className="bg-navy text-white md:w-60 md:shrink-0">
-          <div className="flex items-center gap-2 px-5 py-5">
-            <img src="/favicon.svg" alt="" className="h-7 w-7 rounded bg-white p-0.5" />
-            <div>
-              <div className="font-semibold leading-tight">Suraksha Saathi</div>
-              <div className="text-xs text-blue-200">Compliance dashboard</div>
-            </div>
+          <div className="px-5 py-5">
+            <Lockup tone="white" subtitle="Compliance dashboard" />
           </div>
           <nav aria-label="Main" className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-col md:overflow-visible">
             {NAV.map((item) => (

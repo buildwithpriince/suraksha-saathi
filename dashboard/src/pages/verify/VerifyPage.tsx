@@ -2,6 +2,7 @@
  * Public /verify (docs/08): scan or paste a certificate, check it in the browser with the root key
  * first (works offline), then ask /v1/public/verify for the live revocation status when online.
  */
+import { LogoMark } from "../../components/Logo";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useSearchParams } from "react-router";
 import { ApiError, backend, type PublicVerify } from "../../api";
@@ -108,7 +109,7 @@ export function VerifyPage() {
       <DemoBanner />
       <header className="bg-navy px-4 py-4 text-white">
         <div className="mx-auto flex max-w-lg items-center gap-3">
-          <img src="/favicon.svg" alt="" className="h-8 w-8 rounded bg-white p-0.5" />
+          <LogoMark className="h-9 w-9" />
           <div>
             <h1 className="text-lg font-semibold leading-tight">Verify a certificate</h1>
             <p className="text-xs text-blue-200">Suraksha Saathi safety training</p>

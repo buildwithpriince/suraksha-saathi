@@ -10,7 +10,8 @@
     "test": "vitest run",
     "l10n:build": "node scripts/l10n.mjs build",
     "l10n:report": "node scripts/l10n.mjs report",
-    "markers": "node scripts/markers.mjs"
+    "markers": "node scripts/markers.mjs",
+    "icons": "node scripts/icons.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/noto-sans-devanagari": "^0.4.1",
@@ -48,6 +49,7 @@
   "devDependencies": {
     "@types/qrcode": "^1.5.6",
     "@types/react": "~19.2.2",
+    "sharp": "^0.35.4",
     "typescript": "~6.0.3",
     "vitest": "^5.0.1"
   }

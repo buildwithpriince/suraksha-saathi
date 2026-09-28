@@ -110,12 +110,15 @@ export class ScenarioSession {
     return heldSec;
   }
 
-  /** `operate_extinguisher` PASS "Pull": `pin_pulled`, once per step. */
-  pullPin(): void {
+  /**
+   * `operate_extinguisher` PASS "Pull": `pin_pulled{method}`, once per step. `method` is how:
+   * swiped off the handle, or the "Tap to pull the pin" fallback offered after 8 s.
+   */
+  pullPin(method: 'swipe' | 'tap' = 'swipe'): void {
     const cur = this.requireExtinguisher();
     if (this.pinPulled) return;
     this.pinPulled = true;
-    this.emit('pin_pulled', cur.step.id);
+    this.emit('pin_pulled', cur.step.id, { method });
   }
 
   /** `operate_extinguisher` "Squeeze" lever pressed; ignored until the pin is out (the lever is locked). */

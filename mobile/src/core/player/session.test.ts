@@ -93,6 +93,14 @@ describe('operate_extinguisher gestures (D-038)', () => {
     expect(types(session)).toEqual(['pin_pulled', 'discharge_started', 'discharge_stopped']);
   });
 
+  test('pin_pulled records whether the pin was swiped or tapped out; scoring treats both alike', () => {
+    for (const method of ['swipe', 'tap'] as const) {
+      const { session } = atExtinguish();
+      session.pullPin(method);
+      expect(session.events.at(-1)).toMatchObject({ type: 'pin_pulled', stepId: 'extinguish', data: { method } });
+    }
+  });
+
   test('spray samples carry cumulative onTargetSec and the aim, only while discharging', () => {
     const { session, tick } = atExtinguish();
     session.pullPin();

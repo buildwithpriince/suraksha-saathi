@@ -34,12 +34,14 @@ import { colors, space } from '@/ui/theme';
 
 import { getAnchoringMode } from './anchoringSetting';
 import { createDischargeFeedback } from './dischargeFeedback';
-import { Extinguisher } from './interactions/Extinguisher';
+import { Extinguisher, SprayCone, type PinMethod, type Point } from './interactions/Extinguisher';
 import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
 import { useCameraDirection } from './useCameraDirection';
 
 const EMPTY_PREFAB: Prefab = { objects: {}, labels: {}, zones: {}, paths: {} };
 const WAYPOINT_PX = 64;
+/** operate_extinguisher: offer "Tap to pull the pin" if the pin is still in after this long. */
+const PIN_HELP_AFTER_MS = 8000;
 /** Space kept between a pinned overlay and the screen edge, card or bottom panel (D-033). */
 const PIN_GAP_PX = 8;
 
@@ -105,7 +107,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const extRef = useRef<ExtinguisherState>(INITIAL_EXTINGUISHER);
   const [pinOut, setPinOut] = useState(false);
   const [squeezing, setSqueezing] = useState(false);
-  const [leverLocked, setLeverLocked] = useState(false);
+  // After PIN_HELP_AFTER_MS without the pin out, offer a plain "Tap to pull the pin" button
+  const [pinHelp, setPinHelp] = useState(false);
+  const [nozzle, setNozzle] = useState<Point | null>(null);
   const feedback = useMemo(() => createDischargeFeedback(), []);
 
   const setAnchor = (placed: Direction, scale: number) => {
@@ -176,7 +180,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     setExt(INITIAL_EXTINGUISHER);
     setPinOut(false);
     setSqueezing(false);
-    setLeverLocked(false);
+    setPinHelp(false);
     progressed();
     const effect = prefab.stepEffects?.[cur.step.id];
     if (effect?.fireLevel !== undefined) fireLevel.value = withTiming(effect.fireLevel, { duration: 1500 });
@@ -245,6 +249,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       agentEffective: agentEffective(scenario, session.variantId, session.events, String(p.agentFrom)),
     };
     fireLevel.value = withTiming(FIRE_START, { duration: 400 });
+    const help = setTimeout(() => setPinHelp(true), PIN_HELP_AFTER_MS); // hidden again once the pin is out
     const id = setInterval(() => {
       if (session.current()?.index !== index) return;
       const discharging = session.isDischarging;
@@ -264,6 +269,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     }, HOLD_SAMPLE_SEC * 1000);
     return () => {
       clearInterval(id);
+      clearTimeout(help);
       feedback.stop();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -271,10 +277,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
 
   const onSqueezeIn = () => {
     if (session.current()?.step.interaction !== 'operate_extinguisher' || extRef.current.outcome !== null) return;
-    if (!session.startDischarge()) {
-      setLeverLocked(true); // the pin is still in
-      return;
-    }
+    if (!session.startDischarge()) return; // the pin is still in: the button says so
     feedback.start();
     setSqueezing(true);
   };
@@ -286,11 +289,11 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     setSqueezing(false);
   };
 
-  const onPinPulled = () => {
+  const onPinPulled = (method: PinMethod) => {
     if (session.current()?.step.interaction !== 'operate_extinguisher') return;
-    session.pullPin();
+    session.pullPin(method);
     setPinOut(true);
-    setLeverLocked(false);
+    setPinHelp(false);
   };
 
   /** After the outcome is shown: complete the step with it. `index` guards against a double tap. */
@@ -673,16 +676,8 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
 
       {interaction === 'aim_and_hold' || interaction === 'operate_extinguisher' ? <Reticle geometry={geometry} /> : null}
 
-      {interaction === 'operate_extinguisher' ? (
-        <Extinguisher
-          width={width}
-          bottom={panelTop}
-          target={{ x: geometry.cx, y: geometry.cy }}
-          pinOut={pinOut}
-          discharging={squeezing}
-          pinLabel={t('training.extinguisher.pin.label')}
-          onPinPulled={onPinPulled}
-        />
+      {interaction === 'operate_extinguisher' && nozzle !== null ? (
+        <SprayCone from={nozzle} to={{ x: geometry.cx, y: geometry.cy }} discharging={squeezing} />
       ) : null}
 
       {repositioning ? (
@@ -828,6 +823,15 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
                   {t('training.extinguisher.left.label', { seconds: Math.max(0, Math.ceil(Number(cur.params.dischargeSec) - ext.dischargedSec)) })}
                 </Text>
               </View>
+              {/* Centred in the panel, so always inside the safe area and sized to this phone */}
+              <Extinguisher
+                target={{ x: geometry.cx, y: geometry.cy }}
+                pinOut={pinOut}
+                discharging={squeezing}
+                pinLabel={t('training.extinguisher.pin.label')}
+                onPinPulled={onPinPulled}
+                onNozzle={setNozzle}
+              />
               {ext.outcome !== null ? (
                 <>
                   <Text style={[styles.outcome, ext.outcome === 'extinguished' ? styles.outcomeGood : styles.outcomeBad]}>
@@ -839,15 +843,22 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
                 </>
               ) : (
                 <>
-                  {leverLocked && !pinOut ? <Text style={styles.warn}>{t('training.extinguisher.locked')}</Text> : null}
+                  {pinHelp && !pinOut ? (
+                    <Pressable accessibilityRole="button" style={styles.pinHelp} onPress={() => onPinPulled('tap')}>
+                      <Text style={styles.pinHelpText}>{t('training.extinguisher.pin_tap.button')}</Text>
+                    </Pressable>
+                  ) : null}
+                  {/* Locked until the pin is out, and says why */}
+                  {!pinOut ? <Text style={styles.warn}>🔒 {t('training.extinguisher.locked')}</Text> : null}
                   <Pressable
                     accessibilityRole="button"
                     accessibilityState={{ disabled: !pinOut }}
+                    accessibilityHint={pinOut ? undefined : t('training.extinguisher.locked')}
                     onPressIn={onSqueezeIn}
                     onPressOut={onSqueezeOut}
                     style={[styles.holdButton, !pinOut && styles.holdButtonLocked, squeezing && styles.holdButtonActive]}
                   >
-                    <Text style={styles.holdText}>{t('training.extinguisher.squeeze.button')}</Text>
+                    <Text style={[styles.holdText, !pinOut && styles.holdTextLocked]}>{t('training.extinguisher.squeeze.button')}</Text>
                   </Pressable>
                 </>
               )}
@@ -916,7 +927,19 @@ const styles = StyleSheet.create({
   holdBox: { gap: space.s, backgroundColor: colors.overlay, borderRadius: 14, padding: space.m },
   holdButton: { minHeight: 72, borderRadius: 36, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' },
   holdButtonActive: { backgroundColor: '#7A1A12' },
-  holdButtonLocked: { opacity: 0.45 },
+  holdButtonLocked: { backgroundColor: '#5A5F66' },
+  holdTextLocked: { color: '#C9CDD2' },
+  pinHelp: {
+    minHeight: 56,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#FFD43B',
+    backgroundColor: 'rgba(255,212,59,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: space.m,
+  },
+  pinHelpText: { color: '#FFD43B', fontSize: 18, fontWeight: '800', textAlign: 'center' },
   statusRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: space.s },
   warn: { color: '#FFD43B', fontSize: 17, fontWeight: '800' },
   outcome: { fontSize: 20, lineHeight: 30, fontWeight: '800' },

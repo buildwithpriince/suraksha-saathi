@@ -63,12 +63,13 @@ training.reposition.cancel,Cancel,रद्द करें,,true,button: leave 
 training.reposition.hint,Tap the floor where it should be.,जहाँ होना चाहिए वहाँ फ़र्श को छुएँ।,,true,shown while repositioning (D-036)
 training.hint.anchor_marker,Or point the camera at the printed marker on the floor.,या कैमरे को फ़र्श पर रखे छपे मार्कर की ओर करें।,,true,place_on_plane hint when the scenario has an anchorMarker (D-036)
 training.marker.locked,Locked to the floor marker,फ़र्श के मार्कर पर टिका है,,true,shown while the anchor marker is in view (D-036)
-training.extinguisher.pull,Swipe the safety pin out of the handle.,सेफ़्टी पिन को हैंडल से बाहर की ओर खींचें।,,true,operate_extinguisher: PASS Pull (D-038)
+training.extinguisher.pull,Swipe the yellow pin to the right to pull it out.,पीली पिन को दाईं ओर खींचकर बाहर निकालें।,,true,operate_extinguisher: PASS Pull (D-038)
 training.extinguisher.aim,"Point the ring at the base of the fire, then press and hold the lever button.","रिंग को आग की जड़ पर रखें, फिर लीवर वाला बटन दबाकर रखें।",,true,operate_extinguisher: PASS Aim + Squeeze
 training.extinguisher.sweep,Sweep side to side across the base.,जड़ पर दाएँ-बाएँ घुमाएँ।,,true,operate_extinguisher: PASS Sweep (spraying the base without sweeping)
 training.extinguisher.too_high,Too high: aim lower at the base of the fire.,बहुत ऊपर: नीचे आग की जड़ पर निशाना लगाएँ।,,true,spraying the flame tops
 training.extinguisher.missed,Not on the fire: aim at the base.,आग पर नहीं: जड़ पर निशाना लगाएँ।,,true,spraying beside the fire
 training.extinguisher.locked,Pull the pin first.,पहले पिन खींचें।,,true,lever pressed with the pin still in
+training.extinguisher.pin_tap.button,Tap to pull the pin,पिन निकालने के लिए टैप करें,,true,fallback shown if the pin is not swiped out within 8 s; recorded as pin_pulled{method: tap}
 training.extinguisher.squeeze.button,Squeeze lever (hold),लीवर दबाएँ (दबाकर रखें),,true,press-and-hold discharge button
 training.extinguisher.fire.label,Fire: {{percent}}%,आग: {{percent}}%,,true,{{percent}} = fire size (100 = as it started)
 training.extinguisher.left.label,Extinguisher: {{seconds}} s left,अग्निशामक: {{seconds}} सेकंड बाकी,,true,{{seconds}} = discharge time left

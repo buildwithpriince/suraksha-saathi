@@ -12,7 +12,8 @@ is a pure function. Same inputs, same output. No clocks, no randomness, no platf
 - `type`: `step_started | step_completed | step_skipped | choice_made | target_hit | hold_progress |
   marker_found | position_reached | zone_marked | forbidden_action | attempt_aborted |
   anchor_repositioned | pin_pulled | discharge_started | discharge_stopped`.
-- `operate_extinguisher` (D-038) records `pin_pulled` (once), `discharge_started` /
+- `operate_extinguisher` (D-038) records `pin_pulled{method}` (once; `method` is `swipe`, or `tap`
+  for the button offered after 8 s; scored the same), `discharge_started` /
   `discharge_stopped` for each lever press, and while discharging one `hold_progress` per 0.25 s
   with `aimDh` (horizontal aim relative to the fire, prefab degrees, 1 decimal) as well as `zone`
   and `onTargetSec`. Its `step_completed` carries `extinguished` and `outcome`, which no rule reads.

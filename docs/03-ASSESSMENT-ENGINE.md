@@ -71,7 +71,7 @@ Per-rule `passed`: for a critical rule, false only on a critical failure; for an
 - Each row reads its `feedbackKey` aloud on tap (voice-first).
 - "Try again" starts a new attempt with a new seed (possibly a different variant).
 
-## Required unit tests (`CoreTests~`)
+## Required unit tests (`mobile/src/core/assessment`, run with `npm test`)
 1. Perfect FIRE_01 `ordinary` run -> 100, passed
 2. Alarm after extinguish -> critical failure, passed=false even with score ≥ 70
 3. `oil` variant picks water-type -> R_RIGHT_EXTINGUISHER fails critical

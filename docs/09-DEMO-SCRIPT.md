@@ -17,9 +17,13 @@ camera showing the real room. Airplane mode icon visible during 0:20–2:10.
 | 2:45–2:55 | Rescan revoked certificate after sync -> REVOKED | D2 |
 | 2:55–3:00 | Repo URL + team name | R8 |
 
+**Blocked shot:** 2:25–2:45 needs the app to push an attempt to the backend, which is T-57 (the app
+has no sync client yet) plus the T-58 deploy. Until both land, either record that segment against
+the dashboard's seeded demo data, or cut it.
+
 ## Setup checklist
-- [ ] 2 Android 10+ phones charged; one without ARCore to show tabletop mode in a 5-second cut (optional)
+- [ ] 2 Android 10+ phones charged; deny camera permission on one to show tabletop mode in a 5-second cut (optional)
 - [ ] EXIT_A marker printed A5, taped next to a real door at chest height; room well lit
 - [ ] Worker ID card printed; demo site `DHN-01` seeded; device pre-approved
-- [ ] Localization Report shows zero missing for FIRE_01, GAS_01 in `hi` and `sat`
+- [ ] `npm run l10n:report` shows zero missing for FIRE_01, GAS_01 in `hi` and `sat`
 - [ ] Rehearsed twice end to end; backup screen recordings of each segment

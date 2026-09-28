@@ -64,29 +64,35 @@ instructor signs off. Code must not hard-code any of it; it lives in `content/sc
 | Type | `params` |
 |---|---|
 | `narration` | none |
-| `place_on_plane` | `prefab` (scene prefab name); any other keys are passed to the prefab (e.g. `fireType`) |
-| `tap_target` | `target` (named scene object) |
+| `place_on_plane` | `prefab` (prefab layout name in `mobile/src/core/player/prefabs.ts`); any other keys are passed to the prefab (e.g. `fireType`) |
+| `tap_target` | `target` (named object in the prefab layout) |
 | `choose_one`, `choose_many`, `checklist`, `decision` | `options` (see Fields) |
 | `aim_and_hold` | `targetZone`, `offTargetZones` (list), `durationSec` (length of the hold phase) |
 | `find_marker` | `marker` (must be listed in `setup.markers`) |
-| `move_to` | `anchor` (scene anchor name or marker id), `radiusM`. Optional: `showRoute` (AR arrows), `exitBehind {marker, minAngleDeg}` (then `step_completed` carries `exitBehind: true/false`), `detector {peakReading, alertLevel, dangerLevel}` (simulated gas reading rising with proximity) |
+| `move_to` | `anchor` (scene anchor name or marker id), `radiusM`. Optional: `showRoute` (on-screen arrow to the next waypoint), `exitBehind {marker, minAngleDeg}` (then `step_completed` carries `exitBehind: true/false`), `detector {peakReading, alertLevel, dangerLevel}` (simulated gas reading rising with proximity) |
 | `mark_zone` | `hazard` (anchor name), `trueRadiusM` (scored by `zone_accuracy`), `minCones` |
 
 ## Interaction types (the only step types the player supports)
-| Type | AR behaviour | Tabletop fallback | Events emitted |
+There is no plane detection and no position tracking (D-027). Overlays hold a fixed direction as
+the phone rotates (3DoF, from device orientation), so steps that need the worker to walk use
+printed QR markers or tapped waypoints rather than tracked movement.
+
+| Type | Camera mode (`ar`) | Tabletop mode | Events emitted |
 |---|---|---|---|
 | `narration` | Audio + caption, auto-advance | same | `step_started`, `step_completed` |
-| `place_on_plane` | Tap a detected horizontal plane to anchor a prefab | Auto-placed at room centre | `step_completed{position}` |
-| `tap_target` | Tap a named object in the scene | same | `target_hit{target}` |
-| `choose_one` | Pick one of N 3D items / cards | same | `choice_made{option}` |
-| `choose_many` | Toggle items on a rack, press Done | same | `choice_made{options[]}` |
-| `aim_and_hold` | Point screen-centre reticle at a zone, hold | Drag reticle with finger | `hold_progress{zone,onTargetSec}` per 0.25 s, `step_completed` |
-| `find_marker` | Detect a printed image marker via image tracking | Tap the exit sign in virtual room | `marker_found{marker}` |
-| `move_to` | Physically walk until camera within `radiusM` of an anchor | Tap waypoints along a path | `position_reached{anchor,distanceM}` |
-| `mark_zone` | Tap floor points to place cones around a hazard | Tap floor points | `zone_marked{radiusM}` |
-| `checklist` | Tap each item on the buddy avatar | same | `choice_made{options[]}` |
+| `place_on_plane` | Tap the floor in the camera view; the prefab overlay is anchored there | Auto-placed at room centre | `step_completed{position}` |
+| `tap_target` | Tap a named object in the overlay | same | `target_hit{target}` |
+| `choose_one` | Tap one of N overlay objects / cards | same | `choice_made{option}` |
+| `choose_many` | Toggle cards on a rack, press Done | same | `choice_made{options[]}` |
+| `aim_and_hold` | Turn the phone so the screen-centre reticle sits on the anchored zone | Drag reticle with finger | `hold_progress{zone,onTargetSec}` per 0.25 s, `step_completed` |
+| `find_marker` | Scan the printed QR marker (`EXIT_A`, `EXIT_B`) with the camera | Tap the exit sign in the virtual room | `marker_found{marker}` |
+| `move_to` | To a marker id: walk there and scan it. To a scene anchor: tap waypoints along the drawn path (D-033) | Tap waypoints along a path | `position_reached{anchor,distanceM}` |
+| `mark_zone` | Tap the floor to place cones around the hazard (tap one to remove it), Done after `minCones` | Tap floor points | `zone_marked{radiusM}` |
+| `checklist` | Tap each item on the buddy card, then Done | same | `choice_made{options[]}` |
 | `decision` | Situation card with options (voice read-out) | same | `choice_made{option}` |
 Any option tagged `forbidden` also emits `forbidden_action{tag}` when chosen.
+A printed marker is a QR code whose text is exactly the marker id; `npm run markers` writes the
+printable SVGs. Any step with no progress for 30 s offers "Skip step", scored as failed (D-033).
 
 ## FIRE_01 — Fire & Explosion Response
 Context: a small fire starts near waste material in a workshop / surface plant area.

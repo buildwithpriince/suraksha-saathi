@@ -9,8 +9,11 @@
 Default locale on first launch: `hi`. Worker profile stores `preferred_lang`; kiosk switches to it at login.
 
 ## Rendering
-- UI Toolkit only, Advanced Text Generator enabled in Project Settings > UI Toolkit.
-- Fonts: Noto Sans Devanagari + Noto Sans (both OFL), imported as **dynamic** font assets.
+- All app text renders through `Text` / `TextInput` from `@/ui/Text`, never react-native's own,
+  so every phone shows the same shaping (D-032).
+- Fonts: Noto Sans Devanagari + Noto Sans (both OFL), bundled with `expo-font` and loaded in the
+  root layout. Runtime-loaded fonts get one family name per weight, so `ui/Text` picks the face
+  from `fontWeight` rather than letting Android fake-bold it.
 - Acceptance check: the strings `क्षमता`, `ज्ञान`, `प्रशिक्षण`, `सुरक्षित` render with correct conjuncts and vowel signs on device.
 
 ## Key naming
@@ -20,18 +23,20 @@ Default locale on first launch: `hi`. Worker profile stores `preferred_lang`; ki
   `<scenarioLower>.<stepId>.option.<optionId>`, `<scenarioLower>.rule.<rule_snake>`
   e.g. `fire01.pick_extinguisher.option.dcp`, `gas01.rule.no_ignition`
 
-## Tables (Unity Localization)
-| String table | Contents |
+## Tables (i18next)
+| CSV table | Contents |
 |---|---|
 | `UI` | All screen text, buttons, statuses, errors |
 | `Scenario_FIRE_01` | title, step instructions, options, rule feedback |
 | `Scenario_GAS_01` | same for gas |
-| Asset table `Narration` | AudioClip per `*.audio` key per locale |
+| `Narration` | The narration script per `*.audio` key; the recorded clip uses the same key |
 
-Source of truth for strings during development: `content/strings/<table>.csv` with columns
-`key,en,hi,sat,needsReview,notes`. An Editor script imports CSV -> Unity tables. Never edit tables by hand.
+Source of truth for strings: `content/strings/<table>.csv` with columns
+`key,en,hi,sat,needsReview,notes`. `npm run l10n:build` flattens every CSV into one JSON file per
+locale in `mobile/src/i18n/generated/` (`en.json`, `hi.json`, `sat.json`), which is committed
+because EAS skips gitignored files. Never hand-edit the generated JSON.
 `*.audio` rows hold the narration script (what the recording says; may differ from the caption in
-`*.instruction`). Recorded clips use the same key in the `Narration` asset table.
+`*.instruction`).
 
 ## Translation workflow
 1. Write `en` (short sentences, ≤ 12 words, concrete verbs, no idioms).
@@ -39,12 +44,13 @@ Source of truth for strings during development: `content/strings/<table>.csv` wi
 3. Draft `sat`: machine draft (e.g., IndicTrans2 via Bhashini) may return a different script;
    convert to Devanagari and have a native Santali speaker review. Set `needsReview=false` only after review.
 4. Record narration: `hi` and `sat` voiced by native speakers when possible. Temporary TTS allowed
-   for `hi` during development; file names `Audio/Narration/<locale>/<key>.ogg`, mono, 22 kHz.
+   for `hi` during development; file names `mobile/assets/narration/<locale>/<key>.ogg` (Git LFS),
+   mono, 22 kHz, played with `expo-audio`.
 
 ## Missing-content fallback (never crash, never show a raw key)
-- Missing `sat` string -> show `hi` string and log key to `LocalizationReport`.
+- Missing `sat` string -> i18next falls back to the `hi` string, never a raw key.
 - Missing `sat` audio -> play `hi` audio, keep `sat` caption.
-- Editor menu `Suraksha > Localization Report` lists missing keys/audio per locale; zero missing is a demo gate.
+- `npm run l10n:report` lists missing keys and narration audio per locale; zero missing is a demo gate.
 
 ## Voice-first rules
 - Every instruction and every result feedback row has audio. A replay button sits on every step card.

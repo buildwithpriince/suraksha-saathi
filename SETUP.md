@@ -2,41 +2,42 @@
 
 ## 1. Install (every teammate)
 - Git + **Git LFS** (`git lfs install` once)
-- Unity Hub + **Unity 6.3 LTS** with Android Build Support (OpenJDK, Android SDK & NDK)
-- **.NET 8 SDK** (runs Core tests outside Unity)
-- **Node.js 20+**, **Python 3.12** + **uv**
+- **Node.js 20+** (the app and the dashboard)
+- **Python 3.12** + **uv** (the backend)
 - **Claude Code**: follow https://code.claude.com/docs/en/overview
-- Android phone with Developer Options + USB debugging; check it is on Google's ARCore supported
-  devices list (https://developers.google.com/ar/devices). Keep one non-ARCore phone for fallback testing.
+- Android phone, Android 10+, with Developer Options + USB debugging. Install **Expo Go** for
+  day-to-day work. No ARCore requirement and no headset: overlays are drawn over the camera feed
+  and anchored to device orientation, so any Android 10+ camera phone runs the drills.
+- Keep one phone you can deny camera permission on, to exercise tabletop mode.
 
 ### First clone
 - Run `git lfs install` once, then `git clone <repo-url> suraksha-saathi`. Check binaries arrived:
   in `git lfs ls-files`, `*` means a real file and `-` means a pointer (fix with `git lfs pull`).
 - Line endings are fixed by `.gitattributes`: every text file is LF on every OS. Do not change
   `core.autocrlf`. A "CRLF will be replaced by LF" warning is that normalization working.
-- Unity Smart Merge (optional, per machine, Unity users). Without it Git does a normal text merge
-  of scenes/prefabs; safe, but more conflicts. Either way, only a scene's owner edits it (section 5).
-  ```
-  git config merge.unityyamlmerge.name "Unity SmartMerge"
-  git config merge.unityyamlmerge.driver "'<UnityYAMLMerge>' merge -p %O %B %A %A"
-  git config merge.unityyamlmerge.recursive binary
-  ```
-  `<UnityYAMLMerge>` is in the Unity install, for example
-  Windows: `C:/Program Files/Unity/Hub/Editor/<version>/Editor/Data/Tools/UnityYAMLMerge.exe`,
-  macOS: `/Applications/Unity/Hub/Editor/<version>/Unity.app/Contents/Tools/UnityYAMLMerge`.
 
-## 2. Connect Claude Code to the Unity Editor (A and B at minimum)
-Pick ONE and follow its own install guide, then run `/mcp` inside Claude Code to confirm it is connected.
-- Official Unity MCP (part of Unity's AI tools, beta): https://docs.unity3d.com/Packages/com.unity.ai.assistant@2.0/manual/unity-mcp-overview.html
-- Community alternative (open source): https://github.com/CoderGamester/mcp-unity
-Then run task T-07: ask Claude to read the Boot scene hierarchy and the Console.
-If MCP is unavailable, Claude will give you numbered Editor steps instead of editing scene files (enforced by the hook).
+## 2. Run the app on a phone
+```
+cd mobile
+npm install
+npx expo start          # scan the QR with Expo Go, same Wi-Fi
+```
+Anything needing a native module Expo Go does not carry carries needs a dev build
+(`npx eas-cli@latest build -p android --profile development`).
+
+Build an installable APK (human: needs an expo.dev login):
+```
+npx eas-cli@latest login                                   # interactive, once per machine
+cd mobile && git lfs pull
+npx eas-cli@latest build -p android --profile preview
+```
+`git lfs pull` first is not optional: EAS uploads your working tree, and LFS pointer files would
+ship as broken assets. The build runs in Expo's cloud and prints a download link when it finishes.
 
 ## 3. First Claude Code session (repo root)
 ```
 claude
 /context        # confirm CLAUDE.md is listed under Memory files
-/mcp            # confirm Unity MCP (if set up)
 /implement-task T-01
 ```
 
@@ -47,22 +48,24 @@ claude
 - **Specs are the steering wheel.** If Claude produces something wrong because the spec was vague,
   fix the spec in `docs/`, not only the code. Everyone's next session benefits.
 - **Same mistake twice = CLAUDE.md edit.** Add one concrete line to the right CLAUDE.md or rule file.
-- **Tests are the proof.** Don't accept "should work". Core: `dotnet test`; backend: `pytest`; dashboard: `vitest`.
-- **Device truth beats Editor truth.** AR work is only done after it runs on a real phone.
+- **Tests are the proof.** Don't accept "should work". App: `cd mobile && npm test`;
+  backend: `uv run pytest -q`; dashboard: `npm run test`.
+- **Device truth beats laptop truth.** Camera, sensor and overlay work is only done after it runs
+  on a real phone.
 - **Review is automatic.** `spec-reviewer` runs at the end of every task; `crypto-reviewer` on signature code.
 
 ## 5. Parallel work without conflicts (6 people)
-| Owner | Area | Owns these Unity files |
+| Owner | Area | Owns these folders |
 |---|---|---|
-| A | Architecture, Core, persistence, sync, Boot/Tabletop scenes | `Boot.unity`, `TabletopTraining.unity` |
-| B | AR interactions, ScenarioPlayer, VFX | `ARTraining.unity`, interaction prefabs |
-| C | UI Toolkit screens, localization tooling, Verify scene | `Home.unity`, `Verify.unity`, `UI/` |
-| D | Backend + deploy | — |
-| E | Dashboard + deploy | — |
-| F | Scenario content, strings, audio, device QA, README, video | `content/`, `Audio/` |
+| A | Architecture, core logic, persistence, sync | `mobile/src/core/`, `mobile/src/db/`, `mobile/src/net/` |
+| B | Camera interactions, ScenarioPlayer, overlays | `mobile/src/training/` |
+| C | Screens, localization tooling | `mobile/src/app/`, `mobile/src/ui/`, `mobile/src/i18n/` |
+| D | Backend + deploy | `backend/` |
+| E | Dashboard + deploy | `dashboard/` |
+| F | Scenario content, strings, audio, device QA, README, video | `content/`, `mobile/assets/` |
 - Branch per task: `t-22-scenario-player`. Small PRs; merge daily.
-- Never edit a scene or prefab you don't own; ask the owner or make a new prefab.
-- Always commit `.meta` files with their assets. Close Unity before `git pull` on scene files.
+- Don't edit a folder you don't own without telling its owner; `mobile/src/core/` is shared, so
+  changes there need a heads-up because every area depends on it.
 
 ## 6. Secrets and environment
 Backend `.env` (never committed; template in `backend/.env.example`):
@@ -72,9 +75,10 @@ Generate the root key once (`uv run python -m app.tools.gen_root_key`), store th
 Render env vars, commit only the public key to `content/trust/root_public_key.txt`.
 
 ## 7. Things a human must do (Claude cannot)
-- Install Unity modules, sign in to Unity, create the Android keystore, and build/install APKs.
-- Test AR on real phones; print markers; record narration audio; get the safety-content review.
-- Source 3D models/VFX (free or CC0) and record their licenses in README credits.
+- Sign in to expo.dev, create the Android keystore (EAS offers to generate one), and install APKs on phones.
+- Test camera and sensor behaviour on real phones; print the exit markers; record narration audio;
+  get the safety-content review.
+- Record third-party asset licenses in the README credits as assets are added.
 
 ## 8. Deploy the backend to Render (human, once; task T-58)
 Claude can't do this: it needs your Render and Supabase accounts and the real root key (D-014).

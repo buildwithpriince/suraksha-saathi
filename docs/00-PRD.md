@@ -20,7 +20,7 @@
 |---|---|---|
 | R1 | Android APK | Installs and runs on an Android 10+ mid-range phone. Cold start to Home < 6 s. No headset |
 | R2 | Two complete AR modules | `FIRE_01` and `GAS_01` playable start to finish on real surfaces via camera, per `docs/02` |
-| R2a | Non-ARCore fallback | On a device without ARCore the same modules run in tabletop 3D mode with identical scoring |
+| R2a | No-camera fallback | With no camera, or with camera permission denied, the same modules run in tabletop mode (a drawn virtual room) with identical steps, events and scoring |
 | R3 | Assessment engine | Scores from recorded actions per `docs/03`; critical-step miss fails regardless of score; result screen explains each lost point |
 | R4 | QR certificate generation | Passing all required modules issues a signed QR per `docs/04`, fully offline |
 | R4a | QR verification | App Verify screen and dashboard `/verify` both return Valid / Expired / Revoked / Invalid, offline for signature checks |
@@ -32,7 +32,7 @@
 ## Differentiators we promised in the PPT (must be visible in the demo)
 - D1 Action-based scoring with critical steps (not MCQs)
 - D2 Certificates verifiable with no network (signature chain, cached revocations)
-- D3 Printed exit markers anchor evacuation routes to real exits (image tracking)
+- D3 Printed exit markers anchor evacuation routes to real exits (QR markers scanned with the camera)
 - D4 Shared-tablet kiosk mode with worker ID card QR login
 - D5 Recertification: certificates expire; dashboard lists who is due
 
@@ -43,5 +43,5 @@
 
 ## Non-functional
 - Target device class: 4 GB RAM, Snapdragon 6-series or equivalent, Android 10+
-- AR scenes hold 30 fps on target device; APK < 150 MB
+- Camera mode holds 30 fps on the target device; APK < 150 MB
 - All safety content reviewed by a human before demo; unreviewed items carry `needsReview`

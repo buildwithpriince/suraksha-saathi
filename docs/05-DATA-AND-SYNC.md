@@ -39,6 +39,10 @@ Also stored (T-50): `devices.attestation_expires_at`, `devices.created_at`, `att
 `result_json` (D-022). Schema lives in `backend/app/db/models.py` + Alembic; tests run it on SQLite (D-019).
 
 ## Device authentication
+The device generates its Ed25519 key pair on first launch. The private key is held in
+`expo-secure-store` (Android Keystore-backed) and never leaves the device or appears in logs;
+this supersedes D-004's package choice. Moving to a hardware-backed key is roadmap, not built.
+
 Every device API call (except register) carries:
 - `X-Device-Id`: device id
 - `X-Timestamp`: unix seconds (server rejects if |now − ts| > 300)

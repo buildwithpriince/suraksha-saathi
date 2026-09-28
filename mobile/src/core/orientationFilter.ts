@@ -97,3 +97,25 @@ export function filterStep(state: FilterState, reference: Quaternion, gyro: Vec3
   const q = quatNormalize(quatMultiply(correction, predicted));
   return { q, initialised: true, speedDegPerSec, refDisagreeDeg: angleBetween(q, ref) };
 }
+
+// --- Gyroscope bias (D-039) ----------------------------------------------------------------------
+// Android's gyroscope arrives bias-corrected; iOS's (Reanimated reads raw CMGyroData) does not. While
+// the phone is still, whatever the gyro reads is bias, so it is learnt then and subtracted always.
+
+/** Time constant of the bias estimate while still, seconds. */
+export const BIAS_TAU_SEC = 2;
+/** "Still": the reference orientation turns slower than this, degrees per second. */
+export const STILL_DEG_PER_SEC = 3;
+/** A gyro reading (after the current bias) above this is motion, never learnt as bias. */
+export const MAX_BIAS_DEG_PER_SEC = 5;
+
+export function updateGyroBias(bias: Vec3, gyro: Vec3, referenceTurnDegPerSec: number, dt: number): Vec3 {
+  'worklet';
+  const rx = gyro.x - bias.x;
+  const ry = gyro.y - bias.y;
+  const rz = gyro.z - bias.z;
+  const residualDeg = (Math.sqrt(rx * rx + ry * ry + rz * rz) * 180) / Math.PI;
+  if (!(dt > 0) || referenceTurnDegPerSec > STILL_DEG_PER_SEC || residualDeg > MAX_BIAS_DEG_PER_SEC) return bias;
+  const k = gain(dt, BIAS_TAU_SEC);
+  return { x: bias.x + rx * k, y: bias.y + ry * k, z: bias.z + rz * k };
+}

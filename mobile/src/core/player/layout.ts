@@ -17,6 +17,15 @@ export const CAMERA_LONG_SIDE_FOV_DEG = 66;
 /** Aspect of the camera stream, long side / short side. */
 export const CAMERA_STREAM_ASPECT = 4 / 3;
 
+// Worklets capture the functions they call when they are defined, so a worklet must come after
+// every local worklet it calls (worklets.test.ts checks this).
+
+/** Height in px the 3:4 portrait stream is drawn at when FILL_CENTER scales it to cover the view. */
+export function shownStreamHeight(viewWidth: number, viewHeight: number): number {
+  'worklet';
+  return Math.max(viewHeight, viewWidth * CAMERA_STREAM_ASPECT);
+}
+
 /**
  * Focal length in dp of the portrait camera preview (D-036). expo-camera's preview fills the view
  * and crops the overflow (FILL_CENTER), so on a tall phone the stream's long side spans the full
@@ -30,12 +39,6 @@ export function focalLengthPx(viewWidth: number, viewHeight: number, longSideFov
 /** Pixels per degree at the centre of the preview. */
 export function pxPerDegAt(viewWidth: number, viewHeight: number, longSideFovDeg?: number): number {
   return (focalLengthPx(viewWidth, viewHeight, longSideFovDeg) * Math.PI) / 180;
-}
-
-/** Height in px the 3:4 portrait stream is drawn at when FILL_CENTER scales it to cover the view. */
-export function shownStreamHeight(viewWidth: number, viewHeight: number): number {
-  'worklet';
-  return Math.max(viewHeight, viewWidth * CAMERA_STREAM_ASPECT);
 }
 
 /** The lens's long-side FOV that a measured focal length implies for this view (D-039 calibration). */

@@ -1,7 +1,16 @@
 import { describe, expect, test } from 'vitest';
 
 import {
+  CONVENTION_SWITCH_FRAMES,
+  angleBetween,
   angleDiff,
+  bestConvention,
+  conventionStep,
+  gravityMismatchDeg,
+  quatConjugate,
+  rotateInverse,
+  toDeviceToWorld,
+  type ConventionState,
   cameraDirection,
   directionToVector,
   fromReanimatedRotation,
@@ -160,5 +169,56 @@ describe('pinhole projection (D-036)', () => {
     expect(back.x).toBeCloseTo(r.x);
     expect(back.y).toBeCloseTo(r.y);
     expect(back.z).toBeCloseTo(r.z);
+  });
+});
+
+describe('reading the platform rotation quaternion, checked against gravity (D-039)', () => {
+  // Poses a phone is held in during a drill: upright facing various ways, tipped down, rolled
+  const poses: [string, Quaternion][] = [
+    ['upright facing north', UPRIGHT],
+    ['upright facing east', compose(rotation([0, 0, 1], -90), UPRIGHT)],
+    ['looking down at the floor, facing 200°', compose(rotation([0, 0, 1], -200), rotation([1, 0, 0], 50))],
+    ['upright, rolled 20°', compose(compose(rotation([0, 0, 1], -35), UPRIGHT), rotation([0, 0, 1], 20))],
+  ];
+  const down = (q: Quaternion) => {
+    const d = rotateInverse(q, { x: 0, y: 0, z: -1 });
+    return { x: d.x * 9.81, y: d.y * 9.81, z: d.z * 9.81 }; // Reanimated reports m/s²
+  };
+  const androidReport = (q: Quaternion): Quaternion => ({ qw: q.qw, qx: q.qx, qy: q.qz, qz: -q.qy });
+
+  test.each(poses)('%s: whichever way the platform reports it, the chosen reading is the true orientation', (_name, truth) => {
+    // (In some poses two readings give the same orientation, e.g. facing exactly north the Android
+    // remap changes nothing; then either is right, so the orientation is checked, not the label.)
+    for (const reported of [androidReport(truth), truth, quatConjugate(truth)]) {
+      const best = bestConvention(reported, down(truth));
+      expect(best.mismatchDeg).toBeLessThan(1e-3);
+      expect(angleBetween(toDeviceToWorld(reported, best.convention), truth)).toBeLessThan(1e-3);
+    }
+  });
+
+  test.each(poses)('%s: a wrong reading disagrees with gravity by far more than the switch threshold', (_name, truth) => {
+    expect(gravityMismatchDeg(toDeviceToWorld(quatConjugate(truth), 'android'), down(truth))).toBeGreaterThan(25);
+  });
+
+  test('a wrong first guess is corrected after about half a second, not on one frame', () => {
+    const truth = compose(rotation([0, 0, 1], -60), UPRIGHT);
+    const reported = quatConjugate(truth); // say iOS reports world -> device
+    let s: ConventionState = { convention: 'device-to-world', votes: 0, mismatchDeg: 0 };
+    let switchedAt = -1;
+    for (let i = 0; i < 60 && switchedAt < 0; i++) {
+      const next = conventionStep(s, reported, down(truth));
+      if (next.switched) switchedAt = i;
+      s = next;
+    }
+    expect(switchedAt).toBe(CONVENTION_SWITCH_FRAMES - 1);
+    expect(s.convention).toBe('world-to-device');
+    expect(s.mismatchDeg).toBeLessThan(1e-3);
+  });
+
+  test('flat on a table the readings can agree: no switching back and forth', () => {
+    const flatYawed = rotation([0, 0, 1], 40); // screen up, turned: conjugate has the same "down"
+    let s: ConventionState = { convention: 'device-to-world', votes: 0, mismatchDeg: 0 };
+    for (let i = 0; i < 100; i++) s = conventionStep(s, flatYawed, down(flatYawed));
+    expect(s.convention).toBe('device-to-world');
   });
 });

@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
 import { angleDiff, cameraDirection, quatFromRotationVector, quatMultiply, type Quaternion } from './orientation';
-import { INITIAL_FILTER_STATE, filterStep, type FilterState } from './orientationFilter';
+import { INITIAL_FILTER_STATE, filterStep, updateGyroBias, type FilterState } from './orientationFilter';
 
 const DEG = Math.PI / 180;
 const DT = 1 / 60;
@@ -151,5 +151,26 @@ describe('complementary filter (D-036)', () => {
     const settled = run(60, () => facing(0), () => null).state;
     const turned = run(3, () => facing(30), () => null, settled).headings;
     expect(turned[2]!).toBeGreaterThan(29);
+  });
+});
+
+describe('gyro bias (iOS gives raw gyro data, D-039)', () => {
+  const B = { x: 0.4 * DEG, y: -0.8 * DEG, z: 0.3 * DEG }; // about 0.94°/s: a raw phone gyro
+
+  test('learnt while the phone is still, to within 0.05°/s in 10 s', () => {
+    let bias = { x: 0, y: 0, z: 0 };
+    for (let i = 0; i < 600; i++) bias = updateGyroBias(bias, B, 0.5, DT);
+    const err = Math.hypot(bias.x - B.x, bias.y - B.y, bias.z - B.z) / DEG;
+    expect(err).toBeLessThan(0.05);
+  });
+
+  test('never learnt from real motion', () => {
+    const turning = { x: 0, y: -30 * DEG, z: 0 };
+    let bias = { x: 0, y: 0, z: 0 };
+    for (let i = 0; i < 600; i++) bias = updateGyroBias(bias, turning, 30, DT);
+    expect(bias).toEqual({ x: 0, y: 0, z: 0 });
+    // A slow pan the reference barely sees is still above the motion limit
+    for (let i = 0; i < 600; i++) bias = updateGyroBias(bias, { x: 0, y: -8 * DEG, z: 0 }, 1, DT);
+    expect(bias).toEqual({ x: 0, y: 0, z: 0 });
   });
 });

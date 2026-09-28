@@ -33,6 +33,8 @@ export function AnchoringStatus({ live, gyro }: { live: LiveAnchoring; gyro: boo
  * - FOV in use and its source, with the view size it was computed for
  * - filter vs raw: how far the gyro filter and the compass-fused rotation vector disagree; small
  *   while turning if the gyroscope is read correctly
+ * - sensor frame: how the platform's rotation quaternion is read, and how far its "down" is from
+ *   the gravity sensor; a few degrees when right, tens of degrees when wrong
  * - marker residual: at the last HAZARD_A sighting, how far sensor anchoring had drifted from the
  *   marker, i.e. the real drift the marker just removed
  */
@@ -60,6 +62,7 @@ export function AnchoringDebug({
   const visible = visibleFovDeg(view.width, view.height, focalPx);
   const residual = markerResidual();
   const dir = camera.read();
+  const frame = camera.readFrameCheck();
   const rows = [
     t('training.debug.mode', { mode, gyro: camera.gyroAvailable ? t('training.anchor.gyro.yes') : t('training.anchor.gyro.no') }),
     t('training.debug.fov', {
@@ -70,6 +73,8 @@ export function AnchoringDebug({
     }),
     t('training.debug.view', { w: Math.round(view.width), h: Math.round(view.height), f: Math.round(focalPx) }),
     t('training.debug.filter', { deg: mode === 'legacy' ? '—' : camera.readDisagreement().toFixed(1) }),
+    t('training.debug.frame', { convention: frame.convention, deg: frame.mismatchDeg.toFixed(1) }),
+    t('training.debug.bias', { deg: camera.readGyroBias().toFixed(2) }),
     t('training.debug.residual', { deg: residual === null ? '—' : residual.toFixed(1) }),
     t('training.debug.pose', { h: dir.headingDeg.toFixed(1), e: dir.elevationDeg.toFixed(1), speed: camera.readSpeed().toFixed(0) }),
   ];

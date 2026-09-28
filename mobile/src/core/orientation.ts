@@ -202,3 +202,70 @@ export function angleBetween(a: Quaternion, b: Quaternion): number {
   const dot = Math.abs(a.qw * b.qw + a.qx * b.qx + a.qy * b.qy + a.qz * b.qz);
   return 2 * Math.acos(Math.min(1, dot)) * DEG;
 }
+
+// --- Which way round the platform's rotation quaternion is (D-039) ------------------------------
+// Reanimated's ROTATION sensor is not the same thing on both platforms: on Android it is the
+// rotation vector remapped to iOS axes (undone by fromReanimatedRotation); on iOS it is CoreMotion's
+// attitude quaternion passed through as is. Rather than assume CoreMotion's convention, each
+// candidate is checked against the gravity sensor, a plain device-frame vector pointing down on
+// both platforms: the right interpretation predicts "down" where gravity is.
+
+export const ROTATION_CONVENTIONS = ['android', 'device-to-world', 'world-to-device'] as const;
+export type RotationConvention = (typeof ROTATION_CONVENTIONS)[number];
+
+/** The sensor quaternion as device → world (z up), read with a convention. */
+export function toDeviceToWorld(raw: Quaternion, convention: RotationConvention): Quaternion {
+  'worklet';
+  if (convention === 'android') return fromReanimatedRotation(raw);
+  if (convention === 'world-to-device') return quatConjugate(raw);
+  return raw;
+}
+
+/** Degrees between the "down" an orientation predicts and the measured gravity (device frame). */
+export function gravityMismatchDeg(q: Quaternion, gravityDown: Vec3): number {
+  'worklet';
+  const n = Math.sqrt(gravityDown.x * gravityDown.x + gravityDown.y * gravityDown.y + gravityDown.z * gravityDown.z);
+  if (n < 1e-6) return 180;
+  const unit = quatNormalize(q);
+  const down = rotateInverse(unit, { x: 0, y: 0, z: -1 });
+  const dot = (down.x * gravityDown.x + down.y * gravityDown.y + down.z * gravityDown.z) / n;
+  return Math.acos(Math.min(1, Math.max(-1, dot))) * DEG;
+}
+
+/** The convention whose orientation agrees best with gravity, and its mismatch. */
+export function bestConvention(raw: Quaternion, gravityDown: Vec3): { convention: RotationConvention; mismatchDeg: number } {
+  'worklet';
+  const android = gravityMismatchDeg(toDeviceToWorld(raw, 'android'), gravityDown);
+  const direct = gravityMismatchDeg(toDeviceToWorld(raw, 'device-to-world'), gravityDown);
+  const inverse = gravityMismatchDeg(toDeviceToWorld(raw, 'world-to-device'), gravityDown);
+  if (android <= direct && android <= inverse) return { convention: 'android', mismatchDeg: android };
+  if (direct <= inverse) return { convention: 'device-to-world', mismatchDeg: direct };
+  return { convention: 'world-to-device', mismatchDeg: inverse };
+}
+
+/** Frames of clear disagreement before switching convention (about 0.5 s). */
+export const CONVENTION_SWITCH_FRAMES = 30;
+
+export interface ConventionState {
+  convention: RotationConvention;
+  votes: number;
+  /** Gravity mismatch of the convention in use, degrees (debug overlay: small when it is right). */
+  mismatchDeg: number;
+}
+
+/**
+ * One frame of convention checking. Switches only when the one in use is clearly wrong (> 25°) and
+ * another clearly right (< 10°) for CONVENTION_SWITCH_FRAMES frames in a row; with the phone flat,
+ * where the candidates can agree, it never switches.
+ */
+export function conventionStep(s: ConventionState, raw: Quaternion, gravityDown: Vec3): ConventionState & { switched: boolean } {
+  'worklet';
+  const mismatchDeg = gravityMismatchDeg(toDeviceToWorld(raw, s.convention), gravityDown);
+  const best = bestConvention(raw, gravityDown);
+  if (best.convention === s.convention || mismatchDeg <= 25 || best.mismatchDeg >= 10) {
+    return { convention: s.convention, votes: 0, mismatchDeg, switched: false };
+  }
+  const votes = s.votes + 1;
+  if (votes < CONVENTION_SWITCH_FRAMES) return { convention: s.convention, votes, mismatchDeg, switched: false };
+  return { convention: best.convention, votes: 0, mismatchDeg: best.mismatchDeg, switched: true };
+}

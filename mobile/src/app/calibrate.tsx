@@ -43,15 +43,19 @@ export default function CalibrateScreen() {
   const camera = useCameraDirection(mode);
   const [saved, setSaved] = useState(() => getCameraFov(CAMERA_LONG_SIDE_FOV_DEG));
 
-  // Pure gyroscope integration between the two FOV marks
+  // Gyroscope integration between the two FOV marks, minus the bias the camera hook learns while
+  // the phone is still (iOS gives raw gyro data: an uncorrected 1°/s over a 3 s turn would skew
+  // the FOV by up to 20%)
   const gyro = useAnimatedSensor(SensorType.GYROSCOPE, { interval: 16 });
+  const bias = camera.gyroBias;
   const turn = useSharedValue<Quaternion>(IDENTITY);
   const armed = useSharedValue(false);
   useFrameCallback((frame) => {
     'worklet';
     if (!armed.value) return;
     const g = gyro.sensor.value;
-    turn.value = integrateGyro(turn.value, { x: g.x, y: g.y, z: g.z }, (frame.timeSincePreviousFrame ?? 16) / 1000);
+    const b = bias.value;
+    turn.value = integrateGyro(turn.value, { x: g.x - b.x, y: g.y - b.y, z: g.z - b.z }, (frame.timeSincePreviousFrame ?? 16) / 1000);
   });
   const [, setTick] = useState(0);
   useEffect(() => {

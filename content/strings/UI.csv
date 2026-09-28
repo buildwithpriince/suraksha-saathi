@@ -88,6 +88,8 @@ training.debug.fov_source.calibrated,calibrated,कैलिब्रेट क�
 training.debug.fov_source.default,default (not calibrated),डिफ़ॉल्ट (कैलिब्रेट नहीं),,true,"FOV assumed, not measured"
 training.debug.view,view {{w}}×{{h}} dp · f {{f}} px,व्यू {{w}}×{{h}} dp · f {{f}} px,,true,debug overlay: measured camera view size and focal length
 training.debug.filter,filter vs raw sensor {{deg}}°,फ़िल्टर बनाम कच्चा सेंसर {{deg}}°,,true,debug overlay: disagreement between gyro filter and rotation vector
+training.debug.frame,sensor frame {{convention}} · gravity check {{deg}}°,सेंसर फ़्रेम {{convention}} · गुरुत्व जाँच {{deg}}°,,true,debug overlay: how the rotation quaternion is read and its gravity mismatch (D-039)
+training.debug.bias,gyro bias {{deg}}°/s,जायरो बायस {{deg}}°/s,,true,debug overlay: estimated gyroscope bias
 training.debug.residual,marker residual {{deg}}°,मार्कर अंतर {{deg}}°,,true,debug overlay: drift the last marker sighting corrected
 training.debug.pose,heading {{h}}° elev {{e}}° · {{speed}}°/s,दिशा {{h}}° ऊँचाई {{e}}° · {{speed}}°/s,,true,debug overlay: camera direction and turn speed
 result.title,Your result,आपका परिणाम,आमाः फोल,true,screen title
@@ -181,7 +183,7 @@ calibrate.tab.fov,Field of view,दृश्य क्षेत्र (FOV),,tru
 calibrate.tab.selftest,Rotation self-test,घुमाव स्व-परीक्षण,,true,tab
 calibrate.current,In use: lens {{lens}}° ({{source}}),उपयोग में: लेंस {{lens}}° ({{source}}),,true,the lens FOV training uses now
 calibrate.no_gyro,"No gyroscope: the turn is measured with the rotation sensor, which is less exact.","जायरोस्कोप नहीं है: घुमाव रोटेशन सेंसर से मापा जाएगा, जो कम सटीक है।",,true,shown on phones without a gyroscope
-calibrate.fov.aim,"Aim the centre ring at a small, sharp object (a switch, a door corner). Hold still, then tap Mark.","बीच की रिंग को किसी छोटी, साफ़ दिखने वाली चीज़ (स्विच, दरवाज़े का कोना) पर रखें। स्थिर रहें, फिर मार्क दबाएँ।",,true,FOV step 1
+calibrate.fov.aim,"Aim the centre ring at a small, sharp object (a switch, a door corner). Hold completely still for 3 seconds, then tap Mark.","बीच की रिंग को किसी छोटी, साफ़ दिखने वाली चीज़ (स्विच, दरवाज़े का कोना) पर रखें। 3 सेकंड बिल्कुल स्थिर रहें, फिर मार्क दबाएँ।",,true,"FOV step 1; the still hold lets the gyro bias be learnt"
 calibrate.fov.turn,"Turn slowly to the right, phone upright, until the same object touches the yellow line. Then tap Mark.","फ़ोन सीधा रखकर धीरे-धीरे दाईं ओर घूमें, जब तक वही चीज़ पीली रेखा को न छू ले। फिर मार्क दबाएँ।",,true,FOV step 2
 calibrate.fov.turned,Turned {{deg}}°,{{deg}}° घूमे,,true,live gyro angle
 calibrate.fov.result,Measured: {{across}}° across this screen (lens {{lens}}°).,मापा गया: इस स्क्रीन पर {{across}}° चौड़ाई (लेंस {{lens}}°)।,,true,FOV result

@@ -22,6 +22,7 @@ from tests.factories import (
     attempt_result,
     attestation_for,
     certificate_token,
+    latest_scenario,
     signed_headers,
 )
 
@@ -89,7 +90,7 @@ def attempt_item(
     **overrides: Any,
 ) -> dict[str, Any]:
     attempt_id = attempt_id or uuid7()
-    spec = catalog.scenario(scenario, 1)
+    spec = latest_scenario(catalog, scenario)
     assert spec is not None
     result = attempt_result(spec, attempt_id, variant, earned=earned, **overrides)
     return {

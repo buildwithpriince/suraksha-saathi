@@ -127,11 +127,12 @@ class DemoBuilder:
         self.summary = SeedSummary()
         self.content: dict[str, ScenarioContent] = {}
         for scenario_id in REQUIRED:
-            spec = catalog.scenario(scenario_id, 1)
-            assert spec is not None, f"{scenario_id} v1 missing from /content"
             raw = json.loads(
                 (content_dir / "scenarios" / f"{scenario_id}.json").read_text(encoding="utf-8")
             )
+            # Version from the scenario file itself: a content bump needs no change here
+            spec = catalog.scenario(scenario_id, int(raw["version"]))
+            assert spec is not None, f"{scenario_id} v{raw['version']} missing from /content"
             self.content[scenario_id] = ScenarioContent(spec, raw)
 
     def _id(self, at: int) -> uuid.UUID:

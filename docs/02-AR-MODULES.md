@@ -86,6 +86,11 @@ frame, sensor anchoring continues from the last correction. After placement the 
 **Reposition** and then the floor to re-place a drifted overlay: the player records
 `anchor_repositioned{headingDeg, elevationDeg}` in the current step, and no rule reads it. Settings
 has a switch back to the original anchoring (raw rotation vector, linear 50° mapping, no marker).
+Overlays are billboards: always upright on screen, never rotated with the phone (D-039). The
+preview's field of view is measured on each phone by a hidden calibration screen (long-press
+Settings on Home), which also runs a rotate-90°-and-return self-test; during drills a status line
+shows MARKER LOCK / SENSOR / LEGACY and whether a gyroscope was found, and Settings can show a
+debug overlay with the FOV in use and live drift numbers.
 
 | Type | Camera mode (`ar`) | Tabletop mode | Events emitted |
 |---|---|---|---|

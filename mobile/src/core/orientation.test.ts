@@ -11,7 +11,6 @@ import {
   rotationVectorOf,
   screenOffset,
   unproject,
-  uprightRotationDeg,
   vectorToDirection,
   type Quaternion,
 } from './orientation';
@@ -147,9 +146,6 @@ describe('pinhole projection (D-036)', () => {
     const p = project(at(10, 0), rolled, F);
     expect(p.dx).toBeGreaterThan(0);
     expect(p.dy).toBeGreaterThan(0);
-    // Overlays counter-rotate to stay upright in the world
-    expect(uprightRotationDeg(rolled)).toBeCloseTo(30);
-    expect(uprightRotationDeg(UPRIGHT)).toBeCloseTo(0);
   });
 
   test('a direction behind the camera is not in front and lands far off screen on its side', () => {

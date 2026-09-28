@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { buildAttemptResult } from '@/core/assessment/result';
 import type { AttemptMode } from '@/core/assessment/types';
 import { isBehind, unproject, vectorToDirection, type Direction } from '@/core/orientation';
-import { FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, focalLengthPx, pxPerDegAt, type Band } from '@/core/player/layout';
+import { CAMERA_LONG_SIDE_FOV_DEG, FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, focalLengthPx, pxPerDegAt, type Band } from '@/core/player/layout';
 import {
   FIRE_START,
   INITIAL_EXTINGUISHER,
@@ -19,6 +19,7 @@ import {
   type ExtinguisherState,
 } from '@/core/player/extinguisher';
 import { MARKER_LOCK_FRESH_SEC, applySighting, sightingFrom } from '@/core/player/marker';
+import { directionErrorDeg } from '@/core/calibration';
 import { PREFABS, VIRTUAL_MARKER_OFFSET, offsetFrom, zoneAt, type Offset, type Prefab } from '@/core/player/prefabs';
 import { HOLD_SAMPLE_SEC, SKIP_OFFER_AFTER_SEC, ScenarioSession, type CurrentStep } from '@/core/player/session';
 import { tapWaypoint } from '@/core/player/waypoints';
@@ -32,7 +33,8 @@ import { randomBytes } from '@/platform/random';
 import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
-import { getAnchoringMode } from './anchoringSetting';
+import { AnchoringDebug, AnchoringStatus, liveAnchoring } from './AnchoringDebug';
+import { getAnchoringMode, getCameraFov, getDebugOverlay } from './anchoringSetting';
 import { createDischargeFeedback } from './dischargeFeedback';
 import { Extinguisher, SprayCone, type PinMethod, type Point } from './interactions/Extinguisher';
 import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
@@ -73,7 +75,14 @@ function startAttempt(scenario: Scenario): Attempt {
 export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; workerId: string; mode: AttemptMode }) {
   const { t } = useTranslation();
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
+  const windowSize = useWindowDimensions();
+  // The camera view's measured size (D-039): the preview crop and centre come from it, not from
+  // the window, which can differ by the system bars on edge-to-edge Android
+  const [view, setView] = useState({ width: windowSize.width, height: windowSize.height });
+  const { width, height } = view;
+  // Lens FOV: measured on this phone by the calibration screen if it has run, else the default
+  const [fov] = useState(() => getCameraFov(CAMERA_LONG_SIDE_FOV_DEG));
+  const [debug] = useState(getDebugOverlay);
   // Settings "AR anchoring" (D-036), read once per attempt so it can't change mid-drill
   const [anchoringMode] = useState(getAnchoringMode);
   const pinhole = anchoringMode === 'stabilised';
@@ -81,11 +90,11 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     () => ({
       cx: width / 2,
       cy: height / 2,
-      pxPerDeg: pinhole ? pxPerDegAt(width, height) : width / PREVIEW_HFOV_DEG,
-      focalPx: focalLengthPx(width, height),
+      pxPerDeg: pinhole ? pxPerDegAt(width, height, fov.longSideFovDeg) : width / PREVIEW_HFOV_DEG,
+      focalPx: focalLengthPx(width, height, fov.longSideFovDeg),
       pinhole,
     }),
-    [width, height, pinhole],
+    [width, height, pinhole, fov.longSideFovDeg],
   );
   const camera = useCameraDirection(anchoringMode);
   const cameraValues = useMemo(() => ({ direction: camera.direction, orientation: camera.orientation }), [camera.direction, camera.orientation]);
@@ -100,6 +109,8 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   /** Apparent size of the anchor marker that means scale 1; null until it is first seen. */
   const markerRefSize = useRef<number | null>(null);
   const lastMarkerFix = useRef(-Infinity);
+  /** Angle between where sensors had drifted the anchor and where the marker put it, last sighting. */
+  const markerResidual = useRef<number | null>(null);
   const [markerLocked, setMarkerLocked] = useState(false);
   const [repositioning, setRepositioning] = useState(false);
   // operate_extinguisher (D-038): the simulated fire, and the worker's pin and lever
@@ -369,6 +380,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       refSizePx: placing ? null : markerRefSize.current,
     });
     if (fix === null) return;
+    if (!placing && placedAnchor.current !== null) markerResidual.current = directionErrorDeg(placedAnchor.current, fix.measured);
     setAnchor(fix.anchor, fix.scale);
     markerRefSize.current = fix.refSizePx;
     lastMarkerFix.current = performance.now();
@@ -565,7 +577,13 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   })();
 
   return (
-    <View style={styles.root}>
+    <View
+      style={styles.root}
+      onLayout={(e) => {
+        const { width: w, height: h } = e.nativeEvent.layout;
+        if (w !== view.width || h !== view.height) setView({ width: w, height: h });
+      }}
+    >
       {mode === 'ar' ? (
         <CameraView
           style={StyleSheet.absoluteFill}
@@ -690,7 +708,18 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
             {mode === 'tabletop' ? <Text style={styles.mode}>{t('training.tabletop.label')}</Text> : null}
             <Text style={styles.instruction}>{t(cur.step.instructionKey)}</Text>
             {hint !== null ? <Text style={styles.hint}>{hint}</Text> : null}
-            {markerLocked ? <Text style={styles.locked}>📍 {t('training.marker.locked')}</Text> : null}
+            {/* D-039: always say which anchoring is live, so drift can be reported precisely */}
+            <AnchoringStatus live={liveAnchoring(anchoringMode, markerLocked)} gyro={camera.gyroAvailable} />
+            {debug ? (
+              <AnchoringDebug
+                camera={camera}
+                mode={anchoringMode}
+                fov={fov}
+                view={view}
+                focalPx={geometry.focalPx}
+                markerResidual={() => markerResidual.current}
+              />
+            ) : null}
             {detector !== undefined && path !== undefined ? (
               <Text style={styles.hint}>{t('training.detector.label', { reading: Math.round((detector.peakReading * waypoint) / path.length) })}</Text>
             ) : null}
@@ -895,7 +924,6 @@ const styles = StyleSheet.create({
   cardRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s },
   chip: { minHeight: 44, paddingHorizontal: space.m, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center' },
   chipOn: { backgroundColor: 'rgba(255,212,59,0.45)' },
-  locked: { color: '#8CE99A', fontSize: 15, fontWeight: '700' },
   stop: { marginLeft: 'auto', backgroundColor: 'rgba(180,35,24,0.85)' },
   chipText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   timer: { color: '#FFD43B', fontSize: 18, fontWeight: '800' },

@@ -196,17 +196,6 @@ export function unproject(dx: number, dy: number, q: Quaternion, focalPx: number
   return rotate(q, { x: x / n, y: y / n, z: -1 / n });
 }
 
-/**
- * Screen rotation (degrees, clockwise positive as in a React Native transform) that keeps an
- * overlay upright in the world when the phone rolls. 0 with the phone held level.
- */
-export function uprightRotationDeg(q: Quaternion): number {
-  'worklet';
-  const up = rotateInverse(q, { x: 0, y: 0, z: 1 });
-  if (Math.abs(up.x) + Math.abs(up.y) < 1e-6) return 0; // looking straight up or down
-  return Math.atan2(up.x, up.y) * DEG;
-}
-
 /** Angle between two unit quaternions' rotations, degrees. */
 export function angleBetween(a: Quaternion, b: Quaternion): number {
   'worklet';

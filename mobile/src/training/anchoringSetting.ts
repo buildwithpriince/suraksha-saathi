@@ -24,3 +24,52 @@ export function getAnchoringMode(): AnchoringMode {
 export function setAnchoringMode(mode: AnchoringMode): void {
   SecureStore.setItem(KEY, mode);
 }
+
+// --- Debug overlay and camera FOV calibration (D-039) ---------------------------------------------
+
+const DEBUG_KEY = 'anchoring_debug_v1';
+const FOV_KEY = 'camera_fov_v1';
+
+export function getDebugOverlay(): boolean {
+  try {
+    return SecureStore.getItem(DEBUG_KEY) === 'on';
+  } catch {
+    return false;
+  }
+}
+
+export function setDebugOverlay(on: boolean): void {
+  SecureStore.setItem(DEBUG_KEY, on ? 'on' : 'off');
+}
+
+/** The lens FOV used for projection, and where it came from. */
+export interface CameraFov {
+  longSideFovDeg: number;
+  /** `calibrated`: measured on this phone; `default`: the assumed CAMERA_LONG_SIDE_FOV_DEG. */
+  source: 'calibrated' | 'default';
+  /** Calibration turns averaged (0 for the default). */
+  samples: number;
+}
+
+export function getCameraFov(defaultDeg: number): CameraFov {
+  try {
+    const text = SecureStore.getItem(FOV_KEY);
+    if (text !== null) {
+      const saved = JSON.parse(text) as { longSideFovDeg?: unknown; samples?: unknown };
+      if (typeof saved.longSideFovDeg === 'number' && Number.isFinite(saved.longSideFovDeg)) {
+        return { longSideFovDeg: saved.longSideFovDeg, source: 'calibrated', samples: Number(saved.samples ?? 1) };
+      }
+    }
+  } catch {
+    // unreadable: fall back to the default
+  }
+  return { longSideFovDeg: defaultDeg, source: 'default', samples: 0 };
+}
+
+export function saveCameraFov(longSideFovDeg: number, samples: number): void {
+  SecureStore.setItem(FOV_KEY, JSON.stringify({ longSideFovDeg, samples, savedAt: Date.now() }));
+}
+
+export function clearCameraFov(): void {
+  void SecureStore.deleteItemAsync(FOV_KEY);
+}

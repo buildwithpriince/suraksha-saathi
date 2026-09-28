@@ -30,11 +30,14 @@ type ButtonKind = 'primary' | 'secondary' | 'danger';
 export function Button({
   label,
   onPress,
+  onLongPress,
   kind = 'primary',
   disabled = false,
 }: {
   label: string;
   onPress: () => void;
+  /** Hidden secondary action (e.g. Settings long-press opens camera calibration, D-039). */
+  onLongPress?: () => void;
   kind?: ButtonKind;
   disabled?: boolean;
 }) {
@@ -44,6 +47,7 @@ export function Button({
       accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
+      onLongPress={onLongPress}
       style={({ pressed }) => [
         styles.button,
         kind === 'secondary' && styles.buttonSecondary,

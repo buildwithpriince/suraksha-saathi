@@ -22,15 +22,31 @@ export const CAMERA_STREAM_ASPECT = 4 / 3;
  * and crops the overflow (FILL_CENTER), so on a tall phone the stream's long side spans the full
  * height and its sides are cut off: far less than 50° is visible across the width.
  */
-export function focalLengthPx(viewWidth: number, viewHeight: number): number {
+export function focalLengthPx(viewWidth: number, viewHeight: number, longSideFovDeg: number = CAMERA_LONG_SIDE_FOV_DEG): number {
   'worklet';
-  const shownHeight = Math.max(viewHeight, viewWidth * CAMERA_STREAM_ASPECT);
-  return shownHeight / 2 / Math.tan((CAMERA_LONG_SIDE_FOV_DEG * Math.PI) / 360);
+  return shownStreamHeight(viewWidth, viewHeight) / 2 / Math.tan((longSideFovDeg * Math.PI) / 360);
 }
 
 /** Pixels per degree at the centre of the preview. */
-export function pxPerDegAt(viewWidth: number, viewHeight: number): number {
-  return (focalLengthPx(viewWidth, viewHeight) * Math.PI) / 180;
+export function pxPerDegAt(viewWidth: number, viewHeight: number, longSideFovDeg?: number): number {
+  return (focalLengthPx(viewWidth, viewHeight, longSideFovDeg) * Math.PI) / 180;
+}
+
+/** Height in px the 3:4 portrait stream is drawn at when FILL_CENTER scales it to cover the view. */
+export function shownStreamHeight(viewWidth: number, viewHeight: number): number {
+  'worklet';
+  return Math.max(viewHeight, viewWidth * CAMERA_STREAM_ASPECT);
+}
+
+/** The lens's long-side FOV that a measured focal length implies for this view (D-039 calibration). */
+export function longSideFovFromFocal(viewWidth: number, viewHeight: number, focalPx: number): number {
+  return (2 * Math.atan(shownStreamHeight(viewWidth, viewHeight) / 2 / focalPx) * 180) / Math.PI;
+}
+
+/** What the view actually shows: degrees across and top to bottom. */
+export function visibleFovDeg(viewWidth: number, viewHeight: number, focalPx: number): { across: number; down: number } {
+  const deg = (px: number) => (2 * Math.atan(px / 2 / focalPx) * 180) / Math.PI;
+  return { across: deg(viewWidth), down: deg(viewHeight) };
 }
 
 /** Size of the drawn fire (a prefab's `Fire` object), in degrees. */

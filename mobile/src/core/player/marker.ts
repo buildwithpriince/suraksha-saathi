@@ -15,8 +15,12 @@ export const MARKER_MIN_SIZE_PX = 24;
 export const MARKER_BLEND = 0.5;
 /** Overlay scale limits: from 2.5× farther than the reference sighting to 3× nearer. */
 export const MARKER_SCALE_RANGE = [0.4, 3] as const;
-/** A lock older than this is shown as lost. */
-export const MARKER_LOCK_FRESH_SEC = 0.6;
+/**
+ * A lock older than this is shown as lost. expo-camera drops a barcode result identical to the
+ * previous one within 500 ms (CameraView EventThrottleMs), so a marker held still in view reports
+ * only every ~0.5 s; the lock must outlast that gap or it flickers (D-039).
+ */
+export const MARKER_LOCK_FRESH_SEC = 1.2;
 
 export interface Point {
   x: number;
@@ -52,6 +56,8 @@ export interface AnchorFix {
   scale: number;
   /** The marker size that means scale 1: the first sighting after placement. */
   refSizePx: number;
+  /** This sighting alone, before blending: where the marker really is. */
+  measured: Direction;
 }
 
 /**
@@ -70,11 +76,12 @@ export function applySighting(
   const refSizePx = current.refSizePx ?? sighting.sizePx;
   const [lo, hi] = MARKER_SCALE_RANGE;
   const measuredScale = Math.min(hi, Math.max(lo, sighting.sizePx / refSizePx));
-  if (current.anchor === null) return { anchor: measured, scale: measuredScale, refSizePx };
+  if (current.anchor === null) return { anchor: measured, scale: measuredScale, refSizePx, measured };
   return {
     anchor: blendDirection(current.anchor, measured, MARKER_BLEND),
     scale: current.scale + (measuredScale - current.scale) * MARKER_BLEND,
     refSizePx,
+    measured,
   };
 }
 

@@ -59,7 +59,13 @@ export default function HomeScreen() {
       <Card>
         <LanguageSwitcher label={t('home.language.label')} />
       </Card>
-      <Button kind="secondary" label={t('home.settings.button')} onPress={() => router.push('/settings')} />
+      {/* Long-press: hidden camera calibration and rotation self-test (D-039) */}
+      <Button
+        kind="secondary"
+        label={t('home.settings.button')}
+        onPress={() => router.push('/settings')}
+        onLongPress={() => router.push('/calibrate')}
+      />
     </Screen>
   );
 }

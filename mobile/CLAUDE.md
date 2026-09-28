@@ -96,6 +96,14 @@ while a scenario's `anchorMarker` (`HAZARD_A`) is in view, which pins and scales
 (`core/player/marker.ts`). "Reposition" re-places a drifted overlay (`anchor_repositioned`,
 never scored). Settings → "AR anchoring" switches back to the original maths
 (`training/anchoringSetting.ts`).
+FOV (D-039): expo-camera exposes no focal length or FOV, so `CAMERA_LONG_SIDE_FOV_DEG` is only the
+default. Measure it per phone in the hidden calibration screen (`app/calibrate.tsx`, long-press
+Settings on Home): it solves the focal length from a gyro-measured turn (`core/calibration.ts`)
+and saves it; training reads it with `getCameraFov`. Geometry comes from the camera view's
+measured layout, not the window. Overlays are billboards (`core/player/overlay.ts`: position
+only, never rotation). Settings → debug overlay shows the FOV in use and its source, filter-vs-raw
+disagreement and the last marker residual; the calibration screen's self-test gives the
+rotate-90°-and-return error.
 
 ## Commands (from `mobile/`)
 - Core tests: `npm test` (Vitest; run after every `src/core` change)

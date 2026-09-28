@@ -85,6 +85,65 @@ describe('complementary filter (D-036)', () => {
     expect(headings[0]).toBeCloseTo(120);
   });
 
+  test('filter vs raw disagreement stays small in a correct turn and exposes a gyro sign error', () => {
+    const rate = -60 * DEG;
+    // The reference reports where the phone is at the end of each step, like the gyro-driven filter
+    const good = run(60, (i) => facing((i + 1) * DT * 60), () => ({ x: 0, y: rate, z: 0 }), start).state;
+    expect(good.refDisagreeDeg).toBeLessThan(1);
+    // Gyro read with the wrong sign: the prediction turns the other way and the filter fights it
+    const flipped = run(30, (i) => facing(i * DT * 60), () => ({ x: 0, y: -rate, z: 0 }), start).state;
+    expect(flipped.refDisagreeDeg).toBeGreaterThan(20);
+  });
+
+  describe('rotate 90° away and back (the Settings self-test, simulated)', () => {
+    /**
+     * 3 s turning right to 90° at 30°/s, 1 s still, 3 s back, with gyro noise and a bias of
+     * `biasDegPerSec` (Android's calibrated gyroscope: typically under 0.05°/s).
+     * `compass(heading)`: the reference heading error, from a magnetic disturbance.
+     */
+    function roundTrip(compass: (heading: number) => number, biasDegPerSec = 0.05) {
+      const n = noise(11);
+      const heading = (i: number) => (i < 180 ? i * 0.5 : i < 240 ? 90 : Math.max(0, 90 - (i - 240) * 0.5));
+      const rate = (i: number) => (i < 180 ? -30 * DEG : i < 240 ? 0 : i < 420 ? 30 * DEG : 0);
+      let filtered = start;
+      for (let i = 0; i < 480; i++) {
+        const h = heading(i);
+        filtered = filterStep(filtered, facing(h + compass(h)), { x: 0.002 * n(), y: rate(i) + biasDegPerSec * DEG + 0.002 * n(), z: 0.002 * n() }, DT);
+      }
+      return {
+        filtered: Math.abs(angleDiff(cameraDirection(filtered.q).headingDeg, 0)),
+        raw: Math.abs(compass(0)), // the raw sensor at the end: back at heading 0 with its error there
+      };
+    }
+
+    test('clean compass: both return to within half a degree', () => {
+      const r = roundTrip(() => 0);
+      expect(r.filtered).toBeLessThan(0.5);
+      expect(r.raw).toBeLessThan(0.5);
+    });
+
+    test('worst case, an uncalibrated gyro (0.3°/s bias): about 2° (0.3°/s × 7 s in motion)', () => {
+      expect(roundTrip(() => 0, 0.3).filtered).toBeLessThan(2.5);
+    });
+
+    test('a compass error that depends on direction (steel beside the path): both return clean', () => {
+      const r = roundTrip((h) => 15 * Math.sin((h * Math.PI) / 90)); // peaks at 45°, zero at 0 and 90
+      expect(r.raw).toBeLessThan(0.5);
+      expect(r.filtered).toBeLessThan(0.5);
+    });
+
+    test('a 15° compass error that appears while turned away: the filter returns within 3°', () => {
+      // Steel nearby skews the compass by 15° once the phone has turned past 45°, and it stays
+      let disturbed = false;
+      const r = roundTrip((h) => {
+        if (h > 45) disturbed = true;
+        return disturbed ? 15 : 0;
+      });
+      expect(r.raw).toBe(15);
+      expect(r.filtered).toBeLessThan(3);
+    });
+  });
+
   test('without a gyroscope: jitter is smoothed, a real turn is followed at once', () => {
     const n = noise(3);
     const still = run(600, () => facing(0.5 * n()), () => null).headings.slice(300);

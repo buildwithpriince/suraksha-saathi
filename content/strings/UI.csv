@@ -62,7 +62,6 @@ training.reposition.button,Reposition,फिर से रखें,,true,"butto
 training.reposition.cancel,Cancel,रद्द करें,,true,button: leave reposition without moving the overlay
 training.reposition.hint,Tap the floor where it should be.,जहाँ होना चाहिए वहाँ फ़र्श को छुएँ।,,true,shown while repositioning (D-036)
 training.hint.anchor_marker,Or point the camera at the printed marker on the floor.,या कैमरे को फ़र्श पर रखे छपे मार्कर की ओर करें।,,true,place_on_plane hint when the scenario has an anchorMarker (D-036)
-training.marker.locked,Locked to the floor marker,फ़र्श के मार्कर पर टिका है,,true,shown while the anchor marker is in view (D-036)
 training.extinguisher.pull,Swipe the yellow pin to the right to pull it out.,पीली पिन को दाईं ओर खींचकर बाहर निकालें।,,true,operate_extinguisher: PASS Pull (D-038)
 training.extinguisher.aim,"Point the ring at the base of the fire, then press and hold the lever button.","रिंग को आग की जड़ पर रखें, फिर लीवर वाला बटन दबाकर रखें।",,true,operate_extinguisher: PASS Aim + Squeeze
 training.extinguisher.sweep,Sweep side to side across the base.,जड़ पर दाएँ-बाएँ घुमाएँ।,,true,operate_extinguisher: PASS Sweep (spraying the base without sweeping)
@@ -78,6 +77,19 @@ training.extinguisher.outcome.extinguished,The fire is out.,आग बुझ ग
 training.extinguisher.outcome.out_of_control,The fire is out of control.,आग काबू से बाहर है।,,true,operate_extinguisher outcome
 training.extinguisher.outcome.empty,The extinguisher is empty and the fire is still burning.,अग्निशामक खाली हो गया और आग अभी भी जल रही है।,,true,operate_extinguisher outcome
 training.extinguisher.outcome.wrong_agent,This extinguisher is not putting this fire out.,यह अग्निशामक इस आग को नहीं बुझा रहा है।,,true,"operate_extinguisher outcome: the chosen extinguisher is forbidden for this fire (scenario content, e.g. water on oil)"
+training.anchor.status.marker,MARKER LOCK,मार्कर लॉक,,true,status: overlay pinned by the HAZARD marker in view (D-039)
+training.anchor.status.sensor,SENSOR,सेंसर,,true,"status: sensor anchoring (gyro filter), no marker in view"
+training.anchor.status.legacy,LEGACY,पुराना तरीका,,true,status: Settings chose the old anchoring
+training.anchor.gyro.yes,gyro ✓,जायरो ✓,,true,status: a gyroscope was found
+training.anchor.gyro.no,no gyro,जायरो नहीं,,true,status: no gyroscope on this phone
+training.debug.mode,mode {{mode}} · {{gyro}},मोड {{mode}} · {{gyro}},,true,debug overlay (D-039)
+training.debug.fov,FOV {{across}}° × {{down}}° · {{source}} · lens {{lens}}°,FOV {{across}}° × {{down}}° · {{source}} · लेंस {{lens}}°,,true,"debug overlay: visible FOV across × down, its source, lens long-side FOV"
+training.debug.fov_source.calibrated,calibrated,कैलिब्रेट किया,,true,FOV measured on this phone
+training.debug.fov_source.default,default (not calibrated),डिफ़ॉल्ट (कैलिब्रेट नहीं),,true,"FOV assumed, not measured"
+training.debug.view,view {{w}}×{{h}} dp · f {{f}} px,व्यू {{w}}×{{h}} dp · f {{f}} px,,true,debug overlay: measured camera view size and focal length
+training.debug.filter,filter vs raw sensor {{deg}}°,फ़िल्टर बनाम कच्चा सेंसर {{deg}}°,,true,debug overlay: disagreement between gyro filter and rotation vector
+training.debug.residual,marker residual {{deg}}°,मार्कर अंतर {{deg}}°,,true,debug overlay: drift the last marker sighting corrected
+training.debug.pose,heading {{h}}° elev {{e}}° · {{speed}}°/s,दिशा {{h}}° ऊँचाई {{e}}° · {{speed}}°/s,,true,debug overlay: camera direction and turn speed
 result.title,Your result,आपका परिणाम,आमाः फोल,true,screen title
 result.score.label,Score {{score}}%,अंक {{score}}%,नोंबोर {{score}}%,true,{{score}} = score percent
 result.threshold.label,Pass mark {{threshold}}%,पास होने के लिए {{threshold}}%,पास नोंबोर {{threshold}}%,true,{{threshold}} = scenario pass threshold
@@ -161,6 +173,31 @@ settings.anchoring.body,"Stabilised uses the gyroscope and the printed floor mar
 settings.anchoring.stabilised,Stabilised (new),स्थिर (नया),,true,anchoring option: gyro filter + marker (D-036)
 settings.anchoring.legacy,Old (compass only),पुराना (केवल कम्पास),,true,anchoring option: the original maths (D-036)
 settings.anchoring.note,Takes effect when the next drill starts.,अगला अभ्यास शुरू होने पर लागू होगा।,,true,under the anchoring switch
+settings.anchoring.debug.label,Show the anchoring debug overlay during drills,अभ्यास के दौरान एंकरिंग डिबग जानकारी दिखाएँ,,true,debug overlay toggle (D-039)
+settings.anchoring.debug.off,Off,बंद,,true,toggle option
+settings.anchoring.debug.on,On,चालू,,true,toggle option
+calibrate.title,Camera calibration,कैमरा कैलिब्रेशन,,true,hidden screen: long-press Settings on Home (D-039)
+calibrate.tab.fov,Field of view,दृश्य क्षेत्र (FOV),,true,tab
+calibrate.tab.selftest,Rotation self-test,घुमाव स्व-परीक्षण,,true,tab
+calibrate.current,In use: lens {{lens}}° ({{source}}),उपयोग में: लेंस {{lens}}° ({{source}}),,true,the lens FOV training uses now
+calibrate.no_gyro,"No gyroscope: the turn is measured with the rotation sensor, which is less exact.","जायरोस्कोप नहीं है: घुमाव रोटेशन सेंसर से मापा जाएगा, जो कम सटीक है।",,true,shown on phones without a gyroscope
+calibrate.fov.aim,"Aim the centre ring at a small, sharp object (a switch, a door corner). Hold still, then tap Mark.","बीच की रिंग को किसी छोटी, साफ़ दिखने वाली चीज़ (स्विच, दरवाज़े का कोना) पर रखें। स्थिर रहें, फिर मार्क दबाएँ।",,true,FOV step 1
+calibrate.fov.turn,"Turn slowly to the right, phone upright, until the same object touches the yellow line. Then tap Mark.","फ़ोन सीधा रखकर धीरे-धीरे दाईं ओर घूमें, जब तक वही चीज़ पीली रेखा को न छू ले। फिर मार्क दबाएँ।",,true,FOV step 2
+calibrate.fov.turned,Turned {{deg}}°,{{deg}}° घूमे,,true,live gyro angle
+calibrate.fov.result,Measured: {{across}}° across this screen (lens {{lens}}°).,मापा गया: इस स्क्रीन पर {{across}}° चौड़ाई (लेंस {{lens}}°)।,,true,FOV result
+calibrate.fov.error_before,"With the FOV in use ({{source}}), the overlay would have been {{deg}}° off at that line.","उपयोग में FOV ({{source}}) से, उस रेखा पर ओवरले {{deg}}° हटकर होता।",,true,how wrong the current FOV is
+calibrate.fov.samples,Measurements: {{count}}. Average lens FOV {{lens}}°.,माप: {{count}}। औसत लेंस FOV {{lens}}°।,,true,running average
+calibrate.fov.bad,"That measurement does not look right (turn too small, or the object was not on the line). Try again.",यह माप सही नहीं लगता (घुमाव बहुत कम था या चीज़ रेखा पर नहीं थी)। फिर से करें।,,true,implausible result
+calibrate.mark.button,Mark,मार्क,,true,button
+calibrate.again.button,Measure again,फिर से मापें,,true,button
+calibrate.save.button,Save {{lens}}° for training,प्रशिक्षण के लिए {{lens}}° सेव करें,,true,button: persist the averaged FOV
+calibrate.reset.button,Use the default FOV,डिफ़ॉल्ट FOV इस्तेमाल करें,,true,button: forget the calibration
+calibrate.selftest.aim,Aim the centre ring at a sharp object and tap Start.,बीच की रिंग को किसी साफ़ चीज़ पर रखें और शुरू करें दबाएँ।,,true,self-test step 1
+calibrate.selftest.away,Turn at least 90° away. Turned {{deg}}° (furthest {{max}}°).,कम से कम 90° दूर घूमें। {{deg}}° घूमे (सबसे दूर {{max}}°)।,,true,self-test step 2
+calibrate.selftest.back,Now aim the centre ring at the same object again and tap Done.,अब बीच की रिंग को फिर उसी चीज़ पर रखें और हो गया दबाएँ।,,true,self-test step 3
+calibrate.selftest.result,"Return error: {{filtered}}° with {{mode}} anchoring, {{raw}}° with the raw rotation sensor.","लौटने पर त्रुटि: {{mode}} एंकरिंग से {{filtered}}°, कच्चे रोटेशन सेंसर से {{raw}}°।",,true,self-test result (D-039)
+calibrate.start.button,Start,शुरू करें,,true,button
+calibrate.close.button,Close,बंद करें,,true,button
 worker.edit.button,Edit worker,कामगार की जानकारी बदलें,कामी होड़ बोदोलमे,true,button on the worker page
 edit.title,Edit worker,जानकारी बदलें,कामी होड़ बोदोल,true,screen title
 edit.save.button,Save changes,बदलाव सेव करें,बोदोल सेवमे,true,button

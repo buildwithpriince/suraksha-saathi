@@ -10,16 +10,9 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
-import {
-  angleDiff,
-  directionToVector,
-  project,
-  screenOffset,
-  uprightRotationDeg,
-  type Direction,
-  type Quaternion,
-} from '@/core/orientation';
-import { LABEL_BOX_PX, clampToBand, type Band } from '@/core/player/layout';
+import { angleDiff, type Direction, type Quaternion } from '@/core/orientation';
+import { LABEL_BOX_PX, type Band } from '@/core/player/layout';
+import { overlayPlacement } from '@/core/player/overlay';
 import type { Offset } from '@/core/player/prefabs';
 import { Text } from '@/ui/Text';
 import { colors } from '@/ui/theme';
@@ -51,8 +44,8 @@ export interface CameraValues {
  * A view drawn at a direction anchored in the world, moving as the phone turns (3DoF). With a
  * `band`, its centre stays inside it (D-033): pinned to the nearest edge, slightly faded, when the
  * real direction is off screen or under the card, so something the worker must tap always can be.
- * In pinhole mode it also counter-rotates when the phone rolls, and offsets grow with the marker
- * scale; `scaled` content (the fire, the gas cloud) grows with it too.
+ * It is a billboard: always upright on screen, whatever the phone's roll (D-039). Offsets grow
+ * with the marker scale; `scaled` content (the fire, the gas cloud) grows with it too.
  */
 export function Anchored({
   anchor: { anchor, scale },
@@ -75,36 +68,16 @@ export function Anchored({
   scaled?: boolean;
   children: ReactNode;
 }) {
-  const { dh, de } = offset;
   const { cx, cy, pxPerDeg, focalPx, pinhole } = geometry;
   const style = useAnimatedStyle(() => {
     const a = anchor.value;
-    if (a === null) return { opacity: 0, transform: [{ translateX: -10000 }, { translateY: 0 }, { rotate: '0deg' }, { scale: 1 }] };
+    if (a === null) return { opacity: 0, transform: [{ translateX: -10000 }, { translateY: 0 }, { scale: 1 }] };
     const s = scale.value;
-    const target = { headingDeg: a.headingDeg + dh * s, elevationDeg: Math.max(-89.5, Math.min(89.5, a.elevationDeg + de * s)) };
-    let dx: number;
-    let dy: number;
-    let rotateDeg = 0;
-    if (pinhole) {
-      const q = orientation.value;
-      const p = project(directionToVector(target), q, focalPx);
-      dx = p.dx;
-      dy = p.dy;
-      rotateDeg = uprightRotationDeg(q);
-    } else {
-      const o = screenOffset(target, direction.value, pxPerDeg);
-      dx = o.dx;
-      dy = o.dy;
-    }
-    const at = band === undefined ? { x: cx + dx, y: cy + dy, pinned: false } : clampToBand(cx + dx, cy + dy, band);
+    // Billboard (D-039): position only, never a rotation, so the sprite stays upright on screen
+    const at = overlayPlacement(a, offset, s, { orientation: orientation.value, direction: direction.value }, { cx, cy, pxPerDeg, focalPx, pinhole }, band);
     return {
       opacity: at.pinned ? 0.85 : 1,
-      transform: [
-        { translateX: at.x - width / 2 },
-        { translateY: at.y - height / 2 },
-        { rotate: `${at.pinned ? 0 : rotateDeg}deg` },
-        { scale: scaled ? s : 1 },
-      ],
+      transform: [{ translateX: at.x - width / 2 }, { translateY: at.y - height / 2 }, { scale: scaled ? s : 1 }],
     };
   });
   return (

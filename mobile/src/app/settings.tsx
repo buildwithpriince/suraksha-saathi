@@ -10,7 +10,7 @@ import { getDevice } from '@/db/device';
 import { TRUST } from '@/device/trust';
 import { formatDate } from '@/ui/CertificateDetails';
 import { DemoKeysBanner } from '@/ui/DemoKeysBanner';
-import { getAnchoringMode, setAnchoringMode, type AnchoringMode } from '@/training/anchoringSetting';
+import { getAnchoringMode, getDebugOverlay, setAnchoringMode, setDebugOverlay, type AnchoringMode } from '@/training/anchoringSetting';
 import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
 import { Body, Button, Card, Screen, Segmented, Title } from '@/ui/components';
 
@@ -21,6 +21,7 @@ export default function SettingsScreen() {
   const [pending, setPending] = useState(0);
   const [lastSync, setLastSync] = useState<number | null>(null);
   const [anchoring, setAnchoring] = useState<AnchoringMode>(getAnchoringMode);
+  const [debugOverlay, setDebugOverlayState] = useState(getDebugOverlay);
 
   useFocusEffect(
     useCallback(() => {
@@ -64,6 +65,18 @@ export default function SettingsScreen() {
           onChange={(mode) => {
             setAnchoringMode(mode);
             setAnchoring(mode);
+          }}
+        />
+        <Body>{t('settings.anchoring.debug.label')}</Body>
+        <Segmented
+          options={[
+            { value: 'off', label: t('settings.anchoring.debug.off') },
+            { value: 'on', label: t('settings.anchoring.debug.on') },
+          ]}
+          value={debugOverlay ? 'on' : 'off'}
+          onChange={(v) => {
+            setDebugOverlay(v === 'on');
+            setDebugOverlayState(v === 'on');
           }}
         />
         <Body muted>{t('settings.anchoring.note')}</Body>

@@ -10,6 +10,14 @@ import { buildAttemptResult } from '@/core/assessment/result';
 import type { AttemptMode } from '@/core/assessment/types';
 import { isBehind, unproject, vectorToDirection, type Direction } from '@/core/orientation';
 import { FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, focalLengthPx, pxPerDegAt, type Band } from '@/core/player/layout';
+import {
+  FIRE_START,
+  INITIAL_EXTINGUISHER,
+  agentEffective,
+  extinguisherTick,
+  type ExtinguisherConfig,
+  type ExtinguisherState,
+} from '@/core/player/extinguisher';
 import { MARKER_LOCK_FRESH_SEC, applySighting, sightingFrom } from '@/core/player/marker';
 import { PREFABS, VIRTUAL_MARKER_OFFSET, offsetFrom, zoneAt, type Offset, type Prefab } from '@/core/player/prefabs';
 import { HOLD_SAMPLE_SEC, SKIP_OFFER_AFTER_SEC, ScenarioSession, type CurrentStep } from '@/core/player/session';
@@ -25,6 +33,8 @@ import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
 import { getAnchoringMode } from './anchoringSetting';
+import { createDischargeFeedback } from './dischargeFeedback';
+import { Extinguisher } from './interactions/Extinguisher';
 import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
 import { useCameraDirection } from './useCameraDirection';
 
@@ -90,6 +100,13 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const lastMarkerFix = useRef(-Infinity);
   const [markerLocked, setMarkerLocked] = useState(false);
   const [repositioning, setRepositioning] = useState(false);
+  // operate_extinguisher (D-038): the simulated fire, and the worker's pin and lever
+  const [ext, setExt] = useState<ExtinguisherState>(INITIAL_EXTINGUISHER);
+  const extRef = useRef<ExtinguisherState>(INITIAL_EXTINGUISHER);
+  const [pinOut, setPinOut] = useState(false);
+  const [squeezing, setSqueezing] = useState(false);
+  const [leverLocked, setLeverLocked] = useState(false);
+  const feedback = useMemo(() => createDischargeFeedback(), []);
 
   const setAnchor = (placed: Direction, scale: number) => {
     anchor.set(placed);
@@ -155,6 +172,11 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     setPicked([]);
     setCones([]);
     setRepositioning(false);
+    extRef.current = INITIAL_EXTINGUISHER;
+    setExt(INITIAL_EXTINGUISHER);
+    setPinOut(false);
+    setSqueezing(false);
+    setLeverLocked(false);
     progressed();
     const effect = prefab.stepEffects?.[cur.step.id];
     if (effect?.fireLevel !== undefined) fireLevel.value = withTiming(effect.fireLevel, { duration: 1500 });
@@ -209,6 +231,76 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     }, HOLD_SAMPLE_SEC * 1000);
     return () => clearInterval(id);
   }, [holding, cur?.index, cur?.step.interaction, camera, prefab, session, refresh]);
+
+  // operate_extinguisher: every 0.25 s, sample the aim, record it while discharging, and step the
+  // fire simulation (D-038). The fire grows from the start of the step if the worker is slow.
+  useEffect(() => {
+    if (cur?.step.interaction !== 'operate_extinguisher') return;
+    const index = cur.index;
+    const p = cur.params;
+    const cfg: ExtinguisherConfig = {
+      targetZone: String(p.targetZone),
+      offTargetZones: p.offTargetZones as string[],
+      dischargeSec: Number(p.dischargeSec),
+      agentEffective: agentEffective(scenario, session.variantId, session.events, String(p.agentFrom)),
+    };
+    fireLevel.value = withTiming(FIRE_START, { duration: 400 });
+    const id = setInterval(() => {
+      if (session.current()?.index !== index) return;
+      const discharging = session.isDischarging;
+      const aim = placedAnchor.current === null ? null : prefabOffset(camera.read());
+      const zone = aim === null ? 'none' : zoneAt(prefab, aim);
+      const aimDh = aim?.dh ?? 0;
+      if (discharging) session.spraySample(zone, aimDh);
+      const next = extinguisherTick(extRef.current, { discharging, zone, aimDh }, cfg, HOLD_SAMPLE_SEC);
+      extRef.current = next;
+      setExt(next);
+      fireLevel.value = withTiming(next.fire, { duration: HOLD_SAMPLE_SEC * 1000 });
+      if (next.outcome !== null && discharging) {
+        session.stopDischarge();
+        feedback.stop();
+        setSqueezing(false);
+      }
+    }, HOLD_SAMPLE_SEC * 1000);
+    return () => {
+      clearInterval(id);
+      feedback.stop();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cur?.index, cur?.step.interaction]);
+
+  const onSqueezeIn = () => {
+    if (session.current()?.step.interaction !== 'operate_extinguisher' || extRef.current.outcome !== null) return;
+    if (!session.startDischarge()) {
+      setLeverLocked(true); // the pin is still in
+      return;
+    }
+    feedback.start();
+    setSqueezing(true);
+  };
+
+  const onSqueezeOut = () => {
+    if (!session.isDischarging) return;
+    session.stopDischarge();
+    feedback.stop();
+    setSqueezing(false);
+  };
+
+  const onPinPulled = () => {
+    if (session.current()?.step.interaction !== 'operate_extinguisher') return;
+    session.pullPin();
+    setPinOut(true);
+    setLeverLocked(false);
+  };
+
+  /** After the outcome is shown: complete the step with it. `index` guards against a double tap. */
+  const finishExtinguisher = (index: number) => {
+    const c = session.current();
+    const outcome = extRef.current.outcome;
+    if (c?.index !== index || c.step.interaction !== 'operate_extinguisher' || outcome === null) return;
+    session.finishExtinguisher(outcome, outcome === 'extinguished');
+    refresh();
+  };
 
   // Finished (all steps done or stopped): score, store with its outbox row, show the result
   const saved = useRef(false);
@@ -453,6 +545,15 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     if (wantedMarker(cur) !== null) return t(mode === 'ar' ? 'training.hint.scan_marker' : 'training.hint.tap_marker');
     if (path !== undefined) return t('training.hint.waypoints');
     if (interaction === 'aim_and_hold') return t('training.hint.hold');
+    if (interaction === 'operate_extinguisher') {
+      // PASS, one prompt at a time (D-038)
+      if (ext.outcome !== null) return null;
+      if (!pinOut) return t('training.extinguisher.pull');
+      if (ext.sprayZone === null) return t('training.extinguisher.aim');
+      if (ext.sprayZone === cur.params.targetZone) return t('training.extinguisher.sweep');
+      if ((cur.params.offTargetZones as string[]).includes(ext.sprayZone)) return t('training.extinguisher.too_high');
+      return t('training.extinguisher.missed');
+    }
     if (interaction === 'tap_target') return t('training.hint.target');
     if (interaction === 'choose_many') return t('training.hint.choose_many');
     if (interaction === 'checklist') return t('training.hint.checklist');
@@ -570,7 +671,19 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
         </Anchored>
       ))}
 
-      {interaction === 'aim_and_hold' ? <Reticle geometry={geometry} /> : null}
+      {interaction === 'aim_and_hold' || interaction === 'operate_extinguisher' ? <Reticle geometry={geometry} /> : null}
+
+      {interaction === 'operate_extinguisher' ? (
+        <Extinguisher
+          width={width}
+          bottom={panelTop}
+          target={{ x: geometry.cx, y: geometry.cy }}
+          pinOut={pinOut}
+          discharging={squeezing}
+          pinLabel={t('training.extinguisher.pin.label')}
+          onPinPulled={onPinPulled}
+        />
+      ) : null}
 
       {repositioning ? (
         <Pressable style={StyleSheet.absoluteFill} accessibilityLabel={t('training.reposition.hint')} onPress={onReposition} />
@@ -596,6 +709,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
                   style={[styles.chip, repositioning && styles.chipOn]}
                   onPress={() => {
                     setHolding(false);
+                    onSqueezeOut();
                     setRepositioning((on) => !on);
                   }}
                 >
@@ -706,6 +820,40 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
             </View>
           ) : null}
 
+          {interaction === 'operate_extinguisher' && cur !== null ? (
+            <View style={styles.holdBox}>
+              <View style={styles.statusRow}>
+                <Text style={styles.hint}>{t('training.extinguisher.fire.label', { percent: Math.round(ext.fire * 100) })}</Text>
+                <Text style={styles.hint}>
+                  {t('training.extinguisher.left.label', { seconds: Math.max(0, Math.ceil(Number(cur.params.dischargeSec) - ext.dischargedSec)) })}
+                </Text>
+              </View>
+              {ext.outcome !== null ? (
+                <>
+                  <Text style={[styles.outcome, ext.outcome === 'extinguished' ? styles.outcomeGood : styles.outcomeBad]}>
+                    {t(`training.extinguisher.outcome.${ext.outcome}`)}
+                  </Text>
+                  <Pressable accessibilityRole="button" style={styles.done} onPress={() => finishExtinguisher(cur.index)}>
+                    <Text style={styles.doneText}>{t('training.continue.button')}</Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  {leverLocked && !pinOut ? <Text style={styles.warn}>{t('training.extinguisher.locked')}</Text> : null}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !pinOut }}
+                    onPressIn={onSqueezeIn}
+                    onPressOut={onSqueezeOut}
+                    style={[styles.holdButton, !pinOut && styles.holdButtonLocked, squeezing && styles.holdButtonActive]}
+                  >
+                    <Text style={styles.holdText}>{t('training.extinguisher.squeeze.button')}</Text>
+                  </Pressable>
+                </>
+              )}
+            </View>
+          ) : null}
+
           {interaction === 'narration' ? (
             <Pressable
               accessibilityRole="button"
@@ -768,5 +916,11 @@ const styles = StyleSheet.create({
   holdBox: { gap: space.s, backgroundColor: colors.overlay, borderRadius: 14, padding: space.m },
   holdButton: { minHeight: 72, borderRadius: 36, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' },
   holdButtonActive: { backgroundColor: '#7A1A12' },
+  holdButtonLocked: { opacity: 0.45 },
+  statusRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: space.s },
+  warn: { color: '#FFD43B', fontSize: 17, fontWeight: '800' },
+  outcome: { fontSize: 20, lineHeight: 30, fontWeight: '800' },
+  outcomeGood: { color: '#8CE99A' },
+  outcomeBad: { color: '#FF8787' },
   holdText: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
 });

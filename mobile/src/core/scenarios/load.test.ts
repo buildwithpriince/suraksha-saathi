@@ -87,6 +87,39 @@ describe('malformed scenarios are rejected', () => {
     expect(problems(s).join()).toMatch(/HAZARD_Z is not in setup.markers/);
   });
 
+  test('operate_extinguisher: agentFrom must be an earlier choose_one step (D-038)', () => {
+    const s = fireCopy();
+    const step = s.steps.find((st: Mutable) => st.id === 'extinguish');
+    step.params.agentFrom = 'escalation'; // a later decision
+    expect(problems(s).join()).toMatch(/escalation must be an earlier choose_one step/);
+    step.params.agentFrom = 'raise_alarm'; // earlier, but not a choice
+    expect(problems(s).join()).toMatch(/raise_alarm must be an earlier choose_one step/);
+  });
+
+  test('operate_extinguisher needs dischargeSec and zones', () => {
+    const s = fireCopy();
+    const step = s.steps.find((st: Mutable) => st.id === 'extinguish');
+    delete step.params.dischargeSec;
+    delete step.params.targetZone;
+    const found = problems(s).join();
+    expect(found).toMatch(/dischargeSec/);
+    expect(found).toMatch(/targetZone/);
+  });
+
+  test('PASS params on a hold rule need an operate_extinguisher step', () => {
+    const s = fireCopy();
+    const step = s.steps.find((st: Mutable) => st.id === 'extinguish');
+    step.interaction = 'aim_and_hold';
+    step.params = { targetZone: 'FireBase', offTargetZones: ['FlameTop'], durationSec: 10 };
+    expect(problems(s).join()).toMatch(/requirePinPulled and minSweeps need an operate_extinguisher step/);
+  });
+
+  test('minSweeps must be a whole number', () => {
+    const s = fireCopy();
+    s.rules.find((r: Mutable) => r.id === 'R_AIM_BASE').params.minSweeps = 1.5;
+    expect(problems(s).join()).toMatch(/minSweeps/);
+  });
+
   test('per-variant correct map missing a variant', () => {
     const s = fireCopy();
     delete s.rules.find((r: Mutable) => r.id === 'R_RIGHT_EXTINGUISHER').params.correct.ordinary;

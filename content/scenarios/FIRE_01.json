@@ -74,10 +74,15 @@
     },
     {
       "id": "extinguish",
-      "interaction": "aim_and_hold",
+      "interaction": "operate_extinguisher",
       "instructionKey": "fire01.extinguish.instruction",
       "audioKey": "fire01.extinguish.audio",
-      "params": { "targetZone": "FireBase", "offTargetZones": ["FlameTop"], "durationSec": 10 }
+      "params": {
+        "agentFrom": "pick_extinguisher",
+        "targetZone": "FireBase",
+        "offTargetZones": ["FlameTop"],
+        "dischargeSec": 12
+      }
     },
     {
       "id": "escalation",
@@ -173,7 +178,13 @@
     {
       "id": "R_AIM_BASE",
       "type": "hold",
-      "params": { "step": "extinguish", "minOnTargetSec": 4, "maxOffTargetRatio": 0.4 },
+      "params": {
+        "step": "extinguish",
+        "minOnTargetSec": 4,
+        "maxOffTargetRatio": 0.4,
+        "requirePinPulled": true,
+        "minSweeps": 2
+      },
       "points": 15,
       "critical": false,
       "feedbackKey": "fire01.rule.aim_base"

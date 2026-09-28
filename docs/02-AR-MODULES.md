@@ -68,6 +68,7 @@ instructor signs off. Code must not hard-code any of it; it lives in `content/sc
 | `tap_target` | `target` (named object in the prefab layout) |
 | `choose_one`, `choose_many`, `checklist`, `decision` | `options` (see Fields) |
 | `aim_and_hold` | `targetZone`, `offTargetZones` (list), `durationSec` (length of the hold phase) |
+| `operate_extinguisher` | `agentFrom` (an earlier `choose_one` step: the extinguisher picked there), `targetZone`, `offTargetZones` (list), `dischargeSec` (seconds of spray the extinguisher holds) |
 | `find_marker` | `marker` (must be listed in `setup.markers`) |
 | `move_to` | `anchor` (scene anchor name or marker id), `radiusM`. Optional: `showRoute` (on-screen arrow to the next waypoint), `exitBehind {marker, minAngleDeg}` (then `step_completed` carries `exitBehind: true/false`), `detector {peakReading, alertLevel, dangerLevel}` (simulated gas reading rising with proximity) |
 | `mark_zone` | `hazard` (anchor name), `trueRadiusM` (scored by `zone_accuracy`), `minCones` |
@@ -94,6 +95,7 @@ has a switch back to the original anchoring (raw rotation vector, linear 50° ma
 | `choose_one` | Tap one of N overlay objects / cards | same | `choice_made{option}` |
 | `choose_many` | Toggle cards on a rack, press Done | same | `choice_made{options[]}` |
 | `aim_and_hold` | Turn the phone so the screen-centre reticle sits on the anchored zone | Drag reticle with finger | `hold_progress{zone,onTargetSec}` per 0.25 s, `step_completed` |
+| `operate_extinguisher` | First-person extinguisher, PASS: swipe the pin off; turn the phone so the ring (the nozzle's aim) is on the fire; press and hold the lever button (spray + vibration); sweep side to side. The fire shrinks with spray on `targetZone` (twice as fast while sweeping), not at all on `offTargetZones`, and grows while not being put out. The step ends when the fire is out, out of control, the extinguisher is empty, or after 1 s of spray if the `agentFrom` pick is `forbidden` in this variant (no reduction, failure shown) | same (ring aimed by turning the phone) | `pin_pulled`, `discharge_started` / `discharge_stopped`, `hold_progress{zone,onTargetSec,aimDh}` per 0.25 s while discharging, `step_completed{extinguished,outcome}` |
 | `find_marker` | Scan the printed QR marker (`EXIT_A`, `EXIT_B`) with the camera | Tap the exit sign in the virtual room | `marker_found{marker}` |
 | `move_to` | To a marker id: walk there and scan it. To a scene anchor: tap waypoints along the drawn path (D-033) | Tap waypoints along a path | `position_reached{anchor,distanceM}` |
 | `mark_zone` | Tap the floor to place cones around the hazard (tap one to remove it), Done after `minCones` | Tap floor points | `zone_marked{radiusM}` |
@@ -106,8 +108,9 @@ printable SVGs. Any step with no progress for 30 s offers "Skip step", scored as
 ## FIRE_01 — Fire & Explosion Response
 Context: a small fire starts near waste material in a workshop / surface plant area.
 Variants: `ordinary` (paper, wood, cloth) and `oil` (oil / grease fire).
-Scenario version 2 (D-036): adds the `HAZARD_A` anchor marker; version 1 attempts are no longer
-accepted by a backend running this content.
+Scenario version 2 (D-036, D-038): adds the `HAZARD_A` anchor marker, and the extinguish step is
+an `operate_extinguisher` scored on the PASS technique; version 1 attempts are no longer accepted
+by a backend running this content.
 
 | # | Step id | Interaction | What the worker does | Notes |
 |---|---|---|---|---|
@@ -117,7 +120,7 @@ accepted by a backend running this content.
 | 4 | `find_exit` | find_marker | Finds the nearest printed EXIT marker | Anchors the escape route |
 | 5 | `pick_extinguisher` | choose_one | Chooses from: water-type, dry chemical powder (DCP), CO2 | `oil` variant: water-type is `forbidden` |
 | 6 | `approach` | move_to | Moves to the attack spot with the exit behind them | Checked: exit marker direction is behind camera forward (angle > 120°) |
-| 7 | `extinguish` | aim_and_hold | Aims at the base of the fire, holds | Aiming at flame tops counts as off-target |
+| 7 | `extinguish` | operate_extinguisher | PASS: pulls the pin, aims at the base of the fire, squeezes, sweeps side to side | Aiming at flame tops counts as off-target and does not reduce the fire; the extinguisher from step 5 is used, and a pick that is `forbidden` here (water on oil) has no effect |
 | 8 | `escalation` | decision | Fire spreads (scripted). Options: keep fighting / evacuate and alert / collect belongings | Only "evacuate and alert" is correct; "keep fighting" and "collect belongings" are `forbidden` |
 | 9 | `evacuate` | move_to | Follows AR arrows to the exit marker | Time limited |
 | 10 | `assembly` | decision | At assembly point: report to supervisor for headcount / go back inside / leave site | Only "report" is correct |
@@ -130,7 +133,7 @@ Rules (points total 100):
 | R_EXIT_FOUND | completed | step `find_exit` | 10 | no |
 | R_RIGHT_EXTINGUISHER | correct_choice | step `pick_extinguisher`, correct by variant | 15 | yes (if forbidden picked) |
 | R_EXIT_BEHIND | completed | step `approach` with `exitBehind=true` | 10 | no |
-| R_AIM_BASE | hold | step `extinguish`, onTargetSec ≥ 4, offTargetRatio ≤ 0.4 | 15 | no |
+| R_AIM_BASE | hold | step `extinguish`, onTargetSec ≥ 4, offTargetRatio ≤ 0.4, pin pulled before spraying, ≥ 2 sweeps on the base (PASS, D-038) | 15 | no |
 | R_EVACUATE_DECISION | correct_choice | step `escalation` | 15 | yes |
 | R_EVACUATE_TIME | time_limit | step `evacuate`, 60 s | 10 | no |
 | R_ASSEMBLY_REPORT | correct_choice | step `assembly` | 10 | no |

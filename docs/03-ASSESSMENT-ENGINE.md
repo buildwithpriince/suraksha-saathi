@@ -11,7 +11,11 @@ is a pure function. Same inputs, same output. No clocks, no randomness, no platf
 - `t`: seconds since attempt start (monotonic clock), 2 decimals.
 - `type`: `step_started | step_completed | step_skipped | choice_made | target_hit | hold_progress |
   marker_found | position_reached | zone_marked | forbidden_action | attempt_aborted |
-  anchor_repositioned`.
+  anchor_repositioned | pin_pulled | discharge_started | discharge_stopped`.
+- `operate_extinguisher` (D-038) records `pin_pulled` (once), `discharge_started` /
+  `discharge_stopped` for each lever press, and while discharging one `hold_progress` per 0.25 s
+  with `aimDh` (horizontal aim relative to the fire, prefab degrees, 1 decimal) as well as `zone`
+  and `onTargetSec`. Its `step_completed` carries `extinguished` and `outcome`, which no rule reads.
 - `anchor_repositioned{headingDeg, elevationDeg}` (D-036) records that the worker re-placed a
   drifted overlay. It is neutral: no rule reads it, and adding it anywhere leaves the result unchanged.
 - Events are append-only. The player writes them; the engine only reads them.
@@ -24,7 +28,7 @@ is a pure function. Same inputs, same output. No clocks, no randomness, no platf
 | `time_limit` | `step`, `seconds` | full if completed within `seconds` of its `step_started` |
 | `correct_choice` | `step`, `correct` (list or per-variant map), `partial` (bool) | single: full if first choice in `correct`. `partial`: `points × max(0, rightPicked − wrongPicked) / correct.count`, rounded down. Multi-select steps (`choose_many`, `checklist`) without `partial`: full only if the picked set equals `correct` (D-017) |
 | `no_forbidden` | `tag` | full if no `forbidden_action` with that tag |
-| `hold` | `step`, `minOnTargetSec`, `maxOffTargetRatio` | full if both met; half if only on-target met; else 0. Each `hold_progress` in the step is one 0.25 s sample: `zone` is the zone under the reticle (`"none"` if none) and `onTargetSec` is cumulative. onTarget = the largest `onTargetSec` in the step; offTargetRatio = samples whose `zone` is in the step's `offTargetZones` / all samples in the step (D-028) |
+| `hold` | `step` (`aim_and_hold` or `operate_extinguisher`), `minOnTargetSec`, `maxOffTargetRatio`; for `operate_extinguisher` only, optional PASS checks `requirePinPulled` (bool) and `minSweeps` (int) | full if all checks are met; half if on-target is met but any other check is not; else 0. Each `hold_progress` in the step is one 0.25 s sample: `zone` is the zone under the reticle (`"none"` if none) and `onTargetSec` is cumulative. onTarget = the largest `onTargetSec` in the step; offTargetRatio = samples whose `zone` is in the step's `offTargetZones` / all samples in the step (D-028). `requirePinPulled`: a `pin_pulled` in the step comes before its first `hold_progress` in the sorted log. `minSweeps`: side-to-side reversals in the `aimDh` of the samples on `targetZone`, in order; a reversal counts once the aim has swung ≥ 4° from the furthest point in the other direction (`core/assessment/sweeps.ts`, D-038) |
 | `zone_accuracy` | `step`, `toleranceM` (true radius = the step's `trueRadiusM` after `$` variant substitution) | full if abs error ≤ tol; half if ≤ 2×tol; else 0 |
 
 Critical rules:
@@ -88,3 +92,6 @@ Per-rule `passed`: for a critical rule, false only on a critical failure; for an
 11. Events out of chronological order in list -> engine sorts by `t` stably before evaluating
 12. Same inputs twice -> byte-identical serialized result (determinism)
 13. `attempt_aborted` -> passed=false
+14. FIRE_01 PASS (D-038): pin, base, sweeps -> R_AIM_BASE full; static aim or pin missing / after
+    spraying -> half; flame tops only or under `minOnTargetSec` -> 0
+15. `anchor_repositioned`, `discharge_started`, `discharge_stopped` anywhere -> result unchanged

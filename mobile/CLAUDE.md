@@ -74,6 +74,7 @@ files); never hand-edit it.
 | `place_on_plane` | Tap the floor in the camera view; the prefab overlay is placed there and anchored |
 | `tap_target`, `choose_one`, `choose_many`, `checklist`, `decision`, `narration` | Tap overlay objects / cards; `choose_many` and `checklist` toggle cards, then Done |
 | `aim_and_hold` | Turn the phone so the screen-centre reticle is on the anchored zone; `hold_progress` sample every 0.25 s |
+| `operate_extinguisher` | First-person extinguisher (`training/interactions/Extinguisher.tsx`), PASS: swipe the pin off, aim the centre ring at the base, hold the lever button, sweep; fire simulation in `core/player/extinguisher.ts`, vibration via `training/dischargeFeedback.ts` (the place to add a spray sound later); scored by the `hold` rule's PASS checks (D-038) |
 | `find_marker` | Scan the printed QR marker (`EXIT_A`, `EXIT_B`) with `expo-camera` |
 | `move_to` to a marker id | Walk to the printed marker and scan it |
 | `move_to` to a scene anchor | Tap waypoints along the drawn path (any mark not yet reached counts; the next one is pinned on screen, D-033); detector reading rises with path progress; `showRoute` points at the next waypoint |

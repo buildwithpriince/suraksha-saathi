@@ -15,6 +15,10 @@ export const EVENT_TYPES = [
   'attempt_aborted',
   // Neutral: the worker re-placed the drifted overlay (D-036). No rule reads it.
   'anchor_repositioned',
+  // operate_extinguisher gestures (D-038): PASS "Pull", and the "Squeeze" lever pressed / released
+  'pin_pulled',
+  'discharge_started',
+  'discharge_stopped',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 

@@ -15,8 +15,8 @@ fire01.pick_extinguisher.option.dcp,Dry chemical powder (DCP) extinguisher,स�
 fire01.pick_extinguisher.option.co2,CO2 extinguisher,CO2 अग्निशामक,CO2 बुझाव जिनिस,true,option label
 fire01.approach.instruction,Move closer with the exit behind you.,निकास को पीछे रखते हुए पास जाएँ।,ओडोक् होर आम तायोम रे दोहो काते सोर सेनोःमे।,true,step caption
 fire01.approach.audio,Walk toward the fire. Keep the exit behind you.,आग की ओर बढ़ें। निकास को अपने पीछे रखें।,सेंगेल सेच् सेनोःमे। ओडोक् होर आम तायोम रे दोहोयमे।,true,narration script
-fire01.extinguish.instruction,Aim at the base of the fire and hold.,आग की जड़ पर निशाना लगाएँ और दबाकर रखें।,सेंगेल रेयाः रेहेद् रे निसाना दोहो काते सापाःमे।,true,step caption
-fire01.extinguish.audio,"Aim at the base of the fire, not the flame tops. Hold steady.","आग की जड़ पर निशाना लगाएँ, लपटों के ऊपर नहीं। हाथ स्थिर रखें।","सेंगेल रेयाः रेहेद् रे निसाना दोहोयमे, जाला चेतान रे बाङ। ती थिर ते दोहोयमे।",true,narration script
+fire01.extinguish.instruction,"Put out the fire: Pull the pin, Aim at the base, Squeeze, Sweep.","आग बुझाएँ: पिन खींचें, जड़ पर निशाना लगाएँ, लीवर दबाएँ, दाएँ-बाएँ घुमाएँ।",,true,step caption (PASS; D-038)
+fire01.extinguish.audio,"Pull the pin. Aim the nozzle at the base of the fire, not the flame tops. Squeeze the lever and sweep from side to side.","पिन खींचें। नोज़ल को आग की जड़ पर रखें, लपटों के ऊपर नहीं। लीवर दबाएँ और दाएँ-बाएँ घुमाते रहें।",,true,narration script (PASS; D-038)
 fire01.escalation.instruction,The fire is spreading. What do you do?,आग फैल रही है। आप क्या करेंगे?,सेंगेल पासनावोः काना। आम चेद् बेनावाम?,true,step caption
 fire01.escalation.audio,The fire is spreading. What do you do now?,आग फैल रही है। अब आप क्या करेंगे?,सेंगेल पासनावोः काना। नितोः आम चेद् बेनावाम?,true,narration script
 fire01.escalation.option.keep_fighting,Keep fighting the fire,आग से लड़ते रहें,सेंगेल सांव लोड़ाय चालावमे,true,option label
@@ -34,7 +34,7 @@ fire01.rule.alarm_fast,Raise the alarm quickly.,जल्दी अलार्�
 fire01.rule.exit_found,Find the nearest exit.,सबसे पास का निकास ढूँढें।,सानाम खोन सोर ओडोक् होर पानतेयमे।,true,rule feedback
 fire01.rule.right_extinguisher,Use the right extinguisher. Never use water on an oil fire.,सही अग्निशामक इस्तेमाल करें। तेल की आग पर कभी पानी न डालें।,थिक बुझाव जिनिस बेबहारमे। सुनुम सेंगेल रे जाहाँ ओकतोहों दाः आलोम ढालाया।,true,rule feedback
 fire01.rule.exit_behind,Keep the exit behind you while you fight a fire.,आग बुझाते समय निकास को अपने पीछे रखें।,सेंगेल बुझाव जोखेच् ओडोक् होर आम तायोम रे दोहोयमे।,true,rule feedback
-fire01.rule.aim_base,Aim at the base of the fire.,आग की जड़ पर निशाना लगाएँ।,सेंगेल रेयाः रेहेद् रे निसाना दोहोयमे।,true,rule feedback
+fire01.rule.aim_base,"Pull the pin first, aim at the base of the fire and sweep side to side.","पहले पिन खींचें, आग की जड़ पर निशाना लगाएँ और दाएँ-बाएँ घुमाएँ।",,true,rule feedback (PASS; D-038)
 fire01.rule.evacuate_decision,"If the fire spreads, evacuate and alert others.",आग फैले तो बाहर निकलें और दूसरों को सावधान करें।,सेंगेल पासनावोः खान बाहरे ओडोक्मे आर एटाः होड़को खोबोर एमाकोमे।,true,rule feedback
 fire01.rule.evacuate_time,Evacuate quickly along the marked route.,तय रास्ते से जल्दी बाहर निकलें।,चिन्हा होर ते जोलदी बाहरे ओडोक्मे।,true,rule feedback
 fire01.rule.assembly_report,Report to your supervisor at the assembly point.,असेंबली पॉइंट पर अपने सुपरवाइज़र को रिपोर्ट करें।,जारवा ठाँव रे आमाः सुपरवाइज़र के लायमे।,true,rule feedback

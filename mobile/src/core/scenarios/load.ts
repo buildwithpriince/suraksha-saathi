@@ -4,6 +4,7 @@
  * played: loadScenario throws ScenarioError listing every problem.
  */
 import {
+  HOLD_INTERACTIONS,
   INTERACTION_TYPES,
   MULTI_SELECT,
   RULE_TYPES,
@@ -164,6 +165,14 @@ function checkSteps(c: Checker, value: unknown, variants: Variant[], variantIds:
     if (params === null || !INTERACTION_TYPES.includes(interaction)) return;
 
     const step: Step = s as unknown as Step;
+    // operate_extinguisher reads the extinguisher chosen in an earlier single-choice step (D-038)
+    if (interaction === 'operate_extinguisher') {
+      const from = c.string(params, 'agentFrom', `${path}.params`);
+      const source = steps.get(from);
+      if (from !== '' && (source === undefined || source.interaction !== 'choose_one')) {
+        c.fail(`${path}.params.agentFrom`, `${from} must be an earlier choose_one step`);
+      }
+    }
     steps.set(id, step);
     for (const variant of variants) {
       if (runsIn !== undefined && !runsIn.includes(variant.id)) continue;
@@ -218,6 +227,12 @@ function checkParams(c: Checker, type: InteractionType, p: Obj, path: string, ma
       c.string(p, 'targetZone', path);
       c.strings(p, 'offTargetZones', path);
       c.number(p, 'durationSec', path, { min: 0.25 });
+      return;
+    case 'operate_extinguisher':
+      // agentFrom is checked against the earlier steps in checkSteps
+      c.string(p, 'targetZone', path);
+      c.strings(p, 'offTargetZones', path);
+      c.number(p, 'dischargeSec', path, { min: 1 });
       return;
     case 'find_marker': {
       const marker = c.string(p, 'marker', path);
@@ -346,11 +361,18 @@ function checkRules(c: Checker, value: unknown, steps: Map<string, Step>, varian
         if (tag !== '' && !forbiddenTags.has(tag)) c.fail(`${path}.params.tag`, `no forbidden option has tag ${tag}`);
         break;
       }
-      case 'hold':
-        stepRef('step', ['aim_and_hold']);
+      case 'hold': {
+        const step = stepRef('step', HOLD_INTERACTIONS);
         c.number(params, 'minOnTargetSec', `${path}.params`, { min: 0 });
         c.number(params, 'maxOffTargetRatio', `${path}.params`, { min: 0, max: 1 });
+        // PASS sub-steps (D-038): only an operate_extinguisher step records a pin and an aim
+        const pullPin = c.bool(params, 'requirePinPulled', `${path}.params`, true);
+        if (params.minSweeps !== undefined) c.number(params, 'minSweeps', `${path}.params`, { min: 0, integer: true });
+        if ((pullPin !== undefined || params.minSweeps !== undefined) && step !== undefined && step.interaction !== 'operate_extinguisher') {
+          c.fail(`${path}.params`, 'requirePinPulled and minSweeps need an operate_extinguisher step');
+        }
         break;
+      }
       case 'zone_accuracy':
         stepRef('step', ['mark_zone']);
         c.number(params, 'toleranceM', `${path}.params`, { min: 0.01 });

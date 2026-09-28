@@ -8,8 +8,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { buildAttemptResult } from '@/core/assessment/result';
 import type { AttemptMode } from '@/core/assessment/types';
-import { isBehind, type Direction } from '@/core/orientation';
-import { FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, type Band } from '@/core/player/layout';
+import { isBehind, unproject, vectorToDirection, type Direction } from '@/core/orientation';
+import { FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, focalLengthPx, pxPerDegAt, type Band } from '@/core/player/layout';
+import { MARKER_LOCK_FRESH_SEC, applySighting, sightingFrom } from '@/core/player/marker';
 import { PREFABS, VIRTUAL_MARKER_OFFSET, offsetFrom, zoneAt, type Offset, type Prefab } from '@/core/player/prefabs';
 import { HOLD_SAMPLE_SEC, SKIP_OFFER_AFTER_SEC, ScenarioSession, type CurrentStep } from '@/core/player/session';
 import { tapWaypoint } from '@/core/player/waypoints';
@@ -23,6 +24,7 @@ import { randomBytes } from '@/platform/random';
 import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
+import { getAnchoringMode } from './anchoringSetting';
 import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
 import { useCameraDirection } from './useCameraDirection';
 
@@ -60,12 +62,47 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   const { t } = useTranslation();
   const router = useRouter();
   const { width, height } = useWindowDimensions();
-  const geometry: ScreenGeometry = useMemo(() => ({ cx: width / 2, cy: height / 2, pxPerDeg: width / PREVIEW_HFOV_DEG }), [width, height]);
-  const camera = useCameraDirection();
+  // Settings "AR anchoring" (D-036), read once per attempt so it can't change mid-drill
+  const [anchoringMode] = useState(getAnchoringMode);
+  const pinhole = anchoringMode === 'stabilised';
+  const geometry: ScreenGeometry = useMemo(
+    () => ({
+      cx: width / 2,
+      cy: height / 2,
+      pxPerDeg: pinhole ? pxPerDegAt(width, height) : width / PREVIEW_HFOV_DEG,
+      focalPx: focalLengthPx(width, height),
+      pinhole,
+    }),
+    [width, height, pinhole],
+  );
+  const camera = useCameraDirection(anchoringMode);
+  const cameraValues = useMemo(() => ({ direction: camera.direction, orientation: camera.orientation }), [camera.direction, camera.orientation]);
   const anchor = useSharedValue<Direction | null>(null);
+  // Marker scale of the placed overlay: 1 until a printed anchor marker says otherwise (D-036)
+  const anchorScale = useSharedValue(1);
+  const anchorValues = useMemo(() => ({ anchor, scale: anchorScale }), [anchor, anchorScale]);
   // The same anchor for the JS thread: render and handlers read this, worklets read `anchor`
   // (Reanimated warns when a shared value is read during render)
   const placedAnchor = useRef<Direction | null>(null);
+  const placedScale = useRef(1);
+  /** Apparent size of the anchor marker that means scale 1; null until it is first seen. */
+  const markerRefSize = useRef<number | null>(null);
+  const lastMarkerFix = useRef(-Infinity);
+  const [markerLocked, setMarkerLocked] = useState(false);
+  const [repositioning, setRepositioning] = useState(false);
+
+  const setAnchor = (placed: Direction, scale: number) => {
+    anchor.set(placed);
+    anchorScale.set(scale);
+    placedAnchor.current = placed;
+    placedScale.current = scale;
+  };
+
+  /** A direction relative to the placed anchor, in the prefab's own (unscaled) degrees. */
+  const prefabOffset = (d: Direction): Offset => {
+    const o = offsetFrom(placedAnchor.current!, d);
+    return { dh: o.dh / placedScale.current, de: o.de / placedScale.current };
+  };
   const fireLevel = useSharedValue(1);
   const gasLevel = useSharedValue(0);
 
@@ -82,6 +119,11 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     const place = scenario.steps.find((s) => s.interaction === 'place_on_plane');
     return PREFABS[String(place?.params.prefab)] ?? EMPTY_PREFAB;
   }, [scenario]);
+  // Printed marker that pins the placed overlay while in view (D-036); camera mode, new anchoring only
+  const anchorMarker = useMemo(() => {
+    const marker = scenario.steps.find((s) => s.interaction === 'place_on_plane')?.params.anchorMarker;
+    return mode === 'ar' && pinhole && typeof marker === 'string' ? marker : null;
+  }, [scenario, mode, pinhole]);
   const markers = scenario.setup.markers;
   const exitHeading = useRef<number | null>(null);
   const handledScan = useRef(-1);
@@ -112,6 +154,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     setHolding(false);
     setPicked([]);
     setCones([]);
+    setRepositioning(false);
     progressed();
     const effect = prefab.stepEffects?.[cur.step.id];
     if (effect?.fireLevel !== undefined) fireLevel.value = withTiming(effect.fireLevel, { duration: 1500 });
@@ -145,13 +188,19 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     return () => clearInterval(id);
   }, [stepIndex, cur?.step.timeLimitSec]);
 
+  // The "locked to marker" badge goes out once sightings stop (marker out of frame)
+  useEffect(() => {
+    if (anchorMarker === null) return;
+    const id = setInterval(() => setMarkerLocked(performance.now() - lastMarkerFix.current < MARKER_LOCK_FRESH_SEC * 1000), 300);
+    return () => clearInterval(id);
+  }, [anchorMarker]);
+
   // aim_and_hold: one sample per 0.25 s while the spray button is held
   useEffect(() => {
     if (!holding || cur?.step.interaction !== 'aim_and_hold') return;
     const index = cur.index;
     const id = setInterval(() => {
-      const a = placedAnchor.current;
-      const zone = a === null ? 'none' : zoneAt(prefab, offsetFrom(a, camera.read()));
+      const zone = placedAnchor.current === null ? 'none' : zoneAt(prefab, prefabOffset(camera.read()));
       setHeld(session.holdSample(zone));
       if (session.current()?.index !== index) {
         setHolding(false);
@@ -208,7 +257,38 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     return null;
   };
 
+  /**
+   * The anchor marker is in view (D-036): pull the overlay onto it and scale it by the marker's
+   * apparent size. During the placement step, seeing the marker places the overlay there.
+   */
+  const onAnchorMarker = (scan: BarcodeScanningResult) => {
+    const c = session.current();
+    if (c === null || repositioning) return;
+    const placing = c.step.interaction === 'place_on_plane';
+    if (!placing && placedAnchor.current === null) return; // not placed yet (e.g. during the brief)
+    const sighting = sightingFrom(scan.cornerPoints);
+    if (sighting === null) return;
+    const fix = applySighting(sighting, geometry, camera.readOrientation(), camera.readSpeed(), {
+      anchor: placing ? null : placedAnchor.current,
+      scale: placedScale.current,
+      refSizePx: placing ? null : markerRefSize.current,
+    });
+    if (fix === null) return;
+    setAnchor(fix.anchor, fix.scale);
+    markerRefSize.current = fix.refSizePx;
+    lastMarkerFix.current = performance.now();
+    setMarkerLocked(true);
+    if (placing) {
+      session.complete({ headingDeg: round1(fix.anchor.headingDeg), elevationDeg: round1(fix.anchor.elevationDeg), anchorMarker: scan.data });
+      refresh();
+    }
+  };
+
   const onScan = (scan: BarcodeScanningResult) => {
+    if (anchorMarker !== null && scan.data === anchorMarker) {
+      onAnchorMarker(scan);
+      return;
+    }
     const c = session.current();
     const marker = wantedMarker(c);
     if (c === null || marker === null || scan.data !== marker || handledScan.current === c.index) return;
@@ -216,12 +296,15 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     markerReached(c, marker);
   };
 
-  /** The world direction under a screen tap. */
+  /** The world direction under a screen tap: the inverse of the overlay projection. */
   const tapDirection = (e: GestureResponderEvent): Direction => {
+    const dx = e.nativeEvent.locationX - geometry.cx;
+    const dy = e.nativeEvent.locationY - geometry.cy;
+    if (geometry.pinhole) return vectorToDirection(unproject(dx, dy, camera.readOrientation(), geometry.focalPx));
     const cam = camera.read();
     return {
-      headingDeg: (cam.headingDeg + (e.nativeEvent.locationX - geometry.cx) / geometry.pxPerDeg + 360) % 360,
-      elevationDeg: cam.elevationDeg - (e.nativeEvent.locationY - geometry.cy) / geometry.pxPerDeg,
+      headingDeg: (cam.headingDeg + dx / geometry.pxPerDeg + 360) % 360,
+      elevationDeg: cam.elevationDeg - dy / geometry.pxPerDeg,
     };
   };
 
@@ -229,16 +312,29 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     const c = session.current();
     if (c?.step.interaction !== 'place_on_plane') return;
     const placed = tapDirection(e);
-    anchor.set(placed);
-    placedAnchor.current = placed;
+    setAnchor(placed, 1);
+    markerRefSize.current = null;
     session.complete({ headingDeg: round1(placed.headingDeg), elevationDeg: round1(placed.elevationDeg) });
     refresh();
   };
 
+  /**
+   * "Reposition" (D-036): the worker taps where the overlay should be because it drifted. Recorded
+   * as `anchor_repositioned`, which scoring ignores. A marker in view takes over again afterwards.
+   */
+  const onReposition = (e: GestureResponderEvent) => {
+    if (!repositioning || session.current() === null) return;
+    const placed = tapDirection(e);
+    setAnchor(placed, 1);
+    markerRefSize.current = null;
+    session.reposition(placed.headingDeg, placed.elevationDeg);
+    setRepositioning(false);
+    refresh();
+  };
+
   const onCone = (e: GestureResponderEvent) => {
-    const a = placedAnchor.current;
-    if (session.current()?.step.interaction !== 'mark_zone' || a === null) return;
-    const at = offsetFrom(a, tapDirection(e));
+    if (session.current()?.step.interaction !== 'mark_zone' || placedAnchor.current === null) return;
+    const at = prefabOffset(tapDirection(e));
     nextConeId.current += 1;
     setCones((placed) => [...placed, { id: nextConeId.current, at }]);
     progressed();
@@ -295,9 +391,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     if (c?.index !== index) return;
     if (c.step.interaction === 'place_on_plane' && placedAnchor.current === null) {
       // Placement isn't scored, but later steps need the overlay: put it where the camera points
-      const placed = camera.read();
-      anchor.set(placed);
-      placedAnchor.current = placed;
+      setAnchor(camera.read(), 1);
     }
     if (__DEV__) console.log(`[training] step ${c.step.id} skipped after no progress: scored as failed`);
     session.skip();
@@ -305,6 +399,8 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   };
 
   const interaction = cur?.step.interaction;
+  // Once placed, the worker can re-place a drifted overlay in any later step (D-036)
+  const canReposition = cur !== null && interaction !== 'place_on_plane' && placedAnchor.current !== null;
   const scanning = mode === 'ar' && wantedMarker(cur) !== null;
   const path = interaction === 'move_to' && cur !== null ? prefab.paths[String(cur.params.anchor)] : undefined;
   const tapTarget = interaction === 'tap_target' ? String(cur?.params.target) : null;
@@ -346,12 +442,14 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     if (wantedMarker(cur) !== null) return exitHeadingNow();
     const a = placedAnchor.current;
     const next = path?.[waypoint];
-    return a === null || next === undefined ? null : (a.headingDeg + next.dh + 360) % 360;
+    return a === null || next === undefined ? null : (a.headingDeg + next.dh * placedScale.current + 360) % 360;
   };
   const route = routeHeading();
 
   const hint = (() => {
     if (cur === null) return null;
+    if (repositioning) return t('training.reposition.hint');
+    if (interaction === 'place_on_plane' && anchorMarker !== null) return t('training.hint.anchor_marker');
     if (wantedMarker(cur) !== null) return t(mode === 'ar' ? 'training.hint.scan_marker' : 'training.hint.tap_marker');
     if (path !== undefined) return t('training.hint.waypoints');
     if (interaction === 'aim_and_hold') return t('training.hint.hold');
@@ -369,7 +467,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
           style={StyleSheet.absoluteFill}
           facing="back"
           barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-          onBarcodeScanned={scanning ? onScan : undefined}
+          onBarcodeScanned={scanning || anchorMarker !== null ? onScan : undefined}
         />
       ) : (
         <View style={[StyleSheet.absoluteFill, styles.tabletop]} />
@@ -381,13 +479,13 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       ) : null}
 
       {prefab.objects.Fire !== undefined ? (
-        <Anchored anchor={anchor} offset={prefab.objects.Fire} direction={camera.direction} geometry={geometry} width={fireSize} height={fireSize}>
+        <Anchored anchor={anchorValues} offset={prefab.objects.Fire} camera={cameraValues} geometry={geometry} width={fireSize} height={fireSize} scaled>
           <Fire size={fireSize} level={fireLevel} />
         </Anchored>
       ) : null}
 
       {cloudAt !== undefined ? (
-        <Anchored anchor={anchor} offset={cloudAt} direction={camera.direction} geometry={geometry} width={cloudSize} height={cloudSize}>
+        <Anchored anchor={anchorValues} offset={cloudAt} camera={cameraValues} geometry={geometry} width={cloudSize} height={cloudSize} scaled>
           <GasCloud size={cloudSize} level={gasLevel} />
         </Anchored>
       ) : null}
@@ -397,9 +495,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
         .map(([name, labelKey]) => (
           <Anchored
             key={name}
-            anchor={anchor}
+            anchor={anchorValues}
             offset={prefab.objects[name]!}
-            direction={camera.direction}
+            camera={cameraValues}
             geometry={geometry}
             width={LABEL_BOX_PX.width}
             height={LABEL_BOX_PX.height}
@@ -422,9 +520,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
 
       {mode === 'tabletop' && wantedMarker(cur) !== null ? (
         <Anchored
-          anchor={anchor}
+          anchor={anchorValues}
           offset={VIRTUAL_MARKER_OFFSET}
-          direction={camera.direction}
+          camera={cameraValues}
           geometry={geometry}
           width={LABEL_BOX_PX.width}
           height={LABEL_BOX_PX.height}
@@ -446,9 +544,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       {path?.map((offset, i) => (
         <Anchored
           key={`${stepIndex}-${i}`}
-          anchor={anchor}
+          anchor={anchorValues}
           offset={offset}
-          direction={camera.direction}
+          camera={cameraValues}
           geometry={geometry}
           width={WAYPOINT_PX}
           height={WAYPOINT_PX}
@@ -460,7 +558,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       ))}
 
       {cones.map((cone) => (
-        <Anchored key={cone.id} anchor={anchor} offset={cone.at} direction={camera.direction} geometry={geometry} width={72} height={72}>
+        <Anchored key={cone.id} anchor={anchorValues} offset={cone.at} camera={cameraValues} geometry={geometry} width={72} height={72}>
           <Cone
             reading={coneReading(cone.at)}
             removeLabel={t('training.cone.remove')}
@@ -474,12 +572,17 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
 
       {interaction === 'aim_and_hold' ? <Reticle geometry={geometry} /> : null}
 
+      {repositioning ? (
+        <Pressable style={StyleSheet.absoluteFill} accessibilityLabel={t('training.reposition.hint')} onPress={onReposition} />
+      ) : null}
+
       <SafeAreaView style={styles.chrome} pointerEvents="box-none">
         {cur !== null ? (
           <View style={styles.card} onLayout={(e) => setCardBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
             {mode === 'tabletop' ? <Text style={styles.mode}>{t('training.tabletop.label')}</Text> : null}
             <Text style={styles.instruction}>{t(cur.step.instructionKey)}</Text>
             {hint !== null ? <Text style={styles.hint}>{hint}</Text> : null}
+            {markerLocked ? <Text style={styles.locked}>📍 {t('training.marker.locked')}</Text> : null}
             {detector !== undefined && path !== undefined ? (
               <Text style={styles.hint}>{t('training.detector.label', { reading: Math.round((detector.peakReading * waypoint) / path.length) })}</Text>
             ) : null}
@@ -487,6 +590,18 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
               <Pressable accessibilityRole="button" style={styles.chip} onPress={() => speakKey(cur.step.audioKey)}>
                 <Text style={styles.chipText}>🔊 {t('training.replay.button')}</Text>
               </Pressable>
+              {canReposition ? (
+                <Pressable
+                  accessibilityRole="button"
+                  style={[styles.chip, repositioning && styles.chipOn]}
+                  onPress={() => {
+                    setHolding(false);
+                    setRepositioning((on) => !on);
+                  }}
+                >
+                  <Text style={styles.chipText}>{t(repositioning ? 'training.reposition.cancel' : 'training.reposition.button')}</Text>
+                </Pressable>
+              ) : null}
               {remaining !== null ? <Text style={styles.timer}>{t('training.time_left.label', { seconds: remaining })}</Text> : null}
               <Pressable
                 accessibilityRole="button"
@@ -618,8 +733,10 @@ const styles = StyleSheet.create({
   mode: { color: '#FFD43B', fontSize: 14, fontWeight: '700' },
   instruction: { color: '#FFFFFF', fontSize: 20, lineHeight: 30, fontWeight: '700' },
   hint: { color: '#E4E7EB', fontSize: 16, lineHeight: 24 },
-  cardRow: { flexDirection: 'row', alignItems: 'center', gap: space.s },
+  cardRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s },
   chip: { minHeight: 44, paddingHorizontal: space.m, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center' },
+  chipOn: { backgroundColor: 'rgba(255,212,59,0.45)' },
+  locked: { color: '#8CE99A', fontSize: 15, fontWeight: '700' },
   stop: { marginLeft: 'auto', backgroundColor: 'rgba(180,35,24,0.85)' },
   chipText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   timer: { color: '#FFD43B', fontSize: 18, fontWeight: '800' },

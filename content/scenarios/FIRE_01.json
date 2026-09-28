@@ -1,13 +1,13 @@
 {
   "id": "FIRE_01",
-  "version": 1,
+  "version": 2,
   "domain": "fire_explosion",
   "titleKey": "fire01.title",
   "needsReview": true,
   "passThresholdPercent": 70,
   "validityDays": 365,
   "timeLimitSec": 420,
-  "setup": { "requiresPlane": true, "markers": ["EXIT_A"] },
+  "setup": { "requiresPlane": true, "markers": ["EXIT_A", "HAZARD_A"] },
   "variants": [
     { "id": "ordinary", "params": { "fireType": "ordinary_combustibles" } },
     { "id": "oil", "params": { "fireType": "oil" } }
@@ -25,7 +25,7 @@
       "interaction": "place_on_plane",
       "instructionKey": "fire01.place_fire.instruction",
       "audioKey": "fire01.place_fire.audio",
-      "params": { "prefab": "WorkshopFire", "fireType": "$fireType" }
+      "params": { "prefab": "WorkshopFire", "fireType": "$fireType", "anchorMarker": "HAZARD_A" }
     },
     {
       "id": "raise_alarm",

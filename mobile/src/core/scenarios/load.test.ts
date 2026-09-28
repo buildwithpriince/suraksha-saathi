@@ -81,6 +81,12 @@ describe('malformed scenarios are rejected', () => {
     expect(problems(s).join()).toMatch(/EXIT_Z is not in setup.markers/);
   });
 
+  test('place_on_plane anchorMarker not listed in setup.markers (D-036)', () => {
+    const s = fireCopy();
+    s.steps.find((st: Mutable) => st.id === 'place_fire').params.anchorMarker = 'HAZARD_Z';
+    expect(problems(s).join()).toMatch(/HAZARD_Z is not in setup.markers/);
+  });
+
   test('per-variant correct map missing a variant', () => {
     const s = fireCopy();
     delete s.rules.find((r: Mutable) => r.id === 'R_RIGHT_EXTINGUISHER').params.correct.ordinary;

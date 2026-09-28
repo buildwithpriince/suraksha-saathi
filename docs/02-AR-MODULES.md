@@ -64,7 +64,7 @@ instructor signs off. Code must not hard-code any of it; it lives in `content/sc
 | Type | `params` |
 |---|---|
 | `narration` | none |
-| `place_on_plane` | `prefab` (prefab layout name in `mobile/src/core/player/prefabs.ts`); any other keys are passed to the prefab (e.g. `fireType`) |
+| `place_on_plane` | `prefab` (prefab layout name in `mobile/src/core/player/prefabs.ts`); optional `anchorMarker` (a marker id from `setup.markers`: while the camera sees it, the placed overlay is pinned to it, D-036); any other keys are passed to the prefab (e.g. `fireType`) |
 | `tap_target` | `target` (named object in the prefab layout) |
 | `choose_one`, `choose_many`, `checklist`, `decision` | `options` (see Fields) |
 | `aim_and_hold` | `targetZone`, `offTargetZones` (list), `durationSec` (length of the hold phase) |
@@ -77,10 +77,19 @@ There is no plane detection and no position tracking (D-027). Overlays hold a fi
 the phone rotates (3DoF, from device orientation), so steps that need the worker to walk use
 printed QR markers or tapped waypoints rather than tracked movement.
 
+Anchoring (D-036): orientation comes from a gyroscope + rotation-vector complementary filter, and
+overlays are drawn with a pinhole projection that matches the cropped camera preview. If the
+placement step names an `anchorMarker` and the camera sees that printed marker, the overlay is
+pinned to it and scaled by its apparent size (this is the only correction for walking); out of
+frame, sensor anchoring continues from the last correction. After placement the worker can tap
+**Reposition** and then the floor to re-place a drifted overlay: the player records
+`anchor_repositioned{headingDeg, elevationDeg}` in the current step, and no rule reads it. Settings
+has a switch back to the original anchoring (raw rotation vector, linear 50° mapping, no marker).
+
 | Type | Camera mode (`ar`) | Tabletop mode | Events emitted |
 |---|---|---|---|
 | `narration` | Audio + caption, auto-advance | same | `step_started`, `step_completed` |
-| `place_on_plane` | Tap the floor in the camera view; the prefab overlay is anchored there | Auto-placed at room centre | `step_completed{position}` |
+| `place_on_plane` | Tap the floor in the camera view, or point the camera at the `anchorMarker` if the step has one; the prefab overlay is anchored there | Auto-placed at room centre | `step_completed{position}` (plus `anchorMarker` when placed by the marker) |
 | `tap_target` | Tap a named object in the overlay | same | `target_hit{target}` |
 | `choose_one` | Tap one of N overlay objects / cards | same | `choice_made{option}` |
 | `choose_many` | Toggle cards on a rack, press Done | same | `choice_made{options[]}` |
@@ -97,11 +106,13 @@ printable SVGs. Any step with no progress for 30 s offers "Skip step", scored as
 ## FIRE_01 — Fire & Explosion Response
 Context: a small fire starts near waste material in a workshop / surface plant area.
 Variants: `ordinary` (paper, wood, cloth) and `oil` (oil / grease fire).
+Scenario version 2 (D-036): adds the `HAZARD_A` anchor marker; version 1 attempts are no longer
+accepted by a backend running this content.
 
 | # | Step id | Interaction | What the worker does | Notes |
 |---|---|---|---|---|
 | 1 | `brief` | narration | Hears the situation | Not scored |
-| 2 | `place_fire` | place_on_plane | Places the fire on the real floor | Setup, not scored |
+| 2 | `place_fire` | place_on_plane | Places the fire on the real floor (tap, or point at the printed `HAZARD_A`) | Setup, not scored; `anchorMarker: HAZARD_A` |
 | 3 | `raise_alarm` | tap_target | Raises the alarm (call point / shouts "Fire") | Must happen before fighting |
 | 4 | `find_exit` | find_marker | Finds the nearest printed EXIT marker | Anchors the escape route |
 | 5 | `pick_extinguisher` | choose_one | Chooses from: water-type, dry chemical powder (DCP), CO2 | `oil` variant: water-type is `forbidden` |
@@ -157,7 +168,9 @@ Rules (points total 100):
 | R_REPORT | correct_choice | step `report` | 10 | no |
 
 ## Markers
-- `EXIT_A`, `EXIT_B`: A5 printed, physical width 0.15 m, stored in `Assets/_Project/Markers/`.
+- `EXIT_A`, `EXIT_B`: A5 printed, physical width 0.15 m, generated into `mobile/assets/markers/`.
+- `HAZARD_A` ("FIRE HERE"): A4 printed, 0.18 m, laid flat on the floor where the FIRE_01 fire
+  should be; FIRE_01's `anchorMarker` (D-036). Optional: without it the fire is placed by tapping.
 - Demo setup: tape `EXIT_A` beside a real door at chest height (see `docs/09-DEMO-SCRIPT.md`).
 
 ## Roadmap domains (content only, not built)

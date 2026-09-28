@@ -1,6 +1,20 @@
 import { describe, expect, test } from 'vitest';
 
-import { angleDiff, cameraDirection, fromReanimatedRotation, isBehind, screenOffset, type Quaternion } from './orientation';
+import {
+  angleDiff,
+  cameraDirection,
+  directionToVector,
+  fromReanimatedRotation,
+  isBehind,
+  project,
+  quatFromRotationVector,
+  rotationVectorOf,
+  screenOffset,
+  unproject,
+  uprightRotationDeg,
+  vectorToDirection,
+  type Quaternion,
+} from './orientation';
 
 /** Rotation of `deg` degrees about a unit axis. */
 function rotation(axis: [number, number, number], deg: number): Quaternion {
@@ -73,5 +87,82 @@ describe('angles', () => {
     expect(isBehind(0, 200, 120)).toBe(true);
     expect(isBehind(0, 90, 120)).toBe(false);
     expect(isBehind(350, 10, 120)).toBe(false);
+  });
+});
+
+describe('pinhole projection (D-036)', () => {
+  const F = 600;
+  const at = (headingDeg: number, elevationDeg: number) => directionToVector({ headingDeg, elevationDeg });
+
+  test('direction <-> vector round trip, across north', () => {
+    for (const d of [
+      { headingDeg: 0, elevationDeg: 0 },
+      { headingDeg: 359, elevationDeg: -30 },
+      { headingDeg: 123.4, elevationDeg: 45 },
+    ]) {
+      const back = vectorToDirection(directionToVector(d));
+      expect(back.headingDeg).toBeCloseTo(d.headingDeg);
+      expect(back.elevationDeg).toBeCloseTo(d.elevationDeg);
+    }
+  });
+
+  test('where the camera points projects to the centre', () => {
+    const p = project(at(0, 0), UPRIGHT, F);
+    expect(p.inFront).toBe(true);
+    expect(p.dx).toBeCloseTo(0);
+    expect(p.dy).toBeCloseTo(0);
+  });
+
+  test('10 degrees right and 10 degrees up land at f·tan(10°), not a linear pxPerDeg', () => {
+    const right = project(at(10, 0), UPRIGHT, F);
+    expect(right.dx).toBeCloseTo(F * Math.tan((10 * Math.PI) / 180));
+    expect(right.dy).toBeCloseTo(0);
+    const up = project(at(0, 10), UPRIGHT, F);
+    expect(up.dx).toBeCloseTo(0);
+    expect(up.dy).toBeCloseTo(-F * Math.tan((10 * Math.PI) / 180)); // screen y grows downwards
+  });
+
+  test('a turn moves the overlay the opposite way by the same angle', () => {
+    const turned = compose(rotation([0, 0, 1], -20), UPRIGHT); // turned 20° right
+    const p = project(at(0, 0), turned, F);
+    expect(p.dx).toBeCloseTo(-F * Math.tan((20 * Math.PI) / 180));
+  });
+
+  test('unproject inverts project, also with the phone tilted and rolled', () => {
+    const q = compose(rotation([0, 1, 0], 25), compose(rotation([0, 0, 1], -70), rotation([1, 0, 0], 70)));
+    for (const [dx, dy] of [
+      [0, 0],
+      [120, -80],
+      [-170, 300],
+    ] as const) {
+      const p = project(unproject(dx, dy, q, F), q, F);
+      expect(p.dx).toBeCloseTo(dx, 6);
+      expect(p.dy).toBeCloseTo(dy, 6);
+    }
+  });
+
+  test('rolling the phone rolls the scene: a point to the right drops as the phone rolls left', () => {
+    // Roll the phone 30° counter-clockwise (seen from the user): about device +z
+    const rolled = compose(UPRIGHT, rotation([0, 0, 1], 30));
+    const p = project(at(10, 0), rolled, F);
+    expect(p.dx).toBeGreaterThan(0);
+    expect(p.dy).toBeGreaterThan(0);
+    // Overlays counter-rotate to stay upright in the world
+    expect(uprightRotationDeg(rolled)).toBeCloseTo(30);
+    expect(uprightRotationDeg(UPRIGHT)).toBeCloseTo(0);
+  });
+
+  test('a direction behind the camera is not in front and lands far off screen on its side', () => {
+    const p = project(at(150, 0), UPRIGHT, F);
+    expect(p.inFront).toBe(false);
+    expect(p.dx).toBeGreaterThan(10_000);
+  });
+
+  test('rotation vector round trip', () => {
+    const r = { x: 0.3, y: -0.2, z: 1.1 };
+    const back = rotationVectorOf(quatFromRotationVector(r));
+    expect(back.x).toBeCloseTo(r.x);
+    expect(back.y).toBeCloseTo(r.y);
+    expect(back.z).toBeCloseTo(r.z);
   });
 });

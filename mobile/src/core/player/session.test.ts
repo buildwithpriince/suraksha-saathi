@@ -51,6 +51,29 @@ function playFire(variant: 'ordinary' | 'oil', extinguisher: string) {
   return session;
 }
 
+describe('reposition (D-036)', () => {
+  test('anchor_repositioned is recorded in the current step and changes nothing else', () => {
+    const { session, tick } = clockedSession('ordinary');
+    session.start();
+    tick(2);
+    session.reposition(12.345, -31.26);
+    expect(session.current()!.step.id).toBe('brief');
+    expect(session.events.at(-1)).toEqual({ t: 2, type: 'anchor_repositioned', stepId: 'brief', data: { headingDeg: 12.3, elevationDeg: -31.3 } });
+  });
+
+  test('repositioning in every step leaves the score byte-identical', () => {
+    const plain = playFire('ordinary', 'water');
+    const withMoves = structuredClone(plain.events);
+    // Insert a reposition right after every step start, at the same time
+    for (let i = withMoves.length - 1; i >= 0; i--) {
+      const e = withMoves[i]!;
+      if (e.type === 'step_started') withMoves.splice(i + 1, 0, { t: e.t, type: 'anchor_repositioned', stepId: e.stepId, data: { headingDeg: 1, elevationDeg: -2 } });
+    }
+    expect(withMoves.length).toBeGreaterThan(plain.events.length);
+    expect(JSON.stringify(evaluate(FIRE, 'ordinary', withMoves))).toBe(JSON.stringify(evaluate(FIRE, 'ordinary', plain.events)));
+  });
+});
+
 const AREA = PREFABS.ConfinedAreaEntrance!;
 
 /**

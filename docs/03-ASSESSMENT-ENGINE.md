@@ -10,7 +10,10 @@ is a pure function. Same inputs, same output. No clocks, no randomness, no platf
 ```
 - `t`: seconds since attempt start (monotonic clock), 2 decimals.
 - `type`: `step_started | step_completed | step_skipped | choice_made | target_hit | hold_progress |
-  marker_found | position_reached | zone_marked | forbidden_action | attempt_aborted`.
+  marker_found | position_reached | zone_marked | forbidden_action | attempt_aborted |
+  anchor_repositioned`.
+- `anchor_repositioned{headingDeg, elevationDeg}` (D-036) records that the worker re-placed a
+  drifted overlay. It is neutral: no rule reads it, and adding it anywhere leaves the result unchanged.
 - Events are append-only. The player writes them; the engine only reads them.
 
 ## Rule types

@@ -13,6 +13,8 @@ export const EVENT_TYPES = [
   'zone_marked',
   'forbidden_action',
   'attempt_aborted',
+  // Neutral: the worker re-placed the drifted overlay (D-036). No rule reads it.
+  'anchor_repositioned',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 

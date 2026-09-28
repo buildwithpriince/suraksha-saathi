@@ -10,8 +10,9 @@ import { getDevice } from '@/db/device';
 import { TRUST } from '@/device/trust';
 import { formatDate } from '@/ui/CertificateDetails';
 import { DemoKeysBanner } from '@/ui/DemoKeysBanner';
+import { getAnchoringMode, setAnchoringMode, type AnchoringMode } from '@/training/anchoringSetting';
 import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
-import { Body, Button, Card, Screen, Title } from '@/ui/components';
+import { Body, Button, Card, Screen, Segmented, Title } from '@/ui/components';
 
 /** docs/01 Settings: language, this device's status, sync, and versions (T-41). */
 export default function SettingsScreen() {
@@ -19,6 +20,7 @@ export default function SettingsScreen() {
   const [device, setDevice] = useState(getDevice);
   const [pending, setPending] = useState(0);
   const [lastSync, setLastSync] = useState<number | null>(null);
+  const [anchoring, setAnchoring] = useState<AnchoringMode>(getAnchoringMode);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,6 +49,24 @@ export default function SettingsScreen() {
 
       <Card>
         <LanguageSwitcher label={t('home.language.label')} />
+      </Card>
+
+      {/* D-036: the old anchoring maths stays one tap away in case the new one misbehaves on a phone */}
+      <Card>
+        <Title>{t('settings.anchoring.title')}</Title>
+        <Body>{t('settings.anchoring.body')}</Body>
+        <Segmented
+          options={[
+            { value: 'stabilised', label: t('settings.anchoring.stabilised') },
+            { value: 'legacy', label: t('settings.anchoring.legacy') },
+          ]}
+          value={anchoring}
+          onChange={(mode) => {
+            setAnchoringMode(mode);
+            setAnchoring(mode);
+          }}
+        />
+        <Body muted>{t('settings.anchoring.note')}</Body>
       </Card>
 
       <Card>

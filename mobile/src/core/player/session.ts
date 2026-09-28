@@ -109,6 +109,14 @@ export class ScenarioSession {
   }
 
   /**
+   * The worker re-placed the overlay because it drifted (D-036): `anchor_repositioned` with the
+   * new anchor direction, in the current step. Neutral: it neither completes the step nor scores.
+   */
+  reposition(headingDeg: number, elevationDeg: number): void {
+    this.emit('anchor_repositioned', this.require().step.id, { headingDeg: round1(headingDeg), elevationDeg: round1(elevationDeg) });
+  }
+
+  /**
    * The worker couldn't complete the current step ("Skip step", D-033): `step_skipped` with
    * `reason: "no_progress"`, then the next step. The engine scores the step as failed.
    */
@@ -168,4 +176,8 @@ export class ScenarioSession {
 
 function round2(x: number): number {
   return Math.round(x * 100) / 100;
+}
+
+function round1(x: number): number {
+  return Math.round(x * 10) / 10;
 }

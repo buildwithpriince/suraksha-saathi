@@ -10,7 +10,15 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 
-import { angleDiff, screenOffset, type Direction } from '@/core/orientation';
+import {
+  angleDiff,
+  directionToVector,
+  project,
+  screenOffset,
+  uprightRotationDeg,
+  type Direction,
+  type Quaternion,
+} from '@/core/orientation';
 import { LABEL_BOX_PX, clampToBand, type Band } from '@/core/player/layout';
 import type { Offset } from '@/core/player/prefabs';
 import { Text } from '@/ui/Text';
@@ -19,42 +27,85 @@ import { colors } from '@/ui/theme';
 export interface ScreenGeometry {
   cx: number;
   cy: number;
+  /** Pixels per degree at the screen centre (overlay sizes; the whole mapping in legacy mode). */
   pxPerDeg: number;
+  /** Focal length in px of the preview (pinhole projection, D-036). */
+  focalPx: number;
+  /** true: full-quaternion pinhole projection (stabilised); false: the legacy linear mapping. */
+  pinhole: boolean;
+}
+
+/** The placed overlay's anchor: a world direction plus the marker scale (1 without a marker, D-036). */
+export interface AnchorValues {
+  anchor: SharedValue<Direction | null>;
+  scale: SharedValue<number>;
+}
+
+/** Where the phone points: the direction (legacy mapping) and the orientation (pinhole). */
+export interface CameraValues {
+  direction: SharedValue<Direction>;
+  orientation: SharedValue<Quaternion>;
 }
 
 /**
  * A view drawn at a direction anchored in the world, moving as the phone turns (3DoF). With a
  * `band`, its centre stays inside it (D-033): pinned to the nearest edge, slightly faded, when the
  * real direction is off screen or under the card, so something the worker must tap always can be.
+ * In pinhole mode it also counter-rotates when the phone rolls, and offsets grow with the marker
+ * scale; `scaled` content (the fire, the gas cloud) grows with it too.
  */
 export function Anchored({
-  anchor,
+  anchor: { anchor, scale },
   offset,
-  direction,
+  camera: { direction, orientation },
   geometry,
   width,
   height,
   band,
+  scaled = false,
   children,
 }: {
-  anchor: SharedValue<Direction | null>;
+  anchor: AnchorValues;
   offset: Offset;
-  direction: SharedValue<Direction>;
+  camera: CameraValues;
   geometry: ScreenGeometry;
   width: number;
   height: number;
   band?: Band;
+  scaled?: boolean;
   children: ReactNode;
 }) {
   const { dh, de } = offset;
-  const { cx, cy, pxPerDeg } = geometry;
+  const { cx, cy, pxPerDeg, focalPx, pinhole } = geometry;
   const style = useAnimatedStyle(() => {
     const a = anchor.value;
-    if (a === null) return { opacity: 0, transform: [{ translateX: -10000 }, { translateY: 0 }] };
-    const target = { headingDeg: a.headingDeg + dh, elevationDeg: a.elevationDeg + de };
-    const { dx, dy } = screenOffset(target, direction.value, pxPerDeg);
+    if (a === null) return { opacity: 0, transform: [{ translateX: -10000 }, { translateY: 0 }, { rotate: '0deg' }, { scale: 1 }] };
+    const s = scale.value;
+    const target = { headingDeg: a.headingDeg + dh * s, elevationDeg: Math.max(-89.5, Math.min(89.5, a.elevationDeg + de * s)) };
+    let dx: number;
+    let dy: number;
+    let rotateDeg = 0;
+    if (pinhole) {
+      const q = orientation.value;
+      const p = project(directionToVector(target), q, focalPx);
+      dx = p.dx;
+      dy = p.dy;
+      rotateDeg = uprightRotationDeg(q);
+    } else {
+      const o = screenOffset(target, direction.value, pxPerDeg);
+      dx = o.dx;
+      dy = o.dy;
+    }
     const at = band === undefined ? { x: cx + dx, y: cy + dy, pinned: false } : clampToBand(cx + dx, cy + dy, band);
-    return { opacity: at.pinned ? 0.85 : 1, transform: [{ translateX: at.x - width / 2 }, { translateY: at.y - height / 2 }] };
+    return {
+      opacity: at.pinned ? 0.85 : 1,
+      transform: [
+        { translateX: at.x - width / 2 },
+        { translateY: at.y - height / 2 },
+        { rotate: `${at.pinned ? 0 : rotateDeg}deg` },
+        { scale: scaled ? s : 1 },
+      ],
+    };
   });
   return (
     <Animated.View pointerEvents="box-none" style={[styles.anchored, { width, height }, style]}>

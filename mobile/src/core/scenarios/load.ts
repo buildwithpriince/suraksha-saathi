@@ -196,9 +196,15 @@ function checkParams(c: Checker, type: InteractionType, p: Obj, path: string, ma
   switch (type) {
     case 'narration':
       return;
-    case 'place_on_plane':
+    case 'place_on_plane': {
       c.string(p, 'prefab', path);
+      // Optional printed marker that pins the placed overlay while in view (D-036)
+      if (p.anchorMarker !== undefined) {
+        const marker = c.string(p, 'anchorMarker', path);
+        if (marker !== '' && !markers.has(marker)) c.fail(`${path}.anchorMarker`, `${marker} is not in setup.markers`);
+      }
       return;
+    }
     case 'tap_target':
       c.string(p, 'target', path);
       return;

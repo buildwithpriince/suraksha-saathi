@@ -81,14 +81,20 @@ files); never hand-edit it.
 | `mark_zone` | Tap the floor to place cones (tap one to remove it), Done after `minCones`; `radiusM` = mean cone distance from the hazard in the prefab's `metresPerDeg` scale; each cone shows the simulated detector reading (D-031) |
 
 Markers: a printed marker is a QR code whose text is exactly the marker id (`EXIT_A`).
-`npm run markers` writes printable 150 mm SVGs to `assets/markers/`. Prefab layouts (object,
-zone and waypoint angles) live in `src/core/player/prefabs.ts`; `PREVIEW_HFOV_DEG` in
-`src/core/player/layout.ts` maps degrees to pixels. Tune both on a phone (T-28); labels must stay
+`npm run markers` writes printable SVGs to `assets/markers/` (EXIT 150 mm, HAZARD_A 180 mm).
+Prefab layouts (object, zone and waypoint angles) live in `src/core/player/prefabs.ts`;
+`CAMERA_LONG_SIDE_FOV_DEG` in `src/core/player/layout.ts` sets the preview's focal length
+(`PREVIEW_HFOV_DEG` is the legacy mapping only). Tune both on a phone (T-28); labels must stay
 one label box apart on a 320 dp screen (`prefabs.test.ts`).
 Any step with no progress for 30 s offers "Skip step", which is scored as failed (D-033).
-Anchoring: overlays keep a fixed direction as the phone rotates (3DoF, from device orientation).
-There is no position tracking, so overlays drift if the worker walks; steps that need walking use
-printed markers or waypoints instead.
+Anchoring (D-036): overlays keep a fixed direction as the phone rotates (3DoF). Orientation is a
+gyro + rotation-vector complementary filter (`core/orientationFilter.ts`) run per frame in a
+Reanimated frame callback, and overlays use a pinhole projection (`core/orientation.ts`
+`project`/`unproject`). There is no position tracking: walking still moves overlays, except
+while a scenario's `anchorMarker` (`HAZARD_A`) is in view, which pins and scales them
+(`core/player/marker.ts`). "Reposition" re-places a drifted overlay (`anchor_repositioned`,
+never scored). Settings → "AR anchoring" switches back to the original maths
+(`training/anchoringSetting.ts`).
 
 ## Commands (from `mobile/`)
 - Core tests: `npm test` (Vitest; run after every `src/core` change)

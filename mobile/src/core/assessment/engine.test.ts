@@ -250,6 +250,58 @@ describe('docs/03 required tests', () => {
   });
 });
 
+describe('R_RIGHT_EXTINGUISHER: which extinguisher suits which fire (D-042)', () => {
+  // Found on a device: DCP on the ordinary fire scored 0/15 because the rule listed only water
+  const cases = [
+    { variant: 'ordinary', pick: 'water', earned: 15, feedback: 'fire01.rule.right_extinguisher.correct' },
+    { variant: 'ordinary', pick: 'dcp', earned: 15, feedback: 'fire01.rule.right_extinguisher.correct' },
+    { variant: 'ordinary', pick: 'co2', earned: 0, feedback: 'fire01.rule.right_extinguisher.co2_on_ordinary' },
+    { variant: 'oil', pick: 'dcp', earned: 15, feedback: 'fire01.rule.right_extinguisher.correct' },
+    { variant: 'oil', pick: 'co2', earned: 15, feedback: 'fire01.rule.right_extinguisher.correct' },
+  ] as const;
+  for (const c of cases) {
+    test(`${c.variant} + ${c.pick} -> ${c.earned}/15, feedback ${c.feedback.split('.').pop()}`, () => {
+      const e = evaluate(FIRE, c.variant, fireRun({ extinguisher: c.pick }).events);
+      expect(rule(e, 'R_RIGHT_EXTINGUISHER')).toMatchObject({ earned: c.earned, max: 15, feedbackKey: c.feedback });
+      expect(e.criticalFailures).toEqual([]);
+    });
+  }
+
+  test('oil + water: forbidden, fails the attempt whatever the score, and says why', () => {
+    const e = evaluate(FIRE, 'oil', fireRun({ extinguisher: 'water', forbiddenTag: 'water_on_oil' }).events);
+    expect(rule(e, 'R_RIGHT_EXTINGUISHER')).toMatchObject({
+      earned: 0,
+      passed: false,
+      feedbackKey: 'fire01.rule.right_extinguisher.water_on_oil',
+    });
+    expect(e.scorePercent).toBeGreaterThanOrEqual(FIRE.passThresholdPercent);
+    expect(e.criticalFailures).toEqual(['R_RIGHT_EXTINGUISHER']);
+    expect(e.passed).toBe(false);
+  });
+
+  test('"never use water" is only said to someone who picked water', () => {
+    for (const variant of ['ordinary', 'oil'] as const) {
+      for (const pick of ['water', 'dcp', 'co2']) {
+        const events = fireRun({ extinguisher: pick, forbiddenTag: variant === 'oil' && pick === 'water' ? 'water_on_oil' : undefined }).events;
+        const key = rule(evaluate(FIRE, variant, events), 'R_RIGHT_EXTINGUISHER').feedbackKey;
+        expect(key === 'fire01.rule.right_extinguisher.water_on_oil').toBe(pick === 'water' && variant === 'oil');
+      }
+    }
+  });
+
+  test('a skipped pick gets the general feedback', () => {
+    const run = new Run();
+    run.step('brief', 1).skip('pick_extinguisher');
+    const e = evaluate(FIRE, 'ordinary', run.events);
+    expect(rule(e, 'R_RIGHT_EXTINGUISHER').feedbackKey).toBe('fire01.rule.right_extinguisher');
+  });
+
+  test('rules without choiceFeedback keep their feedbackKey', () => {
+    const e = evaluate(FIRE, 'ordinary', fireRun().events);
+    expect(rule(e, 'R_EVACUATE_DECISION').feedbackKey).toBe('fire01.rule.evacuate_decision');
+  });
+});
+
 describe('PASS extinguisher technique under R_AIM_BASE (D-038)', () => {
   const aimBase = (o: FireOptions) => rule(evaluate(FIRE, 'ordinary', fireRun(o).events), 'R_AIM_BASE');
 
@@ -302,7 +354,7 @@ describe('scoring details', () => {
   });
 
   test('criticalOn forbidden: a wrong pick without a forbidden action only loses points', () => {
-    const e = evaluate(FIRE, 'oil', fireRun({ extinguisher: 'co2' }).events);
+    const e = evaluate(FIRE, 'ordinary', fireRun({ extinguisher: 'co2' }).events);
     expect(rule(e, 'R_RIGHT_EXTINGUISHER')).toMatchObject({ earned: 0, passed: true });
     expect(e.criticalFailures).toEqual([]);
   });

@@ -66,7 +66,18 @@ export interface Rule {
   criticalOn?: 'forbidden';
   variants?: string[];
   feedbackKey: string;
+  /**
+   * `correct_choice` on a single-choice step only: feedback that depends on what was picked
+   * (docs/03). `correct` for a correct pick; `options[id]` for a wrong pick of that option. Anything
+   * not listed (and no choice at all) falls back to `feedbackKey`.
+   */
+  choiceFeedback?: ChoiceFeedback;
   needsReview?: boolean;
+}
+
+export interface ChoiceFeedback {
+  correct?: string;
+  options?: Record<string, string>;
 }
 
 export interface Variant {

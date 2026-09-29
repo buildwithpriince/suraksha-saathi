@@ -57,6 +57,21 @@ describe('malformed scenarios are rejected', () => {
     expect(problems(s).join()).toMatch(/unknown option foam/);
   });
 
+  test('choiceFeedback naming an option the step does not offer (D-042)', () => {
+    const s = fireCopy();
+    s.rules.find((r: Mutable) => r.id === 'R_RIGHT_EXTINGUISHER').choiceFeedback.options.foam = 'fire01.rule.foam';
+    expect(problems(s).join()).toMatch(/choiceFeedback.options: unknown option foam/);
+  });
+
+  test('choiceFeedback on a rule that is not correct_choice, or with an unknown field (D-042)', () => {
+    const s = fireCopy();
+    s.rules.find((r: Mutable) => r.id === 'R_EXIT_FOUND').choiceFeedback = { correct: 'x' };
+    s.rules.find((r: Mutable) => r.id === 'R_RIGHT_EXTINGUISHER').choiceFeedback.wrong = 'x';
+    const found = problems(s).join();
+    expect(found).toMatch(/R_EXIT_FOUND].choiceFeedback: only for correct_choice rules/);
+    expect(found).toMatch(/choiceFeedback.wrong: unknown field/);
+  });
+
   test('forbidden option without a tag', () => {
     const s = fireCopy();
     delete s.steps.find((st: Mutable) => st.id === 'escalation').params.options[0].tag;

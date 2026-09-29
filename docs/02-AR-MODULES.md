@@ -50,7 +50,8 @@ instructor signs off. Code must not hard-code any of it; it lives in `content/sc
   `id`, `labelKey`. Optional: `forbidden` (bool; requires `tag`, emitted as `forbidden_action{tag}`),
   `forbiddenVariants` (forbidden only in these variants; default all), `needsReview`.
 - **Rule:** `id`, `type`, `params`, `points`, `critical`, `feedbackKey`. Optional: `variants`,
-  `criticalOn: "forbidden"` (docs/03), `needsReview`.
+  `criticalOn: "forbidden"` (docs/03), `choiceFeedback` (docs/03; `correct_choice` on a single-choice
+  step only: `{ "correct": key, "options": { optionId: key } }`), `needsReview`.
 - **Variant:** `id`, `params`. Optional: `needsReview`.
 - `needsReview: true` on any object marks content a safety expert must confirm; it does not change
   behaviour. The scenario-level flag stays `true` until the whole module is signed off. Gameplay
@@ -115,7 +116,8 @@ Context: a small fire starts near waste material in a workshop / surface plant a
 Variants: `ordinary` (paper, wood, cloth) and `oil` (oil / grease fire).
 Scenario version 2 (D-036, D-038): adds the `HAZARD_A` anchor marker, and the extinguish step is
 an `operate_extinguisher` scored on the PASS technique; version 1 attempts are no longer accepted
-by a backend running this content.
+by a backend running this content. Version 3 (D-042): DCP is correct on both variants and CO2 on
+`oil`, and the extinguisher feedback depends on the pick.
 
 | # | Step id | Interaction | What the worker does | Notes |
 |---|---|---|---|---|
@@ -123,7 +125,7 @@ by a backend running this content.
 | 2 | `place_fire` | place_on_plane | Places the fire on the real floor (tap, or point at the printed `HAZARD_A`) | Setup, not scored; `anchorMarker: HAZARD_A` |
 | 3 | `raise_alarm` | tap_target | Raises the alarm (call point / shouts "Fire") | Must happen before fighting |
 | 4 | `find_exit` | find_marker | Finds the nearest printed EXIT marker | Anchors the escape route |
-| 5 | `pick_extinguisher` | choose_one | Chooses from: water-type, dry chemical powder (DCP), CO2 | `oil` variant: water-type is `forbidden` |
+| 5 | `pick_extinguisher` | choose_one | Chooses from: water-type, dry chemical powder (DCP), CO2 | Correct: `ordinary` water or DCP; `oil` DCP or CO2. `oil` variant: water-type is `forbidden` |
 | 6 | `approach` | move_to | Moves to the attack spot with the exit behind them | Checked: exit marker direction is behind camera forward (angle > 120°) |
 | 7 | `extinguish` | operate_extinguisher | PASS: pulls the pin, aims at the base of the fire, squeezes, sweeps side to side | Aiming at flame tops counts as off-target and does not reduce the fire; the extinguisher from step 5 is used, and a pick that is `forbidden` here (water on oil) has no effect |
 | 8 | `escalation` | decision | Fire spreads (scripted). Options: keep fighting / evacuate and alert / collect belongings | Only "evacuate and alert" is correct; "keep fighting" and "collect belongings" are `forbidden` |
@@ -136,7 +138,7 @@ Rules (points total 100):
 | R_ALARM_BEFORE_FIGHT | order | before `raise_alarm`, after `extinguish` | 10 | yes |
 | R_ALARM_FAST | time_limit | step `raise_alarm`, 20 s | 5 | no |
 | R_EXIT_FOUND | completed | step `find_exit` | 10 | no |
-| R_RIGHT_EXTINGUISHER | correct_choice | step `pick_extinguisher`, correct by variant | 15 | yes (if forbidden picked) |
+| R_RIGHT_EXTINGUISHER | correct_choice | step `pick_extinguisher`, correct by variant (`ordinary`: water, dcp; `oil`: dcp, co2); feedback by pick | 15 | yes (if forbidden picked) |
 | R_EXIT_BEHIND | completed | step `approach` with `exitBehind=true` | 10 | no |
 | R_AIM_BASE | hold | step `extinguish`, onTargetSec ≥ 4, offTargetRatio ≤ 0.4, pin pulled before spraying, ≥ 2 sweeps on the base (PASS, D-038) | 15 | no |
 | R_EVACUATE_DECISION | correct_choice | step `escalation` | 15 | yes |

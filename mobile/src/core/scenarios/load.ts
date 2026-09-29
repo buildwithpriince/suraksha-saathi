@@ -313,6 +313,7 @@ function checkRules(c: Checker, value: unknown, steps: Map<string, Step>, varian
       c.fail(`${path}.criticalOn`, 'must be "forbidden" on a critical rule');
     }
     c.string(r, 'feedbackKey', path);
+    if (r.choiceFeedback !== undefined && type !== 'correct_choice') c.fail(`${path}.choiceFeedback`, 'only for correct_choice rules');
     const scopedTo = c.strings(r, 'variants', path, true);
     c.subset(scopedTo, variantIds, `${path}.variants`, 'variant');
     c.bool(r, 'needsReview', path, true);
@@ -354,6 +355,7 @@ function checkRules(c: Checker, value: unknown, steps: Map<string, Step>, varian
           c.fail(`${path}.params.partial`, 'only for choose_many and checklist steps');
         }
         checkCorrect(c, params.correct, step, appliesIn, `${path}.params.correct`);
+        if (r.choiceFeedback !== undefined) checkChoiceFeedback(c, r.choiceFeedback, step, `${path}.choiceFeedback`);
         break;
       }
       case 'no_forbidden': {
@@ -381,6 +383,23 @@ function checkRules(c: Checker, value: unknown, steps: Map<string, Step>, varian
   });
   c.unique(ids, 'scenario.rules');
   if (total !== TOTAL_POINTS) c.fail('scenario.rules', `points sum to ${total}, must be ${TOTAL_POINTS}`);
+}
+
+/** `choiceFeedback` (docs/03): string keys, for a single-choice step, naming only its options. */
+function checkChoiceFeedback(c: Checker, value: unknown, step: Step | undefined, path: string): void {
+  const feedback = c.object(value, path);
+  if (feedback === null) return;
+  if (step !== undefined && MULTI_SELECT.includes(step.interaction)) c.fail(path, 'only for single-choice steps');
+  for (const key of Object.keys(feedback)) if (key !== 'correct' && key !== 'options') c.fail(`${path}.${key}`, 'unknown field');
+  if (feedback.correct !== undefined) c.string(feedback, 'correct', path);
+  if (feedback.options === undefined) return;
+  const options = c.object(feedback.options, `${path}.options`);
+  if (options === null) return;
+  const optionIds = new Set(step === undefined ? [] : stepOptions(step).map((o) => o.id));
+  for (const id of Object.keys(options)) {
+    if (step !== undefined && !optionIds.has(id)) c.fail(`${path}.options`, `unknown option ${id}`);
+    c.string(options, id, `${path}.options`);
+  }
 }
 
 function checkCorrect(c: Checker, value: unknown, step: Step | undefined, appliesIn: string[], path: string): void {

@@ -32,7 +32,10 @@ fire01.assembly.option.leave_site,Leave the site,साइट छोड़कर
 fire01.rule.alarm_before_fight,Raise the alarm before you fight the fire.,आग बुझाने से पहले अलार्म बजाएँ।,सेंगेल बुझाव लाहा रे अलार्म बाजावमे।,true,rule feedback
 fire01.rule.alarm_fast,Raise the alarm quickly.,जल्दी अलार्म बजाएँ।,जोलदी अलार्म बाजावमे।,true,rule feedback
 fire01.rule.exit_found,Find the nearest exit.,सबसे पास का निकास ढूँढें।,सानाम खोन सोर ओडोक् होर पानतेयमे।,true,rule feedback
-fire01.rule.right_extinguisher,Use the right extinguisher. Never use water on an oil fire.,सही अग्निशामक इस्तेमाल करें। तेल की आग पर कभी पानी न डालें।,थिक बुझाव जिनिस बेबहारमे। सुनुम सेंगेल रे जाहाँ ओकतोहों दाः आलोम ढालाया।,true,rule feedback
+fire01.rule.right_extinguisher,Pick an extinguisher that suits the fire.,आग के हिसाब से सही अग्निशामक चुनें।,,true,rule feedback when no extinguisher was picked (D-042)
+fire01.rule.right_extinguisher.correct,Right choice: this extinguisher suits this fire.,सही चुनाव: यह अग्निशामक इस आग के लिए सही है।,,true,rule feedback: a correct pick (D-042)
+fire01.rule.right_extinguisher.water_on_oil,Never use water on an oil fire: it spreads the burning oil. Use DCP or CO2.,तेल की आग पर कभी पानी न डालें: इससे जलता हुआ तेल फैलता है। DCP या CO2 इस्तेमाल करें।,,true,rule feedback: water picked on the oil fire (D-042)
+fire01.rule.right_extinguisher.co2_on_ordinary,"CO2 does not work well on burning wood, paper or cloth: the fire can flare up again. Use water or DCP.","CO2 जलती लकड़ी, कागज़ या कपड़े पर ठीक से काम नहीं करता: आग फिर भड़क सकती है। पानी या DCP इस्तेमाल करें।",,true,rule feedback: CO2 picked on the ordinary fire (D-042)
 fire01.rule.exit_behind,Keep the exit behind you while you fight a fire.,आग बुझाते समय निकास को अपने पीछे रखें।,सेंगेल बुझाव जोखेच् ओडोक् होर आम तायोम रे दोहोयमे।,true,rule feedback
 fire01.rule.aim_base,"Pull the pin first, aim at the base of the fire and sweep side to side.","पहले पिन खींचें, आग की जड़ पर निशाना लगाएँ और दाएँ-बाएँ घुमाएँ।",,true,rule feedback (PASS; D-038)
 fire01.rule.evacuate_decision,"If the fire spreads, evacuate and alert others.",आग फैले तो बाहर निकलें और दूसरों को सावधान करें।,सेंगेल पासनावोः खान बाहरे ओडोक्मे आर एटाः होड़को खोबोर एमाकोमे।,true,rule feedback

@@ -63,6 +63,32 @@ function playFire(variant: 'ordinary' | 'oil', extinguisher: string) {
   return session;
 }
 
+describe('extinguisher choice through the session (D-042)', () => {
+  test('the device run: DCP on the ordinary fire earns R_RIGHT_EXTINGUISHER', () => {
+    const session = playFire('ordinary', 'dcp');
+    const e = evaluate(FIRE, 'ordinary', session.events);
+    expect(e.rules.find((r) => r.ruleId === 'R_RIGHT_EXTINGUISHER')).toMatchObject({ earned: 15, max: 15 });
+    expect(e.scorePercent).toBe(100);
+  });
+
+  test('water on the oil fire records the forbidden act and fails the attempt despite a passing score', () => {
+    const session = playFire('oil', 'water');
+    expect(session.events.filter((ev) => ev.type === 'forbidden_action')).toEqual([
+      expect.objectContaining({ stepId: 'pick_extinguisher', data: { tag: 'water_on_oil' } }),
+    ]);
+    const e = evaluate(FIRE, 'oil', session.events);
+    expect(e.scorePercent).toBeGreaterThanOrEqual(FIRE.passThresholdPercent);
+    expect(e.criticalFailures).toEqual(['R_RIGHT_EXTINGUISHER']);
+    expect(e.passed).toBe(false);
+  });
+
+  test('water on the ordinary fire is not forbidden', () => {
+    const session = playFire('ordinary', 'water');
+    expect(session.events.some((ev) => ev.type === 'forbidden_action')).toBe(false);
+    expect(evaluate(FIRE, 'ordinary', session.events).passed).toBe(true);
+  });
+});
+
 describe('operate_extinguisher gestures (D-038)', () => {
   /** A session on FIRE_01's extinguish step. */
   function atExtinguish() {

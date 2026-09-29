@@ -36,7 +36,7 @@ export function evaluate(scenario: Scenario, variantId: string, events: readonly
       max: rule.points,
       critical: rule.critical,
       passed: rule.critical ? !criticalFailure : earned === rule.points,
-      feedbackKey: rule.feedbackKey,
+      feedbackKey: failedStep ? rule.feedbackKey : feedbackKeyFor(rule, earned, log),
     });
     earnedTotal += earned;
     maxTotal += rule.points;
@@ -163,6 +163,20 @@ function earnedPoints(
       return error <= 2 * tolerance + EPSILON ? half : 0;
     }
   }
+}
+
+/**
+ * The feedback to show and speak for a rule (docs/03). A `correct_choice` rule with
+ * `choiceFeedback` answers what was picked: praise for a correct pick, the specific mistake for a
+ * wrong one, so nobody hears "never use water" who did not pick water. Otherwise `feedbackKey`.
+ */
+function feedbackKeyFor(rule: Rule, earned: number, log: EventLog): string {
+  const feedback = rule.choiceFeedback;
+  if (feedback === undefined) return rule.feedbackKey;
+  const choice = log.first(rule.params.step as string, 'choice_made');
+  if (choice === undefined || choice.data?.option === undefined) return rule.feedbackKey;
+  if (earned === rule.points) return feedback.correct ?? rule.feedbackKey;
+  return feedback.options?.[String(choice.data.option)] ?? rule.feedbackKey;
 }
 
 function correctChoicePoints(rule: Rule, variantId: string, step: Step, log: EventLog): number {

@@ -1,6 +1,6 @@
 {
   "id": "FIRE_01",
-  "version": 2,
+  "version": 3,
   "domain": "fire_explosion",
   "titleKey": "fire01.title",
   "needsReview": true,
@@ -159,13 +159,20 @@
       "type": "correct_choice",
       "params": {
         "step": "pick_extinguisher",
-        "correct": { "ordinary": ["water"], "oil": ["dcp"] }
+        "correct": { "ordinary": ["water", "dcp"], "oil": ["dcp", "co2"] }
       },
       "points": 15,
       "critical": true,
       "criticalOn": "forbidden",
       "needsReview": true,
-      "feedbackKey": "fire01.rule.right_extinguisher"
+      "feedbackKey": "fire01.rule.right_extinguisher",
+      "choiceFeedback": {
+        "correct": "fire01.rule.right_extinguisher.correct",
+        "options": {
+          "water": "fire01.rule.right_extinguisher.water_on_oil",
+          "co2": "fire01.rule.right_extinguisher.co2_on_ordinary"
+        }
+      }
     },
     {
       "id": "R_EXIT_BEHIND",

@@ -77,6 +77,10 @@ Per-rule `passed`: for a critical rule, false only on a critical failure; for an
 ## Result screen requirements
 - Big PASS / NOT YET, score, and a list of rules sorted: failed criticals first, then lost points.
 - Each row reads its `feedbackKey` aloud on tap (voice-first).
+- `feedbackKey` in the result is the rule's `feedbackKey`, except for a `correct_choice` rule with
+  `choiceFeedback` whose step was answered (not skipped): full points -> `choiceFeedback.correct`;
+  otherwise `choiceFeedback.options[first choice]`; either falls back to `feedbackKey` if absent. So
+  the feedback answers what was picked: praise, or that pick's specific mistake (D-042).
 - "Try again" starts a new attempt with a new seed (possibly a different variant).
 
 ## Required unit tests (`mobile/src/core/assessment`, run with `npm test`)

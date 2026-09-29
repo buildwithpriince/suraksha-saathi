@@ -203,12 +203,12 @@ Team Caffeine Coders
 
 | Name | Role |
 |---|---|
-| _Name_ | _Team lead, architecture and app core_ |
-| _Name_ | _Camera interactions and ScenarioPlayer_ |
-| _Name_ | _App screens and localisation_ |
-| _Name_ | _Backend and deployment_ |
-| _Name_ | _Dashboard_ |
-| _Name_ | _Safety content, strings, device QA and demo_ |
+| _Prince Agrawal_ | _Technical lead — system architecture, mobile app, camera drills and ScenarioPlayer, assessment engine, offline certificate system, backend and deployment._ |
+| _Shivam Suthar(Team Lead)_ | _Project coordination, problem research, presentation and demo video._ |
+| _Jeet Prajapati_ | _Admin dashboard screens and testing._ |
+| _Apurva Prajapati_ | _Safety scenario content and procedure research._ |
+| _Zarna Modhia_ | _Hindi and Santali localisation, translation review._ |
+| _Hetvi Vyas_ | _UI/UX design, wallet cards and device QA._ |
 
 ## License
 

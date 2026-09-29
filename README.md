@@ -1,130 +1,118 @@
 # Suraksha Saathi
 
-**AR-based vocational safety training and certification for Jharkhand's mining, steel and mica workers.**
+**Camera-based safety drills for new industrial workers in Jharkhand: learn by doing, get a certificate anyone can verify offline.**
 
-Smart India Hackathon 2026 · PS 26041 · Team Caffeine Coders
+[![CI](https://github.com/buildwithpriince/suraksha-saathi/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/buildwithpriince/suraksha-saathi/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Platform: Android 10+](https://img.shields.io/badge/platform-Android%2010%2B-3DDC84.svg)](#download-the-apk)
 
-<p>
-  <img alt="Expo" src="https://img.shields.io/badge/Expo-React%20Native-000?logo=expo&logoColor=white">
-  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-Python%203.12-009688?logo=fastapi&logoColor=white">
-  <img alt="React" src="https://img.shields.io/badge/Dashboard-React%20%2B%20Vite-61DAFB?logo=react&logoColor=black">
-  <img alt="Android" src="https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white">
-  <img alt="Offline first" src="https://img.shields.io/badge/Offline-first-blue">
-</p>
-
-> **Status:** active prototype. `docs/00-PRD.md` defines scope and acceptance criteria; `docs/TASKS.md` is the live task board.
-
-> **Note on the stack:** the app was originally prototyped in Unity. It is now built with **Expo React Native** using camera-based AR overlays (decision `D-027`). This cut the build loop from minutes to seconds, removed the Unity Hub / Android NDK setup burden for the whole team, and let us ship over-the-air through **Expo Go** instead of passing APKs around. Parts of `docs/00`–`09` still describe the Unity app; where they disagree with `mobile/CLAUDE.md`, `mobile/CLAUDE.md` and `D-027` win. Data contracts — scenario JSON, events, scoring, tokens, API, DB — are unchanged by the switch.
-
----
+Smart India Hackathon 2026 · PS 26041 (Govt. of Jharkhand) · Team Caffeine Coders
 
 ## The problem
 
-Safety training for industrial workers in Jharkhand is mostly classroom lectures and multiple-choice tests. A worker can pass a written quiz on fire response and still freeze at a real LPG leak. Training also assumes literacy, a steady internet connection, and a trainer in the room — none of which hold on a mine or mill floor.
+- DGMS recorded **48 fatal mine accidents in Jharkhand in 2022-23**, many involving workers with under 30 days of orientation.
+- Classroom training from static manuals keeps **under 20%** of what was taught after one week.
+- Live drills stop production, VR headsets are out of reach for small mines and contractors, and paper certificates can't prove a worker understood anything.
 
-## What Suraksha Saathi does
+## What it does
 
-- **AR safety drills on the real floor.** Hazards are overlaid on the worker's actual surroundings through the phone camera. No headset, no VR lab — a mid-range Android phone is enough.
-- **Two complete modules.** Fire & Explosion (`FIRE_01`) and Gas Leak & Confined Space (`GAS_01`).
-- **Scores what the worker *does*, not what they can recall.** The assessment engine grades actions, timing and sequence. Critical mistakes fail the attempt outright.
-- **Issues a signed QR certificate.** Signed on the device with a root-attested device key, so a certificate can be issued *and* verified with zero network access — an inspector at a pit head can scan and trust it offline.
-- **Hindi and Santali, voice-first.** Every string goes through localisation; audio narration carries workers with low literacy.
-- **Fully offline.** Everything the worker does works in airplane mode. The network is only ever used to sync.
-- **Web compliance dashboard.** Site-wise compliance, recertification tracking and certificate revocation for supervisors and inspectors.
+| | |
+|---|---|
+| **Two complete drills** | `FIRE_01` Fire & explosion and `GAS_01` Gas leak & confined space, drawn over the live camera on the worker's real floor. No camera or permission denied? The same drills run in a drawn virtual room. |
+| **PASS extinguisher technique** | Pull the pin (drag it out), Aim at the base, Squeeze the lever, Sweep side to side, with a fire that grows, shrinks or flares up depending on what you do. |
+| **Action-based scoring** | Scores what the worker *does* (order, timing, aim, choices), not quiz answers. 9 rules per module, 70% to pass; missing a critical step (3 in fire, 4 in gas) fails the attempt whatever the score. The result screen explains every lost point, out loud. |
+| **Offline certificates** | Passing the required modules issues a signed QR certificate on the phone, with no network. A two-level Ed25519 chain (root → device attestation → certificate) lets the app or the web verifier check it offline. |
+| **Refresher drills** | Short re-runs of the critical steps fall due on day 7 and day 30 after the first pass, to fight the forgetting curve. |
+| **Wallet cards** | Bank-card-size worker ID card (QR opens the worker's training on a shared phone) and certificate card, shareable as an image or printable. |
+| **Hindi and Santali** | Every screen and instruction in English, Hindi and Santali (Ol Chiki script), switchable at runtime, with spoken instructions. |
+| **Compliance dashboard** | Web dashboard for supervisors and admins: sites, workers, attempts, certificates, compliance heatmap, recertification due, revocation, CSV export and a refresher retention chart. |
 
-## How it maps to the problem statement
+## Download the APK
 
-| PS expected solution | Where it lives |
-| --- | --- |
-| Android APK, Android 10+, mid-range phone, no headset | `mobile/` |
-| ≥ 2 complete AR modules (`FIRE_01`, `GAS_01`) | `mobile/`, `content/scenarios/` |
-| Assessment engine | `mobile/` — rules in `docs/03-ASSESSMENT-ENGINE.md` |
-| QR certificate generation **and** verification | `mobile/`, `backend/`, public verify page in `dashboard/` |
-| Hindi + Santali localisation | `mobile/`, strings in `content/` |
-| Offline functionality | SQLite + outbox sync in `mobile/` |
-| Web admin compliance dashboard | `dashboard/` |
-| Demo video + public repo | `docs/09-DEMO-SCRIPT.md` |
+**[Download the latest APK from GitHub Releases](https://github.com/buildwithpriince/suraksha-saathi/releases/latest)** (`suraksha-saathi-v1.0.0.apk`, Android 10 or newer, no headset or ARCore needed).
 
----
+1. Open the link on the phone and download the `.apk`.
+2. When Android asks, allow your browser or file manager to **install unknown apps**.
+3. Open the APK and tap **Install**. If Play Protect warns about an unrecognised app, choose **More details → Install anyway** (the app is not on the Play Store).
+4. Print the exit markers from [`mobile/assets/markers/`](mobile/assets/markers/) for the evacuation step (optional: without them, use the drawn exit).
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/home.png" width="220" alt="Home screen"><br><sub>Home: workers, refresher badges, language</sub></td>
+    <td align="center"><img src="docs/screenshots/fire-drill.png" width="220" alt="Fire drill in camera mode"><br><sub>FIRE_01 on the real floor</sub></td>
+    <td align="center"><img src="docs/screenshots/extinguisher.png" width="220" alt="Extinguisher PASS technique"><br><sub>PASS: pull, aim, squeeze, sweep</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/result.png" width="220" alt="Result screen"><br><sub>Result: every lost point explained</sub></td>
+    <td align="center"><img src="docs/screenshots/certificate.png" width="220" alt="Certificate with QR"><br><sub>Signed QR certificate, issued offline</sub></td>
+    <td align="center"><img src="docs/screenshots/verify.png" width="220" alt="Verify screen"><br><sub>Offline verification</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/id-card.png" width="220" alt="Worker ID wallet card"><br><sub>Worker ID wallet card</sub></td>
+    <td align="center"><img src="docs/screenshots/dashboard-overview.png" width="220" alt="Dashboard overview"><br><sub>Dashboard: compliance overview</sub></td>
+    <td align="center"><img src="docs/screenshots/retention-chart.png" width="220" alt="Refresher retention chart"><br><sub>Refresher retention chart</sub></td>
+  </tr>
+</table>
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    subgraph Phone["Android phone — works offline"]
-        A["Expo React Native app<br/>camera AR overlays"]
-        B["Assessment engine"]
-        C["SQLite + outbox"]
-        D["Device key<br/>signs certificates"]
-        A --> B --> C
-        B --> D
-    end
+  subgraph Phone["Android app (Expo React Native, works in airplane mode)"]
+    Player["ScenarioPlayer<br/>camera overlays or virtual room"] --> Engine["Assessment engine<br/>rules + critical steps"]
+    Engine --> DB[("SQLite<br/>attempts + outbox")]
+    Engine --> Issue["Issue certificate<br/>device key signs SS1"]
+    Verify["Verify screen"]
+  end
+  subgraph Server["Backend (FastAPI + PostgreSQL on Supabase)"]
+    API["REST API /v1"] --> PG[("PostgreSQL")]
+    Root["Root key<br/>(env var only)"]
+  end
+  subgraph Web["Dashboard (React + Vite)"]
+    Dash["Compliance, workers,<br/>retention, revocation"]
+    WebVerify["Public /verify"]
+  end
+  Content["content/scenarios/*.json<br/>single source of truth"] --> Player
+  Content --> API
+  DB -. "sync (roadmap)" .-> API
+  API --> Dash
 
-    subgraph Server["Backend — network only"]
-        E["FastAPI<br/>sync + certificate authority"]
-        F[("PostgreSQL<br/>Supabase")]
-        E --> F
-    end
-
-    subgraph Web["Web"]
-        G["React dashboard<br/>compliance + revocation"]
-        H["Public verify page"]
-    end
-
-    C -- "sync when online" --> E
-    D -- "device attestation" --> E
-    E --> G
-    E --> H
-    Scan["QR scan<br/>offline verify"] -.-> H
+  subgraph Chain["Certificate trust chain (Ed25519, docs/04)"]
+    direction TB
+    R["Root key"] -- "signs" --> A["SA1 device attestation<br/>device public key, site, expiry"]
+    A -- "embedded in" --> C["SS1 certificate QR<br/>worker, modules, scores, expiry"]
+    D["Device key<br/>(phone secure store)"] -- "signs" --> C
+    RL["SR1 revocation list<br/>(root-signed, cached)"]
+  end
+  Root --> R
+  C -- "scan" --> Verify
+  C -- "scan" --> WebVerify
 ```
 
-The app is offline-first: drills, scoring and certificate issuance never touch the network. A local SQLite database with an outbox queue holds attempts and events until a connection is available, at which point FastAPI reconciles them. Certificates are signed on-device with a key attested by a root signing key, so verification only needs the root public key — which ships with the app and lives in `content/trust/root_public_key.txt`.
+The phone only needs the root **public** key and a cached revocation list to decide Valid / Expired / Revoked / Invalid, so an inspector at a site gate gets an answer with no network. Details: [docs/01-ARCHITECTURE.md](docs/01-ARCHITECTURE.md), [docs/04-CERTIFICATES.md](docs/04-CERTIFICATES.md).
 
-Full detail: `docs/01-ARCHITECTURE.md` and `docs/05-DATA-AND-SYNC.md`.
+## Tech stack
 
-## Repo map
+| Part | Stack |
+|---|---|
+| Android app (`mobile/`) | Expo SDK 57, React Native (New Architecture, Hermes), TypeScript, expo-router, expo-camera, expo-sensors, Reanimated, react-native-svg, Lottie, expo-sqlite, expo-secure-store, @noble/ed25519, i18next, expo-speech, Vitest |
+| Backend (`backend/`) | Python 3.12, FastAPI, SQLAlchemy 2 (async), Alembic, PostgreSQL (Supabase), cryptography (Ed25519), PyJWT, uv, pytest, ruff; deployed with a Render Blueprint |
+| Dashboard (`dashboard/`) | React 18, Vite, TypeScript, Tailwind CSS 4, TanStack Query, React Router, Recharts, Supabase Auth, @zxing/browser, Vitest; deployed on Vercel |
+| Content (`content/`) | Scenario JSON (steps, rules, safety content), string tables (CSV), trust keys and shared test vectors |
 
-| Path | What |
-| --- | --- |
-| `mobile/` | Expo React Native Android app — AR, assessment, offline store, certificates |
-| `backend/` | FastAPI sync service + certificate authority (PostgreSQL / Supabase) |
-| `dashboard/` | React + Vite + TypeScript admin dashboard and public verify page |
-| `content/scenarios/` | Scenario JSON — the single source of truth for module steps, thresholds and PPE |
-| `content/trust/` | Root public key and trust anchors |
-| `docs/` | Specifications; source of truth for behaviour and data contracts |
+## Quick start
 
----
-
-## Getting started
-
-### Prerequisites
-
-| For | You need |
-| --- | --- |
-| `mobile/` | Node.js 20+, an Android phone, [Expo Go](https://expo.dev/go) for everyday work — plus USB debugging and a dev build for AR |
-| `backend/` | Python 3.12, [`uv`](https://docs.astral.sh/uv/) |
-| `dashboard/` | Node.js 20+ |
-
-AR features need a device on [Google's ARCore supported list](https://developers.google.com/ar/devices). Keep one non-ARCore phone around to test the fallback path.
-
-### Clone
-
-Fonts, audio and images are stored in **Git LFS**. Without it you get small pointer files instead of real assets.
+Prerequisites: Git with Git LFS, Node.js 22.13+ (24 LTS recommended), Python 3.12 and [uv](https://docs.astral.sh/uv/). Team setup and deployment: [SETUP.md](SETUP.md).
 
 ```bash
-git lfs install          # once per machine, before cloning
+git lfs install
 git clone https://github.com/buildwithpriince/suraksha-saathi.git
 cd suraksha-saathi
-git lfs pull             # only if you cloned before installing Git LFS
 ```
 
-In `git lfs ls-files`, a `*` means a real file and a `-` means an unresolved pointer.
-
-Line endings are normalised to LF by `.gitattributes` on every OS. Don't change `core.autocrlf`; a "CRLF will be replaced by LF" warning is that working as intended.
-
-### Run the app
-
-Install **[Expo Go](https://expo.dev/go)** from the Play Store on your phone, then:
+**Android app** (run on a phone with [Expo Go](https://expo.dev/go), same Wi-Fi):
 
 ```bash
 cd mobile
@@ -132,149 +120,91 @@ npm install
 npx expo start
 ```
 
-Scan the QR code in the terminal with Expo Go and the app loads on your phone — no cable, no APK, no Android Studio. Phone and laptop need to be on the same network. Saving a file hot-reloads the app on the device.
-
-Expo Go is the fastest way to work on screens, scoring, localisation and the offline store. It can't load custom native modules, so the camera AR path needs a development build instead:
-
-```bash
-npx expo run:android          # builds and installs a dev client over USB
-```
-
-After that, `npx expo start --dev-client` gives you the same instant-reload loop with native AR available.
-
-> `mobile/android/` and `mobile/ios/` are generated by `expo prebuild` and must never be edited by hand. Native configuration goes in `mobile/app.config.ts` or a config plugin.
-
-### Run the backend
+**Backend** (local SQLite database, no Docker needed):
 
 ```bash
 cd backend
 uv sync
-cp .env.example .env     # fill in the values below
-uv run fastapi dev app/main.py
+cp .env.example .env    # then set DATABASE_URL=sqlite:///./local.db
+uv run python -m app.tools.gen_root_key --public-key-file local_root_public_key.txt
+# put the printed ROOT_SIGNING_KEY_B64 in .env (gitignored; never commit it)
+uv run alembic upgrade head
+uv run python -m app.tools.seed_demo
+uv run fastapi dev app/main.py    # http://127.0.0.1:8000/v1/health
 ```
 
-### Run the dashboard
+`--public-key-file` keeps a throwaway local key out of `content/trust/`. For a real deployment, follow [SETUP.md section 8](SETUP.md#8-deploy-the-backend-to-render-human-once-task-t-58).
+
+**Dashboard** (runs on built-in demo data unless the `VITE_*` variables in `dashboard/.env.example` are set):
 
 ```bash
 cd dashboard
 npm install
-npm run dev
+npm run dev    # http://localhost:5173; the login page lists the demo accounts
 ```
 
-## Environment
+## Testing
 
-Never commit `.env*`, `*.pem` or anything under `keys/`. The root signing private key exists only in the backend environment.
+| Part | Tests | Commands |
+|---|---|---|
+| Android app | 330 tests in 26 files (scoring, crypto vectors, scenario contract, player, SQLite schema and outbox, l10n) | `cd mobile && npm test && npm run typecheck` |
+| Backend | 371 tests | `cd backend && uv run pytest -q && uv run ruff check . && uv run ruff format --check .` |
+| Dashboard | 78 tests in 7 files | `cd dashboard && npm run typecheck && npm run test && npm run build` |
 
-**`backend/.env`** (template in `backend/.env.example`)
+All three run in [CI](.github/workflows/ci.yml) on every push and pull request. The same Ed25519 test vectors ([content/trust/test-vectors.json](content/trust/test-vectors.json), TEST keys only) are checked by the app, backend and dashboard, so all three agree byte for byte on what a valid certificate is.
 
-| Variable | Purpose |
-| --- | --- |
-| `DATABASE_URL` | PostgreSQL connection string (Supabase session pooler, `?sslmode=require`) |
-| `SUPABASE_URL` | Supabase project URL |
-| `SUPABASE_JWKS_URL` | `<SUPABASE_URL>/auth/v1/.well-known/jwks.json` |
-| `ROOT_SIGNING_KEY_B64` | Root signing private key — generated once, stored only in the deploy environment |
-| `CORS_ORIGINS` | Allowed dashboard origins |
+## Built vs roadmap
 
-**`dashboard/.env.local`**
+| Built and working in the APK / dashboard | Roadmap |
+|---|---|
+| FIRE_01 and GAS_01, camera mode and virtual-room fallback | Remaining PS safety domains (machinery and the rest) as new scenario JSON |
+| Orientation-anchored overlays (3DoF gyro filter), printed QR exit markers, marker lock | True ARCore plane and position tracking (today overlays hold direction but not position) |
+| Action-based scoring with critical failures, result explanations | Phone-to-backend sync client (the backend sync API and outbox are built; the app does not send yet) |
+| Offline certificate issue and verify, two-level Ed25519 chain, revocation list | Real root key ceremony: the demo build signs with the published TEST keys and says so on screen |
+| Refresher drills at day 7 and 30, retention chart | Native-reviewed Santali and recorded Santali narration |
+| Worker ID and certificate wallet cards, printable ID sheet | Kiosk QR login (locked worker session, language switch at login); today the ID card QR opens the worker's page |
+| English, Hindi, Santali (Ol Chiki) UI with spoken instructions | Recorded narration in place of text-to-speech |
+| Compliance dashboard, public verify page | |
 
-| Variable | Purpose |
-| --- | --- |
-| `VITE_API_BASE_URL` | Backend base URL |
-| `VITE_SUPABASE_URL` | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
+Being honest about the demo:
 
-Generate the root key once with `uv run python -m app.tools.gen_root_key`. Commit only the resulting public key to `content/trust/root_public_key.txt`.
+- **The dashboard demo runs on seeded data**: either its built-in mock (no backend) or a backend filled by `seed_demo` (3 sites, 40 workers, 148 attempts). Phones do not sync to it yet.
+- **Santali strings are machine drafts under native-speaker review.** All 336 are marked `needsReview`; the app says so on the Home screen, and Santali narration is spoken with the Hindi voice. A speaker can correct them in one spreadsheet ([docs/07](docs/07-LOCALIZATION.md#translation-workflow)).
+- **Certificates in the demo are signed with TEST keys**, flagged by a "Demo keys" banner in the app.
 
-## Tests
+## Key design decisions
 
-```bash
-cd mobile     && npm test && npm run typecheck && npm run lint
-cd backend    && uv run pytest -q
-cd dashboard  && npm run typecheck && npm run test && npm run build
-```
+Full log with alternatives rejected: [docs/DECISIONS.md](docs/DECISIONS.md).
 
-Validate scenario content against the schema:
+- **Unity → Expo React Native ([D-027](docs/DECISIONS.md)).** Unity's Android build support would not install on the lead's machine and blocked every app task. Expo gave camera overlays that run on any Android 10+ phone (no ARCore device list), cloud APK builds without a local Android SDK, native Devanagari rendering, and TypeScript shared with the dashboard. The cost is no world tracking, which printed QR markers and marker lock partly make up for.
+- **Scenario steps are data ([D-003](docs/DECISIONS.md)).** One generic ScenarioPlayer plays any module from JSON, so safety experts can review content without reading code and new domains need no new app logic.
+- **Two-level signature chain ([D-005](docs/DECISIONS.md)).** Root key → device attestation → certificate lets a phone issue *and* a stranger verify a certificate with no network. Blockchain was rejected as unnecessary.
+- **Compact signed tokens, verified over the transmitted bytes ([D-006](docs/DECISIONS.md)).** No JSON canonicalisation, so the TypeScript and Python verifiers can't disagree.
+- **Santali in Ol Chiki, labelled honestly ([D-047](docs/DECISIONS.md)).** The script the community reads Santali in, with uncertain safety terms left in English rather than invented, and a one-command review loop for native speakers.
 
-```bash
-cd backend && uv run python -m app.tools.validate_scenarios ../content/scenarios
-```
+## Repo map
 
----
-
-## Deployment
-
-**Backend — Render.** Dashboard → New → Blueprint → this repo (`render.yaml` sits at the root). Fill in `DATABASE_URL`, `ROOT_SIGNING_KEY_B64`, `SUPABASE_URL`, `SUPABASE_JWKS_URL` and `CORS_ORIGINS`. Set `SEED_DEMO_ON_START=true` on the first deploy for the demo database — the seed refuses to run twice, so it's safe to leave on. Every start runs `alembic upgrade head`.
-
-Check the deploy:
-
-```
-GET /v1/health            -> {"status":"ok"}
-GET /v1/content/manifest
-GET /v1/revocations
-```
-
-The free Render plan sleeps when idle — hit `/v1/health` a minute before any demo.
-
-**Dashboard — Vercel**, configured by `vercel.json` and `.vercelignore`.
-
-**Dashboard admins.** Create a user in Supabase Auth, then grant them access:
-
-```sql
-insert into admin_profiles (user_id, role, site_ids)
-values ('<uid>', 'admin', '{}');
-```
-
-Or locally: `uv run python -m app.tools.seed_demo --admin <uid>`.
-
----
-
-## Documentation
-
-| Area | Spec |
-| --- | --- |
-| Scope, acceptance criteria | `docs/00-PRD.md` |
-| System design, offline model | `docs/01-ARCHITECTURE.md` |
-| AR module flows | `docs/02-AR-MODULES.md` |
-| Scoring rules | `docs/03-ASSESSMENT-ENGINE.md` |
-| QR certificate format + crypto | `docs/04-CERTIFICATES.md` |
-| Local DB, server DB, sync | `docs/05-DATA-AND-SYNC.md` |
-| REST API | `docs/06-API.md` |
-| Hindi/Santali, fonts, audio | `docs/07-LOCALIZATION.md` |
-| Dashboard screens | `docs/08-DASHBOARD.md` |
-| Demo video storyboard | `docs/09-DEMO-SCRIPT.md` |
-| Task board | `docs/TASKS.md` |
-| Decisions log | `docs/DECISIONS.md` |
-
-Team workflow, tooling and secrets handling: `SETUP.md`. Working conventions for AI-assisted development: `CLAUDE.md`.
-
-## Contributing
-
-- One task from `docs/TASKS.md` at a time; branch per task (`t-22-scenario-player`), small PRs, merge daily.
-- Commits read `T-XX: short imperative summary`.
-- Specs win over assumptions. If code and spec disagree, fix the spec in the same change — and update every consumer of a changed data contract (scenario JSON, QR format, API shape, DB schema).
-- Safety content — steps, thresholds, PPE — only ever comes from `content/scenarios/*.json`. Never invent safety facts in code or strings; mark unknowns `"needsReview": true`.
-- All user-facing text goes through localisation keys. No hard-coded strings in the UI.
-- Anything a worker does must work in airplane mode.
-
-## Roadmap
-
-- Remaining PS safety domains, starting with Machinery
-- Hardware-backed keys (StrongBox / TEE attestation)
-- DigiLocker integration for certificate portability
-
-## Demo
-
-- Video: _coming soon_
-- Screenshots: _coming soon_
-
-## Credits
-
-Third-party 3D models, VFX, fonts and sounds are listed here with their licenses as they are imported.
-
-## License
-
-To be chosen.
+| Path | What |
+|---|---|
+| [`mobile/`](mobile/) | Android app (Expo) |
+| [`backend/`](backend/) | FastAPI API, database models, Alembic migrations, demo seed |
+| [`dashboard/`](dashboard/) | React admin dashboard and public verify page |
+| [`content/`](content/) | Scenario JSON, string tables, trust keys and test vectors |
+| [`docs/`](docs/) | Specs 00–09, task board, decisions log |
 
 ## Team
 
-**Caffeine Coders** — Smart India Hackathon 2026.
+Team Caffeine Coders
+
+| Name | Role |
+|---|---|
+| _Name_ | _Team lead, architecture and app core_ |
+| _Name_ | _Camera interactions and ScenarioPlayer_ |
+| _Name_ | _App screens and localisation_ |
+| _Name_ | _Backend and deployment_ |
+| _Name_ | _Dashboard_ |
+| _Name_ | _Safety content, strings, device QA and demo_ |
+
+## License
+
+[MIT](LICENSE) © 2026 Team Caffeine Coders. Fonts: Noto Sans Devanagari and Noto Sans Ol Chiki, SIL Open Font License 1.1.

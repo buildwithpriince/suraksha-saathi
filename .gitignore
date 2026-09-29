@@ -55,6 +55,10 @@ pnpm-debug.log*
 *.keystore
 **/keys/
 
+# Local backend runs (README quick start): SQLite file and a throwaway root public key
+backend/*.db
+backend/local_root_public_key.txt
+
 # Claude Code (personal)
 CLAUDE.local.md
 .claude/settings.local.json

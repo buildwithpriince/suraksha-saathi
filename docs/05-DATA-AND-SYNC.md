@@ -87,7 +87,8 @@ Trigger: app resume, "Sync now" button, every 10 minutes while app is open and o
   - Attempt: `result.attemptId` must equal the item id (`invalid_payload`); `scenarioId`+`scenarioVersion` must
     exist in `/content` (`unknown_scenario`, not retryable). Identical = same workerId, result and events.
   - Attempt recheck: the server trusts per-rule `earned`/`passed` but takes rule `max`, `critical` and
-    variant scoping from the scenario file. A critical rule without `criticalOn` fails when it earns 0.
+    variant scoping from the scenario file. A `kind: "refresher"` attempt is rechecked against the rules the
+    refresher scores (docs/03 "Refresher drills"; `app/services/refresher.py`, same derivation as the app). A critical rule without `criticalOn` fails when it earns 0.
     Stored `score_percent`/`passed` are the server's values; `flag_reason` lists every disagreement
     (score, passed, criticalFailures, unknown/missing/duplicate rules, unknown variant). `eventsSha256` is
     not checked (the server can't reproduce the device's exact bytes).

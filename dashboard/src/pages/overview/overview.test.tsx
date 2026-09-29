@@ -20,6 +20,22 @@ test("overview shows KPI cards, failed rules and the latest 10 attempts", async 
   expect(rows.length).toBe(10);
 });
 
+test("overview compares initial training with the day 7 and day 30 refreshers (D-044)", async () => {
+  renderRoute("/");
+  expect(await screen.findByRole("heading", { name: "Retention: initial training vs refreshers" })).toBeInTheDocument();
+  const table = await screen.findByRole("table", { name: "Retention by refresher stage" });
+  const rows = within(table).getAllByRole("row").slice(1); // header
+  expect(rows).toHaveLength(6); // 2 modules x 3 stages
+  expect(rows.map((r) => within(r).getAllByRole("cell")[1]!.textContent)).toEqual([
+    "Initial training",
+    "Day 7",
+    "Day 30",
+    "Initial training",
+    "Day 7",
+    "Day 30",
+  ]);
+});
+
 test("a heatmap cell opens the filtered attempts", async () => {
   const user = userEvent.setup();
   renderRoute("/compliance");

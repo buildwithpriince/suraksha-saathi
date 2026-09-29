@@ -44,8 +44,8 @@ Max 50 items, max body 2 MB.
 Worker `deletedAt` (D-035): null, or unix seconds of the soft delete (then equal to `updatedAt`). Until T-65 the
 backend ignores it (unknown fields are dropped), so a deleted worker stays visible on the dashboard.
 Attempt `result.kind` (D-044): `"training"` (default when absent) or `"refresher"`, with `result.refresher`
-= `{"dueDay": n}` for a refresher (docs/03). The server rechecks a refresher against the derived rule set
-(T-37); until then it keeps the field in `result_json` and flags refreshers for the rules they leave out.
+= `{"dueDay": n}` (integer 1–3650) for a refresher and only then (docs/03); otherwise `invalid_payload`. The
+server rechecks a refresher against the derived rule set (docs/03 "Refresher drills", docs/05).
 Rejection codes: `missing_worker` (retryable) · `conflict_immutable` · `invalid_payload` · `unknown_scenario` ·
 `invalid_certificate` (none of the last four are retryable). Ids are echoed exactly as sent. Whole-request
 errors: 422 `validation_error` (envelope), 413 `payload_too_large`. Rules: docs/05 "Sync ingest rules".
@@ -71,6 +71,7 @@ Worker fields are present for VALID, EXPIRED and REVOKED (both signatures verifi
 | Method & path | Purpose | Response shape |
 |---|---|---|
 | GET /v1/admin/overview | KPI cards | `{"workers":n,"certifiedPercent":n,"attempts7d":n,"recertDue30d":n,"topFailedRules":[{"ruleId":"","scenarioId":"","failures":n}]}` |
+| GET /v1/admin/retention | Initial vs refresher scores (D-044) | `{"stages":[0,7,30],"scenarios":[{"scenarioId":"FIRE_01","points":[{"stage":0,"avgScore":94,"workers":36}]}]}` |
 | GET /v1/admin/sites | Sites list | `[{"id","code","name","district","sector","workers","certifiedPercent"}]` |
 | GET /v1/admin/compliance/heatmap | Site × scenario pass rate | `{"sites":["DHN-01"],"scenarios":["FIRE_01","GAS_01"],"cells":[{"site","scenario","passRate","attempts"}]}` |
 | GET /v1/admin/workers?site=&q=&page= | Workers | `{"items":[{"id","displayName","site","certStatus","lastAttemptAt"}],"total":n}` |
@@ -102,6 +103,13 @@ Worker fields are present for VALID, EXPIRED and REVOKED (both signatures verifi
   expiring. Heatmap `cells` cover every site × scenario; `passRate` is `null` when `attempts` is 0.
 - `attempts7d`: attempts whose `startedAt` is within the last 7 days. `topFailedRules`: top 5 by count of
   `passed:false` rule results. `recertDue30d` = the length of `/recert-due?days=30`.
+- `/retention` (D-044): `stages` = 0 plus `content/refresher.json` `dueDays` plus any `dueDay` seen, ascending;
+  `scenarios` = the newest scenarios from `/content`, sorted by id, each with one point per stage. Per worker and
+  module, stage 0 is their first passing `training` attempt (server `passed`), scored over the rules the refresher
+  scores only (per-rule `earned`/`max` from `result`), so every stage measures the same critical steps; stage N is
+  the server `scorePercent` of their first refresher with `dueDay` N. `avgScore` = mean over those workers, rounded
+  half away from zero, `null` when `workers` is 0. Existing aggregates (overview, heatmap, CSV) count refreshers
+  like any other attempt.
 - `/recert-due`: one row per worker, from their newest non-revoked certificate, if `0 ≤ daysLeft ≤ days`
   (`daysLeft = floor((expiresAt − now) / 86400)`); `days` is 0–365. A re-certified worker drops off.
 - Device = `{"id","label","site","status","lastSeenAt","approvedAt"}`, newest registration first.

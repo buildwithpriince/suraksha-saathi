@@ -18,9 +18,11 @@ import {
 } from "../types";
 import {
   DAY,
+  REFRESHER_DAYS,
   SCENARIOS,
   TEST_ROOT_PUBLIC_KEY,
   buildMockDb,
+  refresherRuleIds,
   roundHalfAway,
   signRevocations,
   type MockAttempt,
@@ -137,6 +139,38 @@ export function createMockApi({ account, latencyMs = 250, now = () => Math.floor
         recertDue30d: recertDue(db, inScope, t, 30).length,
         topFailedRules: [...failures.values()].sort((a, b) => b.failures - a.failures || a.ruleId.localeCompare(b.ruleId)).slice(0, 5),
       };
+    },
+
+    async retention() {
+      // Same rules as backend compliance.retention (D-044): per worker and module, stage 0 is the
+      // first passing training attempt scored over the refresher's rules only; stage N is the
+      // first refresher for day N. Averages over workers.
+      const { db, inScope } = await admin();
+      const dayOf = (a: MockAttempt) => (a.result.kind === "refresher" ? (a.result.refresher?.dueDay ?? null) : null);
+      const inView = db.attempts.filter((a) => inScope(a.site)).sort((a, b) => a.startedAt - b.startedAt || a.id.localeCompare(b.id));
+      const stages = [...new Set([0, ...REFRESHER_DAYS, ...inView.map(dayOf).filter((d): d is number => d !== null)])].sort((a, b) => a - b);
+      const scenarios = [...SCENARIOS].sort((a, b) => a.id.localeCompare(b.id)).map((scenario) => {
+        const ruleIds = refresherRuleIds(scenario);
+        const scores = new Map<number, number[]>(stages.map((s) => [s, []]));
+        const byWorker = new Map<string, MockAttempt[]>();
+        for (const a of inView.filter((x) => x.scenarioId === scenario.id)) byWorker.set(a.workerId, [...(byWorker.get(a.workerId) ?? []), a]);
+        for (const list of byWorker.values()) {
+          const initial = list.find((a) => a.passed && dayOf(a) === null);
+          const rules = (initial?.result.rules ?? []).filter((r) => ruleIds.has(r.ruleId));
+          const max = rules.reduce((s, r) => s + r.max, 0);
+          if (max > 0) scores.get(0)!.push(roundHalfAway((100 * rules.reduce((s, r) => s + r.earned, 0)) / max));
+          for (const stage of stages.slice(1)) {
+            const first = list.find((a) => dayOf(a) === stage);
+            if (first) scores.get(stage)!.push(first.scorePercent);
+          }
+        }
+        const points = stages.map((stage) => {
+          const s = scores.get(stage)!;
+          return { stage, avgScore: s.length ? roundHalfAway(s.reduce((x, y) => x + y, 0) / s.length) : null, workers: s.length };
+        });
+        return { scenarioId: scenario.id, points };
+      });
+      return { stages, scenarios };
     },
 
     async sites() {

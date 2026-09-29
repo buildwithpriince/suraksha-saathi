@@ -83,6 +83,22 @@ class Heatmap(BaseModel):
     cells: list[HeatmapCell]
 
 
+class RetentionPoint(BaseModel):
+    stage: int  # 0 = initial training; else days after the first pass (content/refresher.json)
+    avgScore: int | None  # 0-100; null when no worker has a score at this stage
+    workers: int
+
+
+class RetentionScenario(BaseModel):
+    scenarioId: str
+    points: list[RetentionPoint]  # one per stage, in `stages` order
+
+
+class Retention(BaseModel):
+    stages: list[int]
+    scenarios: list[RetentionScenario]
+
+
 class RecertDueItem(BaseModel):
     workerId: uuid.UUID
     displayName: str

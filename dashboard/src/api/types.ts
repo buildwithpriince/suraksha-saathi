@@ -22,6 +22,18 @@ export interface Overview {
   topFailedRules: FailedRule[];
 }
 
+/** GET /v1/admin/retention (D-044): average score at initial training vs each refresher stage. */
+export interface RetentionPoint {
+  stage: number; // 0 = initial training; else days after the first pass
+  avgScore: number | null; // 0-100; null when no worker has a score at this stage
+  workers: number;
+}
+
+export interface Retention {
+  stages: number[];
+  scenarios: { scenarioId: string; points: RetentionPoint[] }[];
+}
+
 export interface Site {
   id: string;
   code: string;
@@ -84,6 +96,8 @@ export interface AttemptResult {
   variant?: string;
   seed?: number;
   mode?: string;
+  kind?: "training" | "refresher"; // D-044; absent = training
+  refresher?: { dueDay: number };
   startedAt?: number;
   durationSec?: number;
   scorePercent?: number;
@@ -198,6 +212,7 @@ export interface ExportQuery {
 /** Everything the dashboard asks of the backend. Implemented by http.ts and mock/. */
 export interface ApiClient {
   overview(): Promise<Overview>;
+  retention(): Promise<Retention>;
   sites(): Promise<Site[]>;
   heatmap(): Promise<Heatmap>;
   workers(query: WorkerQuery): Promise<Paged<WorkerListItem>>;

@@ -6,6 +6,7 @@
  */
 import fire from "../../../../content/scenarios/FIRE_01.json";
 import gas from "../../../../content/scenarios/GAS_01.json";
+import refresherConfig from "../../../../content/refresher.json";
 import vectors from "../../../../content/trust/test-vectors.json";
 import { hexToBytes, signToken } from "../../lib/cert";
 import type { AttemptEvent, AttemptResult, DeviceStatus, RuleResult } from "../types";
@@ -21,19 +22,67 @@ interface ScenarioFile {
   passThresholdPercent: number;
   validityDays: number;
   variants: { id: string }[];
-  steps: { id: string; variants?: string[] }[];
+  steps: {
+    id: string;
+    interaction: string;
+    variants?: string[];
+    params: { options?: { tag?: string }[]; agentFrom?: string; exitBehind?: { marker?: string }; marker?: string };
+  }[];
   rules: {
     id: string;
+    type: string;
     points: number;
     critical: boolean;
     criticalOn?: string;
     variants?: string[];
     feedbackKey?: string;
-    params: { step?: string; before?: string; after?: string };
+    params: { step?: string; before?: string; after?: string; tag?: string };
   }[];
 }
 
 export const SCENARIOS = [fire, gas] as unknown as ScenarioFile[];
+
+/** content/refresher.json: refresher stages in days after the first pass (D-044). */
+export const REFRESHER_DAYS: number[] = refresherConfig.dueDays;
+
+/**
+ * The rules a refresher scores (docs/03 "Refresher drills", D-044). The mock's copy of
+ * `mobile/src/core/refresher/derive.ts` and `backend/app/services/refresher.py`: keep the steps
+ * critical rules are tied to, placement steps and what those need; keep rules whose steps all run.
+ */
+export function refresherRuleIds(s: ScenarioFile): Set<string> {
+  return refresherPlan(s).rules;
+}
+
+function refresherPlan(s: ScenarioFile): { steps: Set<string>; rules: Set<string> } {
+  const tied = (r: ScenarioFile["rules"][number]) => [
+    ...[r.params.step, r.params.before, r.params.after].filter((x): x is string => typeof x === "string"),
+    ...(r.type === "no_forbidden" ? s.steps.filter((st) => st.params.options?.some((o) => o.tag === r.params.tag)).map((st) => st.id) : []),
+  ];
+  const kept = new Set(s.rules.filter((r) => r.critical).flatMap(tied));
+  s.steps.filter((st) => st.interaction === "place_on_plane").forEach((st) => kept.add(st.id));
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const st of s.steps.filter((x) => kept.has(x.id))) {
+      const marker = st.params.exitBehind?.marker;
+      const needs = [
+        ...(st.params.agentFrom ? [st.params.agentFrom] : []),
+        ...s.steps.filter((x) => marker !== undefined && x.interaction === "find_marker" && x.params.marker === marker).map((x) => x.id),
+      ];
+      for (const need of needs) {
+        if (kept.has(need)) continue;
+        kept.add(need);
+        grew = true;
+      }
+    }
+  }
+  return { steps: kept, rules: new Set(s.rules.filter((r) => tied(r).length > 0 && tied(r).every((id) => kept.has(id))).map((r) => r.id)) };
+}
+
+// Fail-rate multiplier by refresher stage: a little is forgotten by day 7, more by day 30
+const REFRESHER_SKILL: Record<number, number> = { 7: 1.3, 30: 1.9 };
+/** Share of certified workers who came back for each refresher stage. */
+const REFRESHER_TURNOUT = 0.6;
 
 export interface MockSite {
   id: string;
@@ -246,17 +295,24 @@ export async function buildMockDb(now = Math.floor(Date.now() / 1000), seed = 20
   }
 
   const attempts: MockAttempt[] = [];
-  const addAttempt = (worker: MockWorker, scenario: ScenarioFile, startedAt: number, skill: number, mustPass: boolean) => {
-    const variant = rand.pick(scenario.variants).id;
-    const mode = rand.next() < 0.8 ? "ar" : "tabletop";
-    const rules = playRules(scenario, variant, skill, rand, mustPass);
+  /** `refresherDay`: a refresher of that stage, played on the short scenario (D-044), drawn from `r`. */
+  const addAttempt = (worker: MockWorker, full: ScenarioFile, startedAt: number, skill: number, mustPass: boolean, r: Rand = rand, refresherDay?: number) => {
+    let scenario = full;
+    if (refresherDay !== undefined) {
+      const plan = refresherPlan(full);
+      scenario = { ...full, rules: full.rules.filter((x) => plan.rules.has(x.id)), steps: full.steps.filter((s) => plan.steps.has(s.id)) };
+    }
+    const variant = r.pick(scenario.variants).id;
+    const mode = r.next() < 0.8 ? "ar" : "tabletop";
+    const rules = playRules(scenario, variant, skill, r, mustPass);
     const { scorePercent, passed, criticalFailures } = scoreRules(scenario, rules);
-    const durationSec = Math.round((150 + rand.next() * 150) * 10) / 10;
-    const attemptId = id();
+    const durationSec = Math.round((150 + r.next() * 150) * (scenario.steps.length / full.steps.length) * 10) / 10;
+    const attemptId = uuid(r.next);
+    const kind = refresherDay === undefined ? { kind: "training" as const } : { kind: "refresher" as const, refresher: { dueDay: refresherDay } };
     attempts.push({
       id: attemptId, workerId: worker.id, site: worker.site, scenarioId: scenario.id, variant, mode, scorePercent, passed,
       flagged: false, flagReason: null, startedAt, durationSec,
-      result: { attemptId, scenarioId: scenario.id, scenarioVersion: scenario.version, variant, seed: rand.int(1, 999999), mode, startedAt, durationSec, scorePercent, passed, criticalFailures, rules, eventsSha256: "" },
+      result: { attemptId, scenarioId: scenario.id, scenarioVersion: scenario.version, variant, seed: r.int(1, 999999), mode, ...kind, startedAt, durationSec, scorePercent, passed, criticalFailures, rules, eventsSha256: "" },
       events: playEvents(scenario, variant, rules, durationSec),
     });
     return attempts[attempts.length - 1]!;
@@ -302,6 +358,20 @@ export async function buildMockDb(now = Math.floor(Date.now() / 1000), seed = 20
     a.flagged = true;
     a.flagReason = `scorePercent ${Math.max(a.scorePercent, 72)}, server computed ${a.scorePercent}; passed true, server computed false`;
     a.result = { ...a.result, scorePercent: Math.max(a.scorePercent, 72), passed: true, criticalFailures: [] };
+  }
+
+  // D-044 refreshers: certified workers came back at each stage that has passed. Drawn from their
+  // own PRNG after everything else, so the rest of the demo data is exactly as before.
+  const refresherRand = prng(seed + 1);
+  for (const cert of certificates) {
+    const worker = workers.find((w) => w.id === cert.workerId)!;
+    for (const scenario of SCENARIOS) {
+      for (const day of REFRESHER_DAYS) {
+        const startedAt = cert.issuedAt + day * DAY + refresherRand.int(32, 96) * 3600;
+        if (startedAt >= now || refresherRand.next() >= REFRESHER_TURNOUT) continue;
+        addAttempt(worker, scenario, startedAt, REFRESHER_SKILL[day] ?? 1.7, false, refresherRand, day);
+      }
+    }
   }
 
   attempts.sort((a, b) => b.startedAt - a.startedAt);

@@ -25,6 +25,7 @@ from app.schemas.sync import (
     WorkerPayload,
 )
 from app.services.content import ContentCatalog
+from app.services.refresher import refresher_scenario
 from app.services.scoring import RuleResult, recheck_attempt
 
 
@@ -113,8 +114,9 @@ async def _attempt(ctx: SyncContext, item_id: uuid.UUID, raw: dict[str, Any]) ->
     if await ctx.session.get(Worker, worker_id) is None:
         raise Rejected("missing_worker", retryable=True)
 
+    # A refresher is scored on the derived short scenario (docs/03, D-044)
     recheck = recheck_attempt(
-        scenario,
+        refresher_scenario(scenario) if result.kind == "refresher" else scenario,
         result.variant,
         [
             RuleResult(r.ruleId, Fraction(r.earned), Fraction(r.max), r.critical, r.passed)

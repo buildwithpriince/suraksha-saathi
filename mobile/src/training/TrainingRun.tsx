@@ -3,13 +3,24 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions, type GestureResponderEvent } from 'react-native';
-import { useSharedValue, withTiming } from 'react-native-reanimated';
+import { useDerivedValue, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { buildAttemptResult } from '@/core/assessment/result';
-import type { AttemptMode } from '@/core/assessment/types';
-import { isBehind, type Direction } from '@/core/orientation';
-import { FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, type Band } from '@/core/player/layout';
+import type { AttemptMode, RefresherInfo } from '@/core/assessment/types';
+import { isBehind, unproject, vectorToDirection, type Direction } from '@/core/orientation';
+import { CAMERA_LONG_SIDE_FOV_DEG, FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, focalLengthPx, pxPerDegAt, type Band } from '@/core/player/layout';
+import {
+  FIRE_START,
+  INITIAL_EXTINGUISHER,
+  agentEffective,
+  extinguisherTick,
+  type ExtinguisherConfig,
+  type ExtinguisherState,
+} from '@/core/player/extinguisher';
+import { exitIndicatorMinAngle } from '@/core/player/exitIndicator';
+import { MARKER_LOCK_FRESH_SEC, applySighting, sightingFrom } from '@/core/player/marker';
+import { directionErrorDeg } from '@/core/calibration';
 import { PREFABS, VIRTUAL_MARKER_OFFSET, offsetFrom, zoneAt, type Offset, type Prefab } from '@/core/player/prefabs';
 import { HOLD_SAMPLE_SEC, SKIP_OFFER_AFTER_SEC, ScenarioSession, type CurrentStep } from '@/core/player/session';
 import { tapWaypoint } from '@/core/player/waypoints';
@@ -18,16 +29,22 @@ import { MULTI_SELECT, type Scenario } from '@/core/scenarios/types';
 import { pickVariant, stepOptions } from '@/core/scenarios/variants';
 import { saveAttempt } from '@/db/attempts';
 import { newId, nowSeconds } from '@/db/database';
-import { speakKey, stopSpeaking } from '@/i18n/speech';
+import { autoSpeakKey, speakKey, stopSpeaking } from '@/i18n/speech';
 import { randomBytes } from '@/platform/random';
 import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
-import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
+import { AnchoringDebug, AnchoringStatus, liveAnchoring } from './AnchoringDebug';
+import { getAnchoringMode, getCameraFov, getDebugOverlay } from './anchoringSetting';
+import { createDischargeFeedback } from './dischargeFeedback';
+import { Extinguisher, SprayCone, type PinMethod, type Point } from './interactions/Extinguisher';
+import { Anchored, Cone, ExitIndicator, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
 import { useCameraDirection } from './useCameraDirection';
 
 const EMPTY_PREFAB: Prefab = { objects: {}, labels: {}, zones: {}, paths: {} };
 const WAYPOINT_PX = 64;
+/** operate_extinguisher: offer "Tap to pull the pin" if the pin is still in after this long. */
+const PIN_HELP_AFTER_MS = 10000;
 /** Space kept between a pinned overlay and the screen edge, card or bottom panel (D-033). */
 const PIN_GAP_PX = 8;
 
@@ -55,17 +72,83 @@ function startAttempt(scenario: Scenario): Attempt {
   return { session, attemptId: newId(), seed, startedAt: nowSeconds() };
 }
 
-/** Plays one attempt of any scenario over the camera feed (`ar`) or a plain virtual room (`tabletop`). */
-export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; workerId: string; mode: AttemptMode }) {
+/**
+ * Plays one attempt of any scenario over the camera feed (`ar`) or a plain virtual room (`tabletop`).
+ * A refresher (D-044) passes the derived scenario and its stage; it plays and scores the same way.
+ */
+export function TrainingRun({
+  scenario,
+  workerId,
+  mode,
+  refresher,
+}: {
+  scenario: Scenario;
+  workerId: string;
+  mode: AttemptMode;
+  refresher?: RefresherInfo;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
-  const { width, height } = useWindowDimensions();
-  const geometry: ScreenGeometry = useMemo(() => ({ cx: width / 2, cy: height / 2, pxPerDeg: width / PREVIEW_HFOV_DEG }), [width, height]);
-  const camera = useCameraDirection();
+  const windowSize = useWindowDimensions();
+  // The camera view's measured size (D-039): the preview crop and centre come from it, not from
+  // the window, which can differ by the system bars on edge-to-edge Android
+  const [view, setView] = useState({ width: windowSize.width, height: windowSize.height });
+  const { width, height } = view;
+  // Lens FOV: measured on this phone by the calibration screen if it has run, else the default
+  const [fov] = useState(() => getCameraFov(CAMERA_LONG_SIDE_FOV_DEG));
+  const [debug] = useState(getDebugOverlay);
+  // Settings "AR anchoring" (D-036), read once per attempt so it can't change mid-drill
+  const [anchoringMode] = useState(getAnchoringMode);
+  const pinhole = anchoringMode === 'stabilised';
+  const geometry: ScreenGeometry = useMemo(
+    () => ({
+      cx: width / 2,
+      cy: height / 2,
+      pxPerDeg: pinhole ? pxPerDegAt(width, height, fov.longSideFovDeg) : width / PREVIEW_HFOV_DEG,
+      focalPx: focalLengthPx(width, height, fov.longSideFovDeg),
+      pinhole,
+    }),
+    [width, height, pinhole, fov.longSideFovDeg],
+  );
+  const camera = useCameraDirection(anchoringMode);
+  const cameraValues = useMemo(() => ({ direction: camera.direction, orientation: camera.orientation }), [camera.direction, camera.orientation]);
   const anchor = useSharedValue<Direction | null>(null);
+  // Marker scale of the placed overlay: 1 until a printed anchor marker says otherwise (D-036)
+  const anchorScale = useSharedValue(1);
+  const anchorValues = useMemo(() => ({ anchor, scale: anchorScale }), [anchor, anchorScale]);
   // The same anchor for the JS thread: render and handlers read this, worklets read `anchor`
   // (Reanimated warns when a shared value is read during render)
   const placedAnchor = useRef<Direction | null>(null);
+  const placedScale = useRef(1);
+  /** Apparent size of the anchor marker that means scale 1; null until it is first seen. */
+  const markerRefSize = useRef<number | null>(null);
+  const lastMarkerFix = useRef(-Infinity);
+  /** Angle between where sensors had drifted the anchor and where the marker put it, last sighting. */
+  const markerResidual = useRef<number | null>(null);
+  const [markerLocked, setMarkerLocked] = useState(false);
+  const [repositioning, setRepositioning] = useState(false);
+  // operate_extinguisher (D-038): the simulated fire, and the worker's pin and lever
+  const [ext, setExt] = useState<ExtinguisherState>(INITIAL_EXTINGUISHER);
+  const extRef = useRef<ExtinguisherState>(INITIAL_EXTINGUISHER);
+  const [pinOut, setPinOut] = useState(false);
+  const [squeezing, setSqueezing] = useState(false);
+  // After PIN_HELP_AFTER_MS without the pin out, offer a plain "Tap to pull the pin" button
+  const [pinHelp, setPinHelp] = useState(false);
+  const [nozzle, setNozzle] = useState<Point | null>(null);
+  const feedback = useMemo(() => createDischargeFeedback(), []);
+
+  const setAnchor = (placed: Direction, scale: number) => {
+    anchor.set(placed);
+    anchorScale.set(scale);
+    placedAnchor.current = placed;
+    placedScale.current = scale;
+  };
+
+  /** A direction relative to the placed anchor, in the prefab's own (unscaled) degrees. */
+  const prefabOffset = (d: Direction): Offset => {
+    const o = offsetFrom(placedAnchor.current!, d);
+    return { dh: o.dh / placedScale.current, de: o.de / placedScale.current };
+  };
   const fireLevel = useSharedValue(1);
   const gasLevel = useSharedValue(0);
 
@@ -82,8 +165,17 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     const place = scenario.steps.find((s) => s.interaction === 'place_on_plane');
     return PREFABS[String(place?.params.prefab)] ?? EMPTY_PREFAB;
   }, [scenario]);
+  // Printed marker that pins the placed overlay while in view (D-036); camera mode, new anchoring only
+  const anchorMarker = useMemo(() => {
+    const marker = scenario.steps.find((s) => s.interaction === 'place_on_plane')?.params.anchorMarker;
+    return mode === 'ar' && pinhole && typeof marker === 'string' ? marker : null;
+  }, [scenario, mode, pinhole]);
   const markers = scenario.setup.markers;
   const exitHeading = useRef<number | null>(null);
+  // D-043: the exit's direction in the compass-free gyro frame, captured when the exit is scanned
+  const exitGyroHeading = useRef<number | null>(null);
+  const compassHeading = useDerivedValue(() => camera.direction.value.headingDeg);
+  const [exitIsBehind, setExitIsBehind] = useState(false);
   const handledScan = useRef(-1);
   const [waypoint, setWaypoint] = useState(0);
   const [held, setHeld] = useState(0);
@@ -112,11 +204,17 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     setHolding(false);
     setPicked([]);
     setCones([]);
+    setRepositioning(false);
+    extRef.current = INITIAL_EXTINGUISHER;
+    setExt(INITIAL_EXTINGUISHER);
+    setPinOut(false);
+    setSqueezing(false);
+    setPinHelp(false);
     progressed();
     const effect = prefab.stepEffects?.[cur.step.id];
     if (effect?.fireLevel !== undefined) fireLevel.value = withTiming(effect.fireLevel, { duration: 1500 });
     if (effect?.gasLevel !== undefined) gasLevel.value = withTiming(effect.gasLevel, { duration: 2500 });
-    speakKey(cur.step.audioKey, () => {
+    autoSpeakKey(cur.step.audioKey, () => {
       // narration auto-advances when its audio ends (docs/02)
       const now = session.current();
       if (cur.step.interaction === 'narration' && now?.index === cur.index) {
@@ -145,13 +243,19 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     return () => clearInterval(id);
   }, [stepIndex, cur?.step.timeLimitSec]);
 
+  // The "locked to marker" badge goes out once sightings stop (marker out of frame)
+  useEffect(() => {
+    if (anchorMarker === null) return;
+    const id = setInterval(() => setMarkerLocked(performance.now() - lastMarkerFix.current < MARKER_LOCK_FRESH_SEC * 1000), 300);
+    return () => clearInterval(id);
+  }, [anchorMarker]);
+
   // aim_and_hold: one sample per 0.25 s while the spray button is held
   useEffect(() => {
     if (!holding || cur?.step.interaction !== 'aim_and_hold') return;
     const index = cur.index;
     const id = setInterval(() => {
-      const a = placedAnchor.current;
-      const zone = a === null ? 'none' : zoneAt(prefab, offsetFrom(a, camera.read()));
+      const zone = placedAnchor.current === null ? 'none' : zoneAt(prefab, prefabOffset(camera.read()));
       setHeld(session.holdSample(zone));
       if (session.current()?.index !== index) {
         setHolding(false);
@@ -160,6 +264,75 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     }, HOLD_SAMPLE_SEC * 1000);
     return () => clearInterval(id);
   }, [holding, cur?.index, cur?.step.interaction, camera, prefab, session, refresh]);
+
+  // operate_extinguisher: every 0.25 s, sample the aim, record it while discharging, and step the
+  // fire simulation (D-038). The fire grows from the start of the step if the worker is slow.
+  useEffect(() => {
+    if (cur?.step.interaction !== 'operate_extinguisher') return;
+    const index = cur.index;
+    const p = cur.params;
+    const cfg: ExtinguisherConfig = {
+      targetZone: String(p.targetZone),
+      offTargetZones: p.offTargetZones as string[],
+      dischargeSec: Number(p.dischargeSec),
+      agentEffective: agentEffective(scenario, session.variantId, session.events, String(p.agentFrom)),
+    };
+    fireLevel.value = withTiming(FIRE_START, { duration: 400 });
+    const help = setTimeout(() => setPinHelp(true), PIN_HELP_AFTER_MS); // hidden again once the pin is out
+    const id = setInterval(() => {
+      if (session.current()?.index !== index) return;
+      const discharging = session.isDischarging;
+      const aim = placedAnchor.current === null ? null : prefabOffset(camera.read());
+      const zone = aim === null ? 'none' : zoneAt(prefab, aim);
+      const aimDh = aim?.dh ?? 0;
+      if (discharging) session.spraySample(zone, aimDh);
+      const next = extinguisherTick(extRef.current, { discharging, zone, aimDh }, cfg, HOLD_SAMPLE_SEC);
+      extRef.current = next;
+      setExt(next);
+      fireLevel.value = withTiming(next.fire, { duration: HOLD_SAMPLE_SEC * 1000 });
+      if (next.outcome !== null && discharging) {
+        session.stopDischarge();
+        feedback.stop();
+        setSqueezing(false);
+      }
+    }, HOLD_SAMPLE_SEC * 1000);
+    return () => {
+      clearInterval(id);
+      clearTimeout(help);
+      feedback.stop();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cur?.index, cur?.step.interaction]);
+
+  const onSqueezeIn = () => {
+    if (session.current()?.step.interaction !== 'operate_extinguisher' || extRef.current.outcome !== null) return;
+    if (!session.startDischarge()) return; // the pin is still in: the button says so
+    feedback.start();
+    setSqueezing(true);
+  };
+
+  const onSqueezeOut = () => {
+    if (!session.isDischarging) return;
+    session.stopDischarge();
+    feedback.stop();
+    setSqueezing(false);
+  };
+
+  const onPinPulled = (method: PinMethod) => {
+    if (session.current()?.step.interaction !== 'operate_extinguisher') return;
+    session.pullPin(method);
+    setPinOut(true);
+    setPinHelp(false);
+  };
+
+  /** After the outcome is shown: complete the step with it. `index` guards against a double tap. */
+  const finishExtinguisher = (index: number) => {
+    const c = session.current();
+    const outcome = extRef.current.outcome;
+    if (c?.index !== index || c.step.interaction !== 'operate_extinguisher' || outcome === null) return;
+    session.finishExtinguisher(outcome, outcome === 'extinguished');
+    refresh();
+  };
 
   // Finished (all steps done or stopped): score, store with its outbox row, show the result
   const saved = useRef(false);
@@ -177,6 +350,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       startedAt,
       durationSec: session.now(),
       events: session.events,
+      ...(refresher === undefined ? {} : { kind: 'refresher' as const, refresher }),
     });
     saveAttempt(workerId, result, session.events, eventsJson);
     router.replace({ pathname: '/result/[attemptId]', params: { attemptId } });
@@ -189,9 +363,21 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     return mode === 'tabletop' && a !== null ? (a.headingDeg + VIRTUAL_MARKER_OFFSET.dh) % 360 : null;
   };
 
+  /**
+   * The exit and where the camera faces, in one frame (D-043). Camera mode: the compass-free gyro
+   * heading, measured from the scan of the exit, so steel and indoor wiring cannot move it.
+   * Tabletop: the drawn exit sign in the same frame as the drawn room.
+   */
+  const exitBearing = (): { exit: number; heading: SharedValue<number> } | null => {
+    if (exitGyroHeading.current !== null) return { exit: exitGyroHeading.current, heading: camera.gyroHeading };
+    const exit = exitHeadingNow();
+    return exit === null ? null : { exit, heading: compassHeading };
+  };
+
   const markerReached = (c: CurrentStep, marker: string) => {
     if (c.step.interaction === 'find_marker') {
       exitHeading.current = mode === 'ar' ? camera.read().headingDeg : exitHeadingNow();
+      exitGyroHeading.current = mode === 'ar' ? camera.readGyroHeading() : null;
       session.record('marker_found', { marker });
       session.complete();
     } else {
@@ -208,7 +394,39 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     return null;
   };
 
+  /**
+   * The anchor marker is in view (D-036): pull the overlay onto it and scale it by the marker's
+   * apparent size. During the placement step, seeing the marker places the overlay there.
+   */
+  const onAnchorMarker = (scan: BarcodeScanningResult) => {
+    const c = session.current();
+    if (c === null || repositioning) return;
+    const placing = c.step.interaction === 'place_on_plane';
+    if (!placing && placedAnchor.current === null) return; // not placed yet (e.g. during the brief)
+    const sighting = sightingFrom(scan.cornerPoints);
+    if (sighting === null) return;
+    const fix = applySighting(sighting, geometry, camera.readOrientation(), camera.readSpeed(), {
+      anchor: placing ? null : placedAnchor.current,
+      scale: placedScale.current,
+      refSizePx: placing ? null : markerRefSize.current,
+    });
+    if (fix === null) return;
+    if (!placing && placedAnchor.current !== null) markerResidual.current = directionErrorDeg(placedAnchor.current, fix.measured);
+    setAnchor(fix.anchor, fix.scale);
+    markerRefSize.current = fix.refSizePx;
+    lastMarkerFix.current = performance.now();
+    setMarkerLocked(true);
+    if (placing) {
+      session.complete({ headingDeg: round1(fix.anchor.headingDeg), elevationDeg: round1(fix.anchor.elevationDeg), anchorMarker: scan.data });
+      refresh();
+    }
+  };
+
   const onScan = (scan: BarcodeScanningResult) => {
+    if (anchorMarker !== null && scan.data === anchorMarker) {
+      onAnchorMarker(scan);
+      return;
+    }
     const c = session.current();
     const marker = wantedMarker(c);
     if (c === null || marker === null || scan.data !== marker || handledScan.current === c.index) return;
@@ -216,12 +434,15 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     markerReached(c, marker);
   };
 
-  /** The world direction under a screen tap. */
+  /** The world direction under a screen tap: the inverse of the overlay projection. */
   const tapDirection = (e: GestureResponderEvent): Direction => {
+    const dx = e.nativeEvent.locationX - geometry.cx;
+    const dy = e.nativeEvent.locationY - geometry.cy;
+    if (geometry.pinhole) return vectorToDirection(unproject(dx, dy, camera.readOrientation(), geometry.focalPx));
     const cam = camera.read();
     return {
-      headingDeg: (cam.headingDeg + (e.nativeEvent.locationX - geometry.cx) / geometry.pxPerDeg + 360) % 360,
-      elevationDeg: cam.elevationDeg - (e.nativeEvent.locationY - geometry.cy) / geometry.pxPerDeg,
+      headingDeg: (cam.headingDeg + dx / geometry.pxPerDeg + 360) % 360,
+      elevationDeg: cam.elevationDeg - dy / geometry.pxPerDeg,
     };
   };
 
@@ -229,16 +450,29 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     const c = session.current();
     if (c?.step.interaction !== 'place_on_plane') return;
     const placed = tapDirection(e);
-    anchor.set(placed);
-    placedAnchor.current = placed;
+    setAnchor(placed, 1);
+    markerRefSize.current = null;
     session.complete({ headingDeg: round1(placed.headingDeg), elevationDeg: round1(placed.elevationDeg) });
     refresh();
   };
 
+  /**
+   * "Reposition" (D-036): the worker taps where the overlay should be because it drifted. Recorded
+   * as `anchor_repositioned`, which scoring ignores. A marker in view takes over again afterwards.
+   */
+  const onReposition = (e: GestureResponderEvent) => {
+    if (!repositioning || session.current() === null) return;
+    const placed = tapDirection(e);
+    setAnchor(placed, 1);
+    markerRefSize.current = null;
+    session.reposition(placed.headingDeg, placed.elevationDeg);
+    setRepositioning(false);
+    refresh();
+  };
+
   const onCone = (e: GestureResponderEvent) => {
-    const a = placedAnchor.current;
-    if (session.current()?.step.interaction !== 'mark_zone' || a === null) return;
-    const at = offsetFrom(a, tapDirection(e));
+    if (session.current()?.step.interaction !== 'mark_zone' || placedAnchor.current === null) return;
+    const at = prefabOffset(tapDirection(e));
     nextConeId.current += 1;
     setCones((placed) => [...placed, { id: nextConeId.current, at }]);
     progressed();
@@ -277,11 +511,11 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       return;
     }
     const behind = c.params.exitBehind as { minAngleDeg: number } | undefined;
-    const exit = behind === undefined ? null : exitHeadingNow();
+    const bearing = behind === undefined ? null : exitBearing();
     session.arrive(
       String(c.params.anchor),
       0,
-      behind === undefined ? undefined : { exitBehind: exit !== null && isBehind(exit, camera.read().headingDeg, behind.minAngleDeg) },
+      behind === undefined ? undefined : { exitBehind: bearing !== null && isBehind(bearing.exit, bearing.heading.get(), behind.minAngleDeg) },
     );
     refresh();
   };
@@ -295,9 +529,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     if (c?.index !== index) return;
     if (c.step.interaction === 'place_on_plane' && placedAnchor.current === null) {
       // Placement isn't scored, but later steps need the overlay: put it where the camera points
-      const placed = camera.read();
-      anchor.set(placed);
-      placedAnchor.current = placed;
+      setAnchor(camera.read(), 1);
     }
     if (__DEV__) console.log(`[training] step ${c.step.id} skipped after no progress: scored as failed`);
     session.skip();
@@ -305,6 +537,8 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   };
 
   const interaction = cur?.step.interaction;
+  // Once placed, the worker can re-place a drifted overlay in any later step (D-036)
+  const canReposition = cur !== null && interaction !== 'place_on_plane' && placedAnchor.current !== null;
   const scanning = mode === 'ar' && wantedMarker(cur) !== null;
   const path = interaction === 'move_to' && cur !== null ? prefab.paths[String(cur.params.anchor)] : undefined;
   const tapTarget = interaction === 'tap_target' ? String(cur?.params.target) : null;
@@ -335,6 +569,22 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     }),
     [width, cardBottom, panelTop],
   );
+  // D-043: "keep the exit behind you" is shown live on the step that scores it and on the extinguish
+  // step right after it; hidden when the run never scanned the exit (a refresher, D-044)
+  const exitMinAngle = cur === null ? null : exitIndicatorMinAngle(scenario.steps, cur.index);
+  useEffect(() => {
+    if (exitMinAngle === null) return;
+    const check = () => {
+      const bearing = exitBearing();
+      setExitIsBehind(bearing !== null && isBehind(bearing.exit, bearing.heading.get(), exitMinAngle));
+    };
+    check();
+    const id = setInterval(check, 250);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exitMinAngle, stepIndex]);
+  const exitShown = exitMinAngle === null ? null : exitBearing();
+
   const waypointBand = useMemo(() => bandFor(WAYPOINT_PX, WAYPOINT_PX), [bandFor]);
   const labelBand = useMemo(() => bandFor(LABEL_BOX_PX.width, LABEL_BOX_PX.height), [bandFor]);
   const cloudAt = prefab.cloud === undefined ? undefined : prefab.objects[prefab.cloud.at];
@@ -346,15 +596,26 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     if (wantedMarker(cur) !== null) return exitHeadingNow();
     const a = placedAnchor.current;
     const next = path?.[waypoint];
-    return a === null || next === undefined ? null : (a.headingDeg + next.dh + 360) % 360;
+    return a === null || next === undefined ? null : (a.headingDeg + next.dh * placedScale.current + 360) % 360;
   };
   const route = routeHeading();
 
   const hint = (() => {
     if (cur === null) return null;
+    if (repositioning) return t('training.reposition.hint');
+    if (interaction === 'place_on_plane' && anchorMarker !== null) return t('training.hint.anchor_marker');
     if (wantedMarker(cur) !== null) return t(mode === 'ar' ? 'training.hint.scan_marker' : 'training.hint.tap_marker');
     if (path !== undefined) return t('training.hint.waypoints');
     if (interaction === 'aim_and_hold') return t('training.hint.hold');
+    if (interaction === 'operate_extinguisher') {
+      // PASS, one prompt at a time (D-038)
+      if (ext.outcome !== null) return null;
+      if (!pinOut) return t('training.extinguisher.pull');
+      if (ext.sprayZone === null) return t('training.extinguisher.aim');
+      if (ext.sprayZone === cur.params.targetZone) return t('training.extinguisher.sweep');
+      if ((cur.params.offTargetZones as string[]).includes(ext.sprayZone)) return t('training.extinguisher.too_high');
+      return t('training.extinguisher.missed');
+    }
     if (interaction === 'tap_target') return t('training.hint.target');
     if (interaction === 'choose_many') return t('training.hint.choose_many');
     if (interaction === 'checklist') return t('training.hint.checklist');
@@ -363,13 +624,19 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   })();
 
   return (
-    <View style={styles.root}>
+    <View
+      style={styles.root}
+      onLayout={(e) => {
+        const { width: w, height: h } = e.nativeEvent.layout;
+        if (w !== view.width || h !== view.height) setView({ width: w, height: h });
+      }}
+    >
       {mode === 'ar' ? (
         <CameraView
           style={StyleSheet.absoluteFill}
           facing="back"
           barcodeScannerSettings={{ barcodeTypes: ['qr'] }}
-          onBarcodeScanned={scanning ? onScan : undefined}
+          onBarcodeScanned={scanning || anchorMarker !== null ? onScan : undefined}
         />
       ) : (
         <View style={[StyleSheet.absoluteFill, styles.tabletop]} />
@@ -381,13 +648,13 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       ) : null}
 
       {prefab.objects.Fire !== undefined ? (
-        <Anchored anchor={anchor} offset={prefab.objects.Fire} direction={camera.direction} geometry={geometry} width={fireSize} height={fireSize}>
+        <Anchored anchor={anchorValues} offset={prefab.objects.Fire} camera={cameraValues} geometry={geometry} width={fireSize} height={fireSize} scaled>
           <Fire size={fireSize} level={fireLevel} />
         </Anchored>
       ) : null}
 
       {cloudAt !== undefined ? (
-        <Anchored anchor={anchor} offset={cloudAt} direction={camera.direction} geometry={geometry} width={cloudSize} height={cloudSize}>
+        <Anchored anchor={anchorValues} offset={cloudAt} camera={cameraValues} geometry={geometry} width={cloudSize} height={cloudSize} scaled>
           <GasCloud size={cloudSize} level={gasLevel} />
         </Anchored>
       ) : null}
@@ -397,9 +664,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
         .map(([name, labelKey]) => (
           <Anchored
             key={name}
-            anchor={anchor}
+            anchor={anchorValues}
             offset={prefab.objects[name]!}
-            direction={camera.direction}
+            camera={cameraValues}
             geometry={geometry}
             width={LABEL_BOX_PX.width}
             height={LABEL_BOX_PX.height}
@@ -422,9 +689,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
 
       {mode === 'tabletop' && wantedMarker(cur) !== null ? (
         <Anchored
-          anchor={anchor}
+          anchor={anchorValues}
           offset={VIRTUAL_MARKER_OFFSET}
-          direction={camera.direction}
+          camera={cameraValues}
           geometry={geometry}
           width={LABEL_BOX_PX.width}
           height={LABEL_BOX_PX.height}
@@ -446,9 +713,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       {path?.map((offset, i) => (
         <Anchored
           key={`${stepIndex}-${i}`}
-          anchor={anchor}
+          anchor={anchorValues}
           offset={offset}
-          direction={camera.direction}
+          camera={cameraValues}
           geometry={geometry}
           width={WAYPOINT_PX}
           height={WAYPOINT_PX}
@@ -460,7 +727,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       ))}
 
       {cones.map((cone) => (
-        <Anchored key={cone.id} anchor={anchor} offset={cone.at} direction={camera.direction} geometry={geometry} width={72} height={72}>
+        <Anchored key={cone.id} anchor={anchorValues} offset={cone.at} camera={cameraValues} geometry={geometry} width={72} height={72}>
           <Cone
             reading={coneReading(cone.at)}
             removeLabel={t('training.cone.remove')}
@@ -472,14 +739,43 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
         </Anchored>
       ))}
 
-      {interaction === 'aim_and_hold' ? <Reticle geometry={geometry} /> : null}
+      {interaction === 'aim_and_hold' || interaction === 'operate_extinguisher' ? <Reticle geometry={geometry} /> : null}
+
+      {interaction === 'operate_extinguisher' && nozzle !== null ? (
+        <SprayCone from={nozzle} to={{ x: geometry.cx, y: geometry.cy }} discharging={squeezing} />
+      ) : null}
+
+      {repositioning ? (
+        <Pressable style={StyleSheet.absoluteFill} accessibilityLabel={t('training.reposition.hint')} onPress={onReposition} />
+      ) : null}
 
       <SafeAreaView style={styles.chrome} pointerEvents="box-none">
         {cur !== null ? (
           <View style={styles.card} onLayout={(e) => setCardBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
             {mode === 'tabletop' ? <Text style={styles.mode}>{t('training.tabletop.label')}</Text> : null}
+            {refresher !== undefined ? <Text style={styles.mode}>{t('refresher.stage.label', { day: refresher.dueDay })}</Text> : null}
             <Text style={styles.instruction}>{t(cur.step.instructionKey)}</Text>
             {hint !== null ? <Text style={styles.hint}>{hint}</Text> : null}
+            {exitShown !== null ? (
+              <ExitIndicator
+                exitHeading={exitShown.exit}
+                heading={exitShown.heading}
+                behind={exitIsBehind}
+                label={t(exitIsBehind ? 'training.exit_behind.ok' : 'training.exit_behind.turn')}
+              />
+            ) : null}
+            {/* D-039: always say which anchoring is live, so drift can be reported precisely */}
+            <AnchoringStatus live={liveAnchoring(anchoringMode, markerLocked)} gyro={camera.gyroAvailable} />
+            {debug ? (
+              <AnchoringDebug
+                camera={camera}
+                mode={anchoringMode}
+                fov={fov}
+                view={view}
+                focalPx={geometry.focalPx}
+                markerResidual={() => markerResidual.current}
+              />
+            ) : null}
             {detector !== undefined && path !== undefined ? (
               <Text style={styles.hint}>{t('training.detector.label', { reading: Math.round((detector.peakReading * waypoint) / path.length) })}</Text>
             ) : null}
@@ -487,6 +783,19 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
               <Pressable accessibilityRole="button" style={styles.chip} onPress={() => speakKey(cur.step.audioKey)}>
                 <Text style={styles.chipText}>🔊 {t('training.replay.button')}</Text>
               </Pressable>
+              {canReposition ? (
+                <Pressable
+                  accessibilityRole="button"
+                  style={[styles.chip, repositioning && styles.chipOn]}
+                  onPress={() => {
+                    setHolding(false);
+                    onSqueezeOut();
+                    setRepositioning((on) => !on);
+                  }}
+                >
+                  <Text style={styles.chipText}>{t(repositioning ? 'training.reposition.cancel' : 'training.reposition.button')}</Text>
+                </Pressable>
+              ) : null}
               {remaining !== null ? <Text style={styles.timer}>{t('training.time_left.label', { seconds: remaining })}</Text> : null}
               <Pressable
                 accessibilityRole="button"
@@ -591,6 +900,56 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
             </View>
           ) : null}
 
+          {interaction === 'operate_extinguisher' && cur !== null ? (
+            <View style={styles.holdBox}>
+              <View style={styles.statusRow}>
+                <Text style={styles.hint}>{t('training.extinguisher.fire.label', { percent: Math.round(ext.fire * 100) })}</Text>
+                <Text style={styles.hint}>
+                  {t('training.extinguisher.left.label', { seconds: Math.max(0, Math.ceil(Number(cur.params.dischargeSec) - ext.dischargedSec)) })}
+                </Text>
+              </View>
+              {/* Centred in the panel, so always inside the safe area and sized to this phone */}
+              <Extinguisher
+                target={{ x: geometry.cx, y: geometry.cy }}
+                pinOut={pinOut}
+                discharging={squeezing}
+                pinLabel={t('training.extinguisher.pin.label')}
+                onPinPulled={onPinPulled}
+                onNozzle={setNozzle}
+              />
+              {ext.outcome !== null ? (
+                <>
+                  <Text style={[styles.outcome, ext.outcome === 'extinguished' ? styles.outcomeGood : styles.outcomeBad]}>
+                    {t(`training.extinguisher.outcome.${ext.outcome}`)}
+                  </Text>
+                  <Pressable accessibilityRole="button" style={styles.done} onPress={() => finishExtinguisher(cur.index)}>
+                    <Text style={styles.doneText}>{t('training.continue.button')}</Text>
+                  </Pressable>
+                </>
+              ) : (
+                <>
+                  {pinHelp && !pinOut ? (
+                    <Pressable accessibilityRole="button" style={styles.pinHelp} onPress={() => onPinPulled('tap')}>
+                      <Text style={styles.pinHelpText}>{t('training.extinguisher.pin_tap.button')}</Text>
+                    </Pressable>
+                  ) : null}
+                  {/* Locked until the pin is out, and says why */}
+                  {!pinOut ? <Text style={styles.warn}>🔒 {t('training.extinguisher.locked')}</Text> : null}
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ disabled: !pinOut }}
+                    accessibilityHint={pinOut ? undefined : t('training.extinguisher.locked')}
+                    onPressIn={onSqueezeIn}
+                    onPressOut={onSqueezeOut}
+                    style={[styles.holdButton, !pinOut && styles.holdButtonLocked, squeezing && styles.holdButtonActive]}
+                  >
+                    <Text style={[styles.holdText, !pinOut && styles.holdTextLocked]}>{t('training.extinguisher.squeeze.button')}</Text>
+                  </Pressable>
+                </>
+              )}
+            </View>
+          ) : null}
+
           {interaction === 'narration' ? (
             <Pressable
               accessibilityRole="button"
@@ -618,8 +977,9 @@ const styles = StyleSheet.create({
   mode: { color: '#FFD43B', fontSize: 14, fontWeight: '700' },
   instruction: { color: '#FFFFFF', fontSize: 20, lineHeight: 30, fontWeight: '700' },
   hint: { color: '#E4E7EB', fontSize: 16, lineHeight: 24 },
-  cardRow: { flexDirection: 'row', alignItems: 'center', gap: space.s },
+  cardRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: space.s },
   chip: { minHeight: 44, paddingHorizontal: space.m, borderRadius: 22, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center' },
+  chipOn: { backgroundColor: 'rgba(255,212,59,0.45)' },
   stop: { marginLeft: 'auto', backgroundColor: 'rgba(180,35,24,0.85)' },
   chipText: { color: '#FFFFFF', fontSize: 16, fontWeight: '600' },
   timer: { color: '#FFD43B', fontSize: 18, fontWeight: '800' },
@@ -651,5 +1011,23 @@ const styles = StyleSheet.create({
   holdBox: { gap: space.s, backgroundColor: colors.overlay, borderRadius: 14, padding: space.m },
   holdButton: { minHeight: 72, borderRadius: 36, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' },
   holdButtonActive: { backgroundColor: '#7A1A12' },
+  holdButtonLocked: { backgroundColor: '#5A5F66' },
+  holdTextLocked: { color: '#C9CDD2' },
+  pinHelp: {
+    minHeight: 56,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#FFD43B',
+    backgroundColor: 'rgba(255,212,59,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: space.m,
+  },
+  pinHelpText: { color: '#FFD43B', fontSize: 18, fontWeight: '800', textAlign: 'center' },
+  statusRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', gap: space.s },
+  warn: { color: '#FFD43B', fontSize: 17, fontWeight: '800' },
+  outcome: { fontSize: 20, lineHeight: 30, fontWeight: '800' },
+  outcomeGood: { color: '#8CE99A' },
+  outcomeBad: { color: '#FF8787' },
   holdText: { color: '#FFFFFF', fontSize: 20, fontWeight: '800' },
 });

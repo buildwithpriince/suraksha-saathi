@@ -1,0 +1,156 @@
+/**
+ * Stabilised device orientation for overlay anchoring (D-036).
+ *
+ * Android's rotation vector (the reference) fuses the compass, so near steel its heading jumps by
+ * tens of degrees as the worker moves, and overlays slide with it. This complementary filter
+ * propagates the orientation with the gyroscope (smooth, no lag) and pulls it towards the
+ * reference slowly: tilt within about a second, heading over several seconds, so a compass jump
+ * is mostly rejected while gyro drift stays bounded. Without a gyroscope it falls back to an
+ * adaptive low-pass on the reference: heavy when the phone is still, none when it turns.
+ *
+ * Plain arithmetic with 'worklet' directives: it runs per frame on the UI thread.
+ */
+import {
+  angleBetween,
+  quatFromRotationVector,
+  quatConjugate,
+  quatMultiply,
+  quatNormalize,
+  rotationVectorOf,
+  type Quaternion,
+  type Vec3,
+} from './orientation';
+
+/** Time constant pulling the filtered tilt (pitch, roll) towards the reference, seconds. */
+export const TILT_TAU_SEC = 1;
+/** Time constant pulling the filtered heading towards the reference, seconds. */
+export const HEADING_TAU_SEC = 8;
+/**
+ * The heading is corrected towards the compass only while the phone turns slower than this. While
+ * turning, the gyroscope is exact over seconds and the compass is at its least reliable (it lags,
+ * and near steel its error changes with direction), so a compass error met mid-turn is not pulled
+ * in (D-039).
+ */
+export const HEADING_GATE_DEG_PER_SEC = 20;
+/** Larger disagreements (startup, a gyro glitch) snap to the reference. */
+export const SNAP_DEG = 60;
+/** Without a gyroscope: differences below this are treated as jitter and smoothed hard. */
+export const JITTER_DEG = 1.5;
+
+export interface FilterState {
+  q: Quaternion;
+  initialised: boolean;
+  /** Angular speed of the filtered orientation, degrees per second (gates marker corrections). */
+  speedDegPerSec: number;
+  /**
+   * Angle between the filtered orientation and the raw rotation vector, degrees (debug overlay,
+   * D-039). Small during turns when the gyroscope is read correctly; a gyro axis or sign error
+   * would show here as a large value every time the phone turns.
+   */
+  refDisagreeDeg: number;
+}
+
+export const INITIAL_FILTER_STATE: FilterState = { q: { qw: 1, qx: 0, qy: 0, qz: 0 }, initialised: false, speedDegPerSec: 0, refDisagreeDeg: 0 };
+
+function isValid(q: Quaternion): boolean {
+  'worklet';
+  const n = q.qw * q.qw + q.qx * q.qx + q.qy * q.qy + q.qz * q.qz;
+  return Number.isFinite(n) && n > 0.25;
+}
+
+function gain(dt: number, tau: number): number {
+  'worklet';
+  return 1 - Math.exp(-dt / tau);
+}
+
+/**
+ * One filter step. `reference`: the rotation-vector orientation (device → world, as in
+ * orientation.ts). `gyro`: angular rate about the device axes in rad/s, or null if the phone has
+ * no gyroscope. `dt`: seconds since the last step.
+ */
+export function filterStep(state: FilterState, reference: Quaternion, gyro: Vec3 | null, dt: number): FilterState {
+  'worklet';
+  if (!isValid(reference)) return state; // the sensor has not reported yet
+  const ref = quatNormalize(reference);
+  if (!state.initialised || !(dt > 0) || dt > 0.5) return { q: ref, initialised: true, speedDegPerSec: 0, refDisagreeDeg: 0 };
+
+  if (gyro === null) {
+    // Adaptive low-pass: follow large motions at once, smooth sub-degree jitter
+    const apart = angleBetween(state.q, ref);
+    const alpha = Math.min(1, Math.max(0.15, apart / (4 * JITTER_DEG)));
+    const error = rotationVectorOf(quatMultiply(ref, quatConjugate(state.q)));
+    const q = quatNormalize(quatMultiply(quatFromRotationVector({ x: error.x * alpha, y: error.y * alpha, z: error.z * alpha }), state.q));
+    return { q, initialised: true, speedDegPerSec: angleBetween(q, state.q) / dt, refDisagreeDeg: angleBetween(q, ref) };
+  }
+
+  // Predict: q ← q · exp(ω dt), ω in device coordinates
+  const predicted = quatNormalize(quatMultiply(state.q, quatFromRotationVector({ x: gyro.x * dt, y: gyro.y * dt, z: gyro.z * dt })));
+  // Correct: the world-frame rotation taking the prediction to the reference, split into tilt
+  // (about world x, y) and heading (about world z, up), each pulled in with its own time constant
+  const error = rotationVectorOf(quatMultiply(ref, quatConjugate(predicted)));
+  const errorDeg = (Math.sqrt(error.x * error.x + error.y * error.y + error.z * error.z) * 180) / Math.PI;
+  if (errorDeg > SNAP_DEG) return { q: ref, initialised: true, speedDegPerSec: 0, refDisagreeDeg: 0 };
+  const speedDegPerSec = (Math.sqrt(gyro.x * gyro.x + gyro.y * gyro.y + gyro.z * gyro.z) * 180) / Math.PI;
+  const kTilt = gain(dt, TILT_TAU_SEC);
+  const kHeading = speedDegPerSec < HEADING_GATE_DEG_PER_SEC ? gain(dt, HEADING_TAU_SEC) : 0;
+  const correction = quatFromRotationVector({ x: error.x * kTilt, y: error.y * kTilt, z: error.z * kHeading });
+  const q = quatNormalize(quatMultiply(correction, predicted));
+  return { q, initialised: true, speedDegPerSec, refDisagreeDeg: angleBetween(q, ref) };
+}
+
+// --- Gyroscope bias (D-039) ----------------------------------------------------------------------
+// Android's gyroscope arrives bias-corrected; iOS's (Reanimated reads raw CMGyroData) does not. While
+// the phone is still, whatever the gyro reads is bias, so it is learnt then and subtracted always.
+
+/** Time constant of the bias estimate while still, seconds. */
+export const BIAS_TAU_SEC = 2;
+/** "Still": the reference orientation turns slower than this, degrees per second. */
+export const STILL_DEG_PER_SEC = 3;
+/** A gyro reading (after the current bias) above this is motion, never learnt as bias. */
+export const MAX_BIAS_DEG_PER_SEC = 5;
+
+export function updateGyroBias(bias: Vec3, gyro: Vec3, referenceTurnDegPerSec: number, dt: number): Vec3 {
+  'worklet';
+  const rx = gyro.x - bias.x;
+  const ry = gyro.y - bias.y;
+  const rz = gyro.z - bias.z;
+  const residualDeg = (Math.sqrt(rx * rx + ry * ry + rz * rz) * 180) / Math.PI;
+  if (!(dt > 0) || referenceTurnDegPerSec > STILL_DEG_PER_SEC || residualDeg > MAX_BIAS_DEG_PER_SEC) return bias;
+  const k = gain(dt, BIAS_TAU_SEC);
+  return { x: bias.x + rx * k, y: bias.y + ry * k, z: bias.z + rz * k };
+}
+
+// --- Compass-free heading for "keep the exit behind you" (D-043) -------------------------------
+// The anchoring filter above still leans on the compass over seconds, which steel and indoor wiring
+// bend by tens of degrees. The exit check only needs how far the phone has turned since the exit
+// was scanned, so this orientation follows the gyroscope alone for heading: tilt is still pulled to
+// the reference (it comes from gravity, not the compass), heading never is. Its absolute heading is
+// arbitrary; only differences between two readings mean anything. Gyro drift after bias removal is
+// a few degrees over a drill, far inside the 120° the check needs.
+
+export interface HeadingHoldState {
+  q: Quaternion;
+  initialised: boolean;
+}
+
+export const INITIAL_HEADING_HOLD: HeadingHoldState = { q: { qw: 1, qx: 0, qy: 0, qz: 0 }, initialised: false };
+
+/**
+ * One step of the compass-free orientation. `gyro` is the bias-corrected rate (rad/s, device axes);
+ * with no gyroscope it simply follows the reference (the compass), the best a phone can then do.
+ * A frame gap longer than 0.5 s skips that interval instead of re-seeding from the compass.
+ */
+export function headingHoldStep(state: HeadingHoldState, reference: Quaternion, gyro: Vec3 | null, dt: number): HeadingHoldState {
+  'worklet';
+  if (!isValid(reference)) return state;
+  const ref = quatNormalize(reference);
+  if (!state.initialised || gyro === null) return { q: ref, initialised: true };
+  if (!(dt > 0) || dt > 0.5) return state;
+  const predicted = quatNormalize(quatMultiply(state.q, quatFromRotationVector({ x: gyro.x * dt, y: gyro.y * dt, z: gyro.z * dt })));
+  // Tilt only (world x, y); a large tilt error (a glitch) is corrected at once, heading never
+  const error = rotationVectorOf(quatMultiply(ref, quatConjugate(predicted)));
+  const tiltDeg = (Math.sqrt(error.x * error.x + error.y * error.y) * 180) / Math.PI;
+  const k = tiltDeg > SNAP_DEG ? 1 : gain(dt, TILT_TAU_SEC);
+  const correction = quatFromRotationVector({ x: error.x * k, y: error.y * k, z: 0 });
+  return { q: quatNormalize(quatMultiply(correction, predicted)), initialised: true };
+}

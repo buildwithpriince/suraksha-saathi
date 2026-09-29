@@ -7,7 +7,7 @@ import { getScenario } from '@/content/scenarios';
 import { sortRulesForDisplay } from '@/core/assessment/result';
 import type { AttemptResult, RuleResult } from '@/core/assessment/types';
 import { getAttempt, wasAborted } from '@/db/attempts';
-import { speakKey, stopSpeaking } from '@/i18n/speech';
+import { autoSpeakKey, speakKey, stopSpeaking } from '@/i18n/speech';
 import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
 import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
@@ -23,7 +23,7 @@ export default function ResultScreen() {
   const scenario = result === undefined ? null : getScenario(result.scenarioId);
 
   useEffect(() => {
-    if (result !== undefined) speakKey(result.passed ? 'result.passed.audio' : 'result.not_yet.audio');
+    if (result !== undefined) autoSpeakKey(result.passed ? 'result.passed.audio' : 'result.not_yet.audio');
     return stopSpeaking;
   }, [result]);
 
@@ -34,6 +34,7 @@ export default function ResultScreen() {
       <Stack.Screen options={{ title: t('result.title'), headerBackVisible: false }} />
       <Card>
         <Title>{t(scenario.titleKey)}</Title>
+        {result.refresher !== undefined ? <Badge label={t('refresher.stage.label', { day: result.refresher.dueDay })} tone="amber" /> : null}
         <View style={[styles.verdict, { backgroundColor: result.passed ? colors.greenBg : colors.redBg }]}>
           <Text style={[styles.verdictText, { color: result.passed ? colors.green : colors.red }]}>
             {t(result.passed ? 'attempt.pass.label' : 'attempt.not_yet.label')}
@@ -55,7 +56,15 @@ export default function ResultScreen() {
       <Button
         label={t('result.try_again.button')}
         onPress={() =>
-          router.replace({ pathname: '/train/[scenarioId]', params: { scenarioId: result.scenarioId, workerId: attempt.workerId } })
+          router.replace({
+            pathname: '/train/[scenarioId]',
+            // A refresher is tried again as the same refresher (D-044)
+            params: {
+              scenarioId: result.scenarioId,
+              workerId: attempt.workerId,
+              ...(result.refresher === undefined ? {} : { refresher: String(result.refresher.dueDay) }),
+            },
+          })
         }
       />
       <Button kind="secondary" label={t('result.done.button')} onPress={() => router.replace({ pathname: '/worker/[id]', params: { id: attempt.workerId } })} />

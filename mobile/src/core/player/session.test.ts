@@ -18,6 +18,20 @@ function clockedSession(scenarioVariant: 'ordinary' | 'oil') {
   return { session, tick: (sec: number) => (now += sec) };
 }
 
+/** Horizontal aim swinging across the fire base, 5° each way: a reversal every 4 samples. */
+const SWEEP_AIM = [-5, -2.5, 0, 2.5, 5, 2.5, 0, -2.5];
+
+/** PASS on the extinguish step: pull the pin, squeeze, spray `samples` × 0.25 s at `zone`. */
+function spray(session: ScenarioSession, tick: (sec: number) => void, samples: number, zone = 'FireBase', aim: readonly number[] = SWEEP_AIM) {
+  session.pullPin();
+  session.startDischarge();
+  for (let i = 0; i < samples; i++) {
+    tick(0.25);
+    session.spraySample(zone, aim[i % aim.length]!);
+  }
+  session.stopDischarge();
+}
+
 /** Plays FIRE_01 through the session API the way the camera screen does. */
 function playFire(variant: 'ordinary' | 'oil', extinguisher: string) {
   const { session, tick } = clockedSession(variant);
@@ -37,10 +51,8 @@ function playFire(variant: 'ordinary' | 'oil', extinguisher: string) {
   tick(9);
   session.record('position_reached', { anchor: 'AttackSpot', distanceM: 0 });
   session.complete({ exitBehind: true });
-  for (let i = 0; i < 40; i++) {
-    tick(0.25);
-    session.holdSample('FireBase');
-  }
+  spray(session, tick, 24);
+  session.finishExtinguisher('extinguished', true);
   tick(3);
   session.choose('evacuate_alert');
   tick(30);
@@ -50,6 +62,143 @@ function playFire(variant: 'ordinary' | 'oil', extinguisher: string) {
   session.choose('report_headcount');
   return session;
 }
+
+describe('extinguisher choice through the session (D-042)', () => {
+  test('the device run: DCP on the ordinary fire earns R_RIGHT_EXTINGUISHER', () => {
+    const session = playFire('ordinary', 'dcp');
+    const e = evaluate(FIRE, 'ordinary', session.events);
+    expect(e.rules.find((r) => r.ruleId === 'R_RIGHT_EXTINGUISHER')).toMatchObject({ earned: 15, max: 15 });
+    expect(e.scorePercent).toBe(100);
+  });
+
+  test('water on the oil fire records the forbidden act and fails the attempt despite a passing score', () => {
+    const session = playFire('oil', 'water');
+    expect(session.events.filter((ev) => ev.type === 'forbidden_action')).toEqual([
+      expect.objectContaining({ stepId: 'pick_extinguisher', data: { tag: 'water_on_oil' } }),
+    ]);
+    const e = evaluate(FIRE, 'oil', session.events);
+    expect(e.scorePercent).toBeGreaterThanOrEqual(FIRE.passThresholdPercent);
+    expect(e.criticalFailures).toEqual(['R_RIGHT_EXTINGUISHER']);
+    expect(e.passed).toBe(false);
+  });
+
+  test('water on the ordinary fire is not forbidden', () => {
+    const session = playFire('ordinary', 'water');
+    expect(session.events.some((ev) => ev.type === 'forbidden_action')).toBe(false);
+    expect(evaluate(FIRE, 'ordinary', session.events).passed).toBe(true);
+  });
+});
+
+describe('operate_extinguisher gestures (D-038)', () => {
+  /** A session on FIRE_01's extinguish step. */
+  function atExtinguish() {
+    const { session, tick } = clockedSession('ordinary');
+    session.start();
+    session.complete();
+    session.complete({ headingDeg: 10, elevationDeg: -30 });
+    session.record('target_hit', { target: 'AlarmCallPoint' });
+    session.complete();
+    session.record('marker_found', { marker: 'EXIT_A' });
+    session.complete();
+    session.choose('water');
+    session.arrive('AttackSpot', 0, { exitBehind: true });
+    expect(session.current()!.step.interaction).toBe('operate_extinguisher');
+    return { session, tick };
+  }
+  const types = (s: ScenarioSession) => s.events.filter((e) => e.stepId === 'extinguish' && e.type !== 'step_started').map((e) => e.type);
+
+  test('the lever is locked until the pin is pulled; the pin is recorded once', () => {
+    const { session } = atExtinguish();
+    expect(session.startDischarge()).toBe(false);
+    session.pullPin();
+    session.pullPin();
+    expect(session.startDischarge()).toBe(true);
+    expect(session.startDischarge()).toBe(false); // already discharging
+    session.stopDischarge();
+    session.stopDischarge();
+    expect(types(session)).toEqual(['pin_pulled', 'discharge_started', 'discharge_stopped']);
+  });
+
+  test('pin_pulled records whether the pin was swiped or tapped out; scoring treats both alike', () => {
+    for (const method of ['swipe', 'tap'] as const) {
+      const { session } = atExtinguish();
+      session.pullPin(method);
+      expect(session.events.at(-1)).toMatchObject({ type: 'pin_pulled', stepId: 'extinguish', data: { method } });
+    }
+  });
+
+  test('spray samples carry cumulative onTargetSec and the aim, only while discharging', () => {
+    const { session, tick } = atExtinguish();
+    session.pullPin();
+    expect(() => session.spraySample('FireBase', 0)).toThrow();
+    session.startDischarge();
+    tick(0.25);
+    session.spraySample('FireBase', 3.14);
+    tick(0.25);
+    session.spraySample('FlameTop', -2);
+    tick(0.25);
+    session.spraySample('FireBase', 1);
+    const samples = session.events.filter((e) => e.type === 'hold_progress').map((e) => e.data);
+    expect(samples).toEqual([
+      { zone: 'FireBase', onTargetSec: 0.25, aimDh: 3.1 },
+      { zone: 'FlameTop', onTargetSec: 0.25, aimDh: -2 },
+      { zone: 'FireBase', onTargetSec: 0.5, aimDh: 1 },
+    ]);
+    expect(session.current()!.step.id).toBe('extinguish'); // samples never complete the step
+  });
+
+  test('finishing records the outcome, closes the lever press, and moves on', () => {
+    const { session } = atExtinguish();
+    session.pullPin();
+    session.startDischarge();
+    session.finishExtinguisher('wrong_agent', false);
+    expect(session.events.slice(-3).map((e) => [e.type, e.data])).toEqual([
+      ['discharge_stopped', undefined],
+      ['step_completed', { extinguished: false, outcome: 'wrong_agent' }],
+      ['step_started', undefined],
+    ]);
+    expect(session.current()!.step.id).toBe('escalation');
+  });
+
+  test('skipping or stopping mid-discharge closes the lever press in the log', () => {
+    const { session } = atExtinguish();
+    session.pullPin();
+    session.startDischarge();
+    session.skip();
+    expect(session.events.filter((e) => e.stepId === 'extinguish').map((e) => e.type).slice(-2)).toEqual(['discharge_stopped', 'step_skipped']);
+  });
+
+  test('extinguisher calls are refused on other steps', () => {
+    const { session } = clockedSession('ordinary');
+    session.start();
+    expect(() => session.pullPin()).toThrow();
+    expect(() => session.startDischarge()).toThrow();
+    expect(() => session.finishExtinguisher('extinguished', true)).toThrow();
+  });
+});
+
+describe('reposition (D-036)', () => {
+  test('anchor_repositioned is recorded in the current step and changes nothing else', () => {
+    const { session, tick } = clockedSession('ordinary');
+    session.start();
+    tick(2);
+    session.reposition(12.345, -31.26);
+    expect(session.current()!.step.id).toBe('brief');
+    expect(session.events.at(-1)).toEqual({ t: 2, type: 'anchor_repositioned', stepId: 'brief', data: { headingDeg: 12.3, elevationDeg: -31.3 } });
+  });
+
+  test('repositioning in every step leaves the score byte-identical', () => {
+    const plain = playFire('ordinary', 'water');
+    const withMoves = structuredClone(plain.events);
+    // Insert a reposition right after every step start, at the same time
+    for (let i = withMoves.length - 1; i >= 0; i--) {
+      const e = withMoves[i]!;
+      if (e.type === 'step_started') withMoves.splice(i + 1, 0, { t: e.t, type: 'anchor_repositioned', stepId: e.stepId, data: { headingDeg: 1, elevationDeg: -2 } });
+    }
+    expect(withMoves.length).toBeGreaterThan(plain.events.length);
+    expect(JSON.stringify(evaluate(FIRE, 'ordinary', withMoves))).toBe(JSON.stringify(evaluate(FIRE, 'ordinary', plain.events)));
+  });
+});
 
 const AREA = PREFABS.ConfinedAreaEntrance!;
 
@@ -170,11 +319,35 @@ describe('ScenarioSession', () => {
     expect(ordinary.events.some((e) => e.type === 'forbidden_action')).toBe(false);
   });
 
-  test('the hold completes after durationSec of samples with cumulative onTargetSec', () => {
-    const session = playFire('ordinary', 'water');
+  test('aim_and_hold still completes after durationSec of samples with cumulative onTargetSec', () => {
+    // FIRE_01 v1 shape: the extinguish step as aim_and_hold, R_AIM_BASE without PASS params
+    const v1 = structuredClone(fireJson) as unknown as { steps: { id: string; interaction: string; params: object }[]; rules: { id: string; params: object }[] };
+    Object.assign(v1.steps.find((st) => st.id === 'extinguish')!, {
+      interaction: 'aim_and_hold',
+      params: { targetZone: 'FireBase', offTargetZones: ['FlameTop'], durationSec: 10 },
+    });
+    v1.rules.find((r) => r.id === 'R_AIM_BASE')!.params = { step: 'extinguish', minOnTargetSec: 4, maxOffTargetRatio: 0.4 };
+    const scenario = loadScenario(v1);
+    let now = 0;
+    const session = new ScenarioSession(scenario, 'ordinary', () => now);
+    session.start();
+    session.complete();
+    session.complete({ headingDeg: 10, elevationDeg: -30 });
+    session.record('target_hit', { target: 'AlarmCallPoint' });
+    session.complete();
+    session.record('marker_found', { marker: 'EXIT_A' });
+    session.complete();
+    session.choose('water');
+    session.arrive('AttackSpot', 0, { exitBehind: true });
+    for (let i = 0; i < 40; i++) {
+      now += 0.25;
+      session.holdSample('FireBase'); // a static aim: no sweeps, and none required here
+    }
     const holds = session.events.filter((e) => e.type === 'hold_progress');
     expect(holds).toHaveLength(40); // durationSec 10 / 0.25
     expect(holds.at(-1)?.data?.onTargetSec).toBe(10);
+    expect(session.current()?.step.id).toBe('escalation');
+    expect(evaluate(scenario, 'ordinary', session.events).rules.find((r) => r.ruleId === 'R_AIM_BASE')).toEqual(expect.objectContaining({ earned: 15 }));
   });
 
   test('steps outside the variant are skipped with step_skipped', () => {
@@ -311,10 +484,7 @@ describe('Skip step (D-033): always a failure, never a pass', () => {
     session.complete(); // find_exit
     session.choose('water');
     session.arrive('AttackSpot', 0, { exitBehind: true });
-    for (let i = 0; i < 24; i++) {
-      tick(0.25);
-      session.holdSample('FireBase'); // 6 s on target: enough for R_AIM_BASE on its own
-    }
+    spray(session, tick, 24); // 6 s sweeping the base: enough for R_AIM_BASE on its own
     session.skip(); // extinguish
     const e = evaluate(FIRE, 'ordinary', session.events);
     expect(rule(session.events, 'ordinary', 'R_AIM_BASE', FIRE)).toEqual(expect.objectContaining({ earned: 0, passed: false }));

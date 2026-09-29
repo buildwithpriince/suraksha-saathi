@@ -50,7 +50,8 @@ instructor signs off. Code must not hard-code any of it; it lives in `content/sc
   `id`, `labelKey`. Optional: `forbidden` (bool; requires `tag`, emitted as `forbidden_action{tag}`),
   `forbiddenVariants` (forbidden only in these variants; default all), `needsReview`.
 - **Rule:** `id`, `type`, `params`, `points`, `critical`, `feedbackKey`. Optional: `variants`,
-  `criticalOn: "forbidden"` (docs/03), `needsReview`.
+  `criticalOn: "forbidden"` (docs/03), `choiceFeedback` (docs/03; `correct_choice` on a single-choice
+  step only: `{ "correct": key, "options": { optionId: key } }`), `needsReview`.
 - **Variant:** `id`, `params`. Optional: `needsReview`.
 - `needsReview: true` on any object marks content a safety expert must confirm; it does not change
   behaviour. The scenario-level flag stays `true` until the whole module is signed off. Gameplay
@@ -64,43 +65,69 @@ instructor signs off. Code must not hard-code any of it; it lives in `content/sc
 | Type | `params` |
 |---|---|
 | `narration` | none |
-| `place_on_plane` | `prefab` (scene prefab name); any other keys are passed to the prefab (e.g. `fireType`) |
-| `tap_target` | `target` (named scene object) |
+| `place_on_plane` | `prefab` (prefab layout name in `mobile/src/core/player/prefabs.ts`); optional `anchorMarker` (a marker id from `setup.markers`: while the camera sees it, the placed overlay is pinned to it, D-036); any other keys are passed to the prefab (e.g. `fireType`) |
+| `tap_target` | `target` (named object in the prefab layout) |
 | `choose_one`, `choose_many`, `checklist`, `decision` | `options` (see Fields) |
 | `aim_and_hold` | `targetZone`, `offTargetZones` (list), `durationSec` (length of the hold phase) |
+| `operate_extinguisher` | `agentFrom` (an earlier `choose_one` step: the extinguisher picked there), `targetZone`, `offTargetZones` (list), `dischargeSec` (seconds of spray the extinguisher holds) |
 | `find_marker` | `marker` (must be listed in `setup.markers`) |
-| `move_to` | `anchor` (scene anchor name or marker id), `radiusM`. Optional: `showRoute` (AR arrows), `exitBehind {marker, minAngleDeg}` (then `step_completed` carries `exitBehind: true/false`), `detector {peakReading, alertLevel, dangerLevel}` (simulated gas reading rising with proximity) |
+| `move_to` | `anchor` (scene anchor name or marker id), `radiusM`. Optional: `showRoute` (on-screen arrow to the next waypoint), `exitBehind {marker, minAngleDeg}` (then `step_completed` carries `exitBehind: true/false`), `detector {peakReading, alertLevel, dangerLevel}` (simulated gas reading rising with proximity) |
 | `mark_zone` | `hazard` (anchor name), `trueRadiusM` (scored by `zone_accuracy`), `minCones` |
 
 ## Interaction types (the only step types the player supports)
-| Type | AR behaviour | Tabletop fallback | Events emitted |
+There is no plane detection and no position tracking (D-027). Overlays hold a fixed direction as
+the phone rotates (3DoF, from device orientation), so steps that need the worker to walk use
+printed QR markers or tapped waypoints rather than tracked movement.
+
+Anchoring (D-036): orientation comes from a gyroscope + rotation-vector complementary filter, and
+overlays are drawn with a pinhole projection that matches the cropped camera preview. If the
+placement step names an `anchorMarker` and the camera sees that printed marker, the overlay is
+pinned to it and scaled by its apparent size (this is the only correction for walking); out of
+frame, sensor anchoring continues from the last correction. After placement the worker can tap
+**Reposition** and then the floor to re-place a drifted overlay: the player records
+`anchor_repositioned{headingDeg, elevationDeg}` in the current step, and no rule reads it. Settings
+has a switch back to the original anchoring (raw rotation vector, linear 50° mapping, no marker).
+Overlays are billboards: always upright on screen, never rotated with the phone (D-039). The
+preview's field of view is measured on each phone by a hidden calibration screen (long-press
+Settings on Home), which also runs a rotate-90°-and-return self-test; during drills a status line
+shows MARKER LOCK / SENSOR / LEGACY and whether a gyroscope was found, and Settings can show a
+debug overlay with the FOV in use and live drift numbers.
+
+| Type | Camera mode (`ar`) | Tabletop mode | Events emitted |
 |---|---|---|---|
 | `narration` | Audio + caption, auto-advance | same | `step_started`, `step_completed` |
-| `place_on_plane` | Tap a detected horizontal plane to anchor a prefab | Auto-placed at room centre | `step_completed{position}` |
-| `tap_target` | Tap a named object in the scene | same | `target_hit{target}` |
-| `choose_one` | Pick one of N 3D items / cards | same | `choice_made{option}` |
-| `choose_many` | Toggle items on a rack, press Done | same | `choice_made{options[]}` |
-| `aim_and_hold` | Point screen-centre reticle at a zone, hold | Drag reticle with finger | `hold_progress{zone,onTargetSec}` per 0.25 s, `step_completed` |
-| `find_marker` | Detect a printed image marker via image tracking | Tap the exit sign in virtual room | `marker_found{marker}` |
-| `move_to` | Physically walk until camera within `radiusM` of an anchor | Tap waypoints along a path | `position_reached{anchor,distanceM}` |
-| `mark_zone` | Tap floor points to place cones around a hazard | Tap floor points | `zone_marked{radiusM}` |
-| `checklist` | Tap each item on the buddy avatar | same | `choice_made{options[]}` |
+| `place_on_plane` | Tap the floor in the camera view, or point the camera at the `anchorMarker` if the step has one; the prefab overlay is anchored there | Auto-placed at room centre | `step_completed{position}` (plus `anchorMarker` when placed by the marker) |
+| `tap_target` | Tap a named object in the overlay | same | `target_hit{target}` |
+| `choose_one` | Tap one of N overlay objects / cards | same | `choice_made{option}` |
+| `choose_many` | Toggle cards on a rack, press Done | same | `choice_made{options[]}` |
+| `aim_and_hold` | Turn the phone so the screen-centre reticle sits on the anchored zone | Drag reticle with finger | `hold_progress{zone,onTargetSec}` per 0.25 s, `step_completed` |
+| `operate_extinguisher` | First-person extinguisher, PASS: swipe the pin off; turn the phone so the ring (the nozzle's aim) is on the fire; press and hold the lever button (spray + vibration); sweep side to side. The fire shrinks with spray on `targetZone` (twice as fast while sweeping), not at all on `offTargetZones`, and grows while not being put out. The step ends when the fire is out, out of control, the extinguisher is empty, or after 1 s of spray if the `agentFrom` pick is `forbidden` in this variant (no reduction, failure shown) | same (ring aimed by turning the phone) | `pin_pulled`, `discharge_started` / `discharge_stopped`, `hold_progress{zone,onTargetSec,aimDh}` per 0.25 s while discharging, `step_completed{extinguished,outcome}` |
+| `find_marker` | Scan the printed QR marker (`EXIT_A`, `EXIT_B`) with the camera | Tap the exit sign in the virtual room | `marker_found{marker}` |
+| `move_to` | To a marker id: walk there and scan it. To a scene anchor: tap waypoints along the drawn path (D-033) | Tap waypoints along a path | `position_reached{anchor,distanceM}` |
+| `mark_zone` | Tap the floor to place cones around the hazard (tap one to remove it), Done after `minCones` | Tap floor points | `zone_marked{radiusM}` |
+| `checklist` | Tap each item on the buddy card, then Done | same | `choice_made{options[]}` |
 | `decision` | Situation card with options (voice read-out) | same | `choice_made{option}` |
 Any option tagged `forbidden` also emits `forbidden_action{tag}` when chosen.
+A printed marker is a QR code whose text is exactly the marker id; `npm run markers` writes the
+printable SVGs. Any step with no progress for 30 s offers "Skip step", scored as failed (D-033).
 
 ## FIRE_01 — Fire & Explosion Response
 Context: a small fire starts near waste material in a workshop / surface plant area.
 Variants: `ordinary` (paper, wood, cloth) and `oil` (oil / grease fire).
+Scenario version 2 (D-036, D-038): adds the `HAZARD_A` anchor marker, and the extinguish step is
+an `operate_extinguisher` scored on the PASS technique; version 1 attempts are no longer accepted
+by a backend running this content. Version 3 (D-042): DCP is correct on both variants and CO2 on
+`oil`, and the extinguisher feedback depends on the pick.
 
 | # | Step id | Interaction | What the worker does | Notes |
 |---|---|---|---|---|
 | 1 | `brief` | narration | Hears the situation | Not scored |
-| 2 | `place_fire` | place_on_plane | Places the fire on the real floor | Setup, not scored |
+| 2 | `place_fire` | place_on_plane | Places the fire on the real floor (tap, or point at the printed `HAZARD_A`), away from the EXIT sign or marker | Setup, not scored; `anchorMarker: HAZARD_A`. The exit is found later (step 4), so the instruction names the printed sign (D-043) |
 | 3 | `raise_alarm` | tap_target | Raises the alarm (call point / shouts "Fire") | Must happen before fighting |
 | 4 | `find_exit` | find_marker | Finds the nearest printed EXIT marker | Anchors the escape route |
-| 5 | `pick_extinguisher` | choose_one | Chooses from: water-type, dry chemical powder (DCP), CO2 | `oil` variant: water-type is `forbidden` |
-| 6 | `approach` | move_to | Moves to the attack spot with the exit behind them | Checked: exit marker direction is behind camera forward (angle > 120°) |
-| 7 | `extinguish` | aim_and_hold | Aims at the base of the fire, holds | Aiming at flame tops counts as off-target |
+| 5 | `pick_extinguisher` | choose_one | Chooses from: water-type, dry chemical powder (DCP), CO2 | Correct: `ordinary` water or DCP; `oil` DCP or CO2. `oil` variant: water-type is `forbidden` |
+| 6 | `approach` | move_to | Moves to the attack spot with the exit behind them | Checked on arrival: the exit is more than 120° from camera forward, measured by the gyroscope from the moment EXIT was scanned (not the compass, D-043). Shown live here and during `extinguish`: an arrow to the exit and "Exit behind you ✓" / "Turn — keep the exit behind you" |
+| 7 | `extinguish` | operate_extinguisher | PASS: pulls the pin, aims at the base of the fire, squeezes, sweeps side to side | Aiming at flame tops counts as off-target and does not reduce the fire; the extinguisher from step 5 is used, and a pick that is `forbidden` here (water on oil) has no effect |
 | 8 | `escalation` | decision | Fire spreads (scripted). Options: keep fighting / evacuate and alert / collect belongings | Only "evacuate and alert" is correct; "keep fighting" and "collect belongings" are `forbidden` |
 | 9 | `evacuate` | move_to | Follows AR arrows to the exit marker | Time limited |
 | 10 | `assembly` | decision | At assembly point: report to supervisor for headcount / go back inside / leave site | Only "report" is correct |
@@ -111,9 +138,9 @@ Rules (points total 100):
 | R_ALARM_BEFORE_FIGHT | order | before `raise_alarm`, after `extinguish` | 10 | yes |
 | R_ALARM_FAST | time_limit | step `raise_alarm`, 20 s | 5 | no |
 | R_EXIT_FOUND | completed | step `find_exit` | 10 | no |
-| R_RIGHT_EXTINGUISHER | correct_choice | step `pick_extinguisher`, correct by variant | 15 | yes (if forbidden picked) |
+| R_RIGHT_EXTINGUISHER | correct_choice | step `pick_extinguisher`, correct by variant (`ordinary`: water, dcp; `oil`: dcp, co2); feedback by pick | 15 | yes (if forbidden picked) |
 | R_EXIT_BEHIND | completed | step `approach` with `exitBehind=true` | 10 | no |
-| R_AIM_BASE | hold | step `extinguish`, onTargetSec ≥ 4, offTargetRatio ≤ 0.4 | 15 | no |
+| R_AIM_BASE | hold | step `extinguish`, onTargetSec ≥ 4, offTargetRatio ≤ 0.4, pin pulled before spraying, ≥ 2 sweeps on the base (PASS, D-038) | 15 | no |
 | R_EVACUATE_DECISION | correct_choice | step `escalation` | 15 | yes |
 | R_EVACUATE_TIME | time_limit | step `evacuate`, 60 s | 10 | no |
 | R_ASSEMBLY_REPORT | correct_choice | step `assembly` | 10 | no |
@@ -151,7 +178,9 @@ Rules (points total 100):
 | R_REPORT | correct_choice | step `report` | 10 | no |
 
 ## Markers
-- `EXIT_A`, `EXIT_B`: A5 printed, physical width 0.15 m, stored in `Assets/_Project/Markers/`.
+- `EXIT_A`, `EXIT_B`: A5 printed, physical width 0.15 m, generated into `mobile/assets/markers/`.
+- `HAZARD_A` ("FIRE HERE"): A4 printed, 0.18 m, laid flat on the floor where the FIRE_01 fire
+  should be; FIRE_01's `anchorMarker` (D-036). Optional: without it the fire is placed by tapping.
 - Demo setup: tape `EXIT_A` beside a real door at chest height (see `docs/09-DEMO-SCRIPT.md`).
 
 ## Roadmap domains (content only, not built)

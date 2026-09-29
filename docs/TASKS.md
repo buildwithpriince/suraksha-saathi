@@ -16,7 +16,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [x] T-06 [E] Dashboard skeleton: Vite React TS strict, Tailwind, Router, TanStack Query, Vitest — Done when: typecheck/test/build green
 - ~~T-07 [A] Unity MCP connected to Claude Code~~ — dropped: no Unity Editor (D-027)
 - [ ] T-08 [A] Bundle `/content` into the app: Metro `watchFolders` + JSON imports of `content/scenarios/*.json` and `content/manifest.json`, and a build script that turns `content/trust/root_public_key.txt` into a TS module (Metro has no `?raw`); replaces the Unity copy step and D-009 — Done when: an APK in airplane mode loads both scenarios and the committed root key (deps: T-02)
-- [ ] T-09 [A] Rewrite the Unity-era specs for the Expo app (D-027): docs/00 (R2/R2a wording, D3 as QR markers), docs/01 (component diagram, screens instead of scenes), docs/02 (camera-mode behaviour column per `mobile/CLAUDE.md`, QR markers), docs/03 (TS core path), docs/04 (implementations line), docs/05 (device key in secure store), docs/07 (rendering, i18next tables, report script), docs/09, README, SETUP — Done when: no spec or setup doc mentions Unity, C# Core or ARCore except as history, and `spec-reviewer` finds no contradiction with `mobile/CLAUDE.md`
+- [x] T-09 [A] Rewrite the Unity-era specs for the Expo app (D-027): docs/00 (R2/R2a wording, D3 as QR markers), docs/01 (component diagram, screens instead of scenes), docs/02 (camera-mode behaviour column per `mobile/CLAUDE.md`, QR markers), docs/03 (TS core path), docs/04 (implementations line), docs/05 (device key in secure store), docs/07 (rendering, i18next tables, report script), docs/09, README, SETUP — Done when: no spec or setup doc mentions Unity, C# Core or ARCore except as history, and `spec-reviewer` finds no contradiction with `mobile/CLAUDE.md`
 
 ## M1 — Core logic, pure TypeScript (target: ____)
 - [x] T-10 [A] Scenario model + JSON loader + validation in `mobile/src/core/scenarios` (docs/02 contract) — Done when: loads both scenario files, rejects 5 malformed cases in tests (deps: T-04)
@@ -39,6 +39,13 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [x] T-26 [C] Result screen per docs/03 (sorted rules, tap-to-hear feedback, try again)
 - [ ] T-27 [B] Fire overlay (animated 2D, Reanimated/SVG) + escalation spread; 30 fps on target phone
 - [ ] T-28 [F] Device test: full FIRE_01 run on 2 phones, bug list filed as tasks
+- [ ] T-29 [B] Lottie fire (`lottie-react-native`, bundled `assets/fire.json` from `npm run fire`) scaled by the fire level, with smoke that thickens as it grows (D-040) — Done when: escalation and the extinguisher visibly grow and shrink it in Expo Go on a phone; scoring, events and scenario JSON unchanged (deps: T-27)
+- [x] T-34 [B] Fix R_RIGHT_EXTINGUISHER from device testing: DCP correct on both variants, CO2 on oil; feedback by pick (`choiceFeedback`); regression tests incl. water on oil failing the attempt (D-042)
+- [x] T-36 [A] Refresher drills in the app (D-044): derived short run of the critical steps at day 7 and 30 after the first pass, `kind: "refresher"` attempts, due badge on Home and the worker page, Settings demo clock, exit indicator hidden without an exit scan — Done when: core tests cover derivation, schedule and scoring, and a refresher runs on a phone after +7 days
+- [x] T-37 [D/E] Refreshers on the server and dashboard (D-044): backend recheck against the derived rule set (Python port + shared expected rule ids), `GET /v1/admin/retention`, seeded refreshers, Overview chart "initial vs day 7 vs day 30" per module (deps: T-36)
+- [ ] T-35 [B] Exit-behind made visible: compass-free gyro heading from the EXIT scan, live arrow and status on approach and extinguish, placement instruction (D-043) — Done when: on a phone, turning around during approach flips the status and the arrow points at the printed EXIT sign
+- [x] T-85 [B] Extinguisher pin pulls on a device (D-045): drag out in any direction with a gesture-handler pan on the UI thread, pin follows the finger, buzz when it pops, fallback button after 10 s — Done when: on a phone, a slow or short drag in any direction pulls the pin without the fallback button
+- [ ] T-86 [C] Wallet cards (D-046): one 85.6 × 54 mm card face for the worker ID card (logo, bilingual name, worker name and ID, site, language, issue date, login QR, optional local photo with placeholder) and the certificate card (modules with scores, dates, SS1 QR); "Share card" as a PNG via `react-native-view-shot` + `expo-sharing`; photo capture from the worker page — Done when: on a phone, both cards render in en and hi, share to another app, and the shared certificate card's QR verifies on the Verify screen
 
 ## M3 — GAS_01 + fallback (target: ____)
 - [x] T-30 [B] Interactions: `choose_many`, `checklist`, `mark_zone` (cones on the placed overlay, radius in overlay metres); gas cloud overlay + detector reading by waypoint progress
@@ -78,6 +85,8 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [x] T-71 [F] `content/strings/*.csv` complete in en/hi; sat drafted
 - [ ] T-72 [F] Santali native-speaker review; `needsReview` cleared for demo scenarios
 - [ ] T-73 [F] Narration audio recorded and bundled for hi and sat; report shows zero missing
+- [ ] T-74 [C] Settings "Spoken instructions" on/off: mutes speech the app starts itself (step instructions, result, scan and verify outcomes); Replay and tap-to-hear always speak; muted narration steps wait for Continue (D-041) — Done when: the choice survives an app restart and a muted FIRE_01 run in Expo Go says nothing until Replay
+- [ ] T-87 [C] Santali in Ol Chiki (D-047): bundled Noto Sans Ol Chiki picked by `ui/Text` from the text, all sat cells drafted in Ol Chiki with needsReview=true, picker "ᱥᱟᱱᱛᱟᱲᱤ (Santali)", dismissible draft note on Home, sat narration speaks Hindi, `l10n:export-review` / `l10n:import-review` — code, drafts, review workflow and report (0 missing) done; Done when: every screen walked in sat in Expo Go with no boxes, raw keys or clipped text
 
 ## M8 — Ship (target: ____)
 - [ ] T-80 [A] Release APK via EAS (signed); install test on 2 phones; size < 150 MB

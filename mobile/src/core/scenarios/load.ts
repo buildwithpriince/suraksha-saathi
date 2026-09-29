@@ -4,6 +4,7 @@
  * played: loadScenario throws ScenarioError listing every problem.
  */
 import {
+  HOLD_INTERACTIONS,
   INTERACTION_TYPES,
   MULTI_SELECT,
   RULE_TYPES,
@@ -164,6 +165,14 @@ function checkSteps(c: Checker, value: unknown, variants: Variant[], variantIds:
     if (params === null || !INTERACTION_TYPES.includes(interaction)) return;
 
     const step: Step = s as unknown as Step;
+    // operate_extinguisher reads the extinguisher chosen in an earlier single-choice step (D-038)
+    if (interaction === 'operate_extinguisher') {
+      const from = c.string(params, 'agentFrom', `${path}.params`);
+      const source = steps.get(from);
+      if (from !== '' && (source === undefined || source.interaction !== 'choose_one')) {
+        c.fail(`${path}.params.agentFrom`, `${from} must be an earlier choose_one step`);
+      }
+    }
     steps.set(id, step);
     for (const variant of variants) {
       if (runsIn !== undefined && !runsIn.includes(variant.id)) continue;
@@ -196,9 +205,15 @@ function checkParams(c: Checker, type: InteractionType, p: Obj, path: string, ma
   switch (type) {
     case 'narration':
       return;
-    case 'place_on_plane':
+    case 'place_on_plane': {
       c.string(p, 'prefab', path);
+      // Optional printed marker that pins the placed overlay while in view (D-036)
+      if (p.anchorMarker !== undefined) {
+        const marker = c.string(p, 'anchorMarker', path);
+        if (marker !== '' && !markers.has(marker)) c.fail(`${path}.anchorMarker`, `${marker} is not in setup.markers`);
+      }
       return;
+    }
     case 'tap_target':
       c.string(p, 'target', path);
       return;
@@ -212,6 +227,12 @@ function checkParams(c: Checker, type: InteractionType, p: Obj, path: string, ma
       c.string(p, 'targetZone', path);
       c.strings(p, 'offTargetZones', path);
       c.number(p, 'durationSec', path, { min: 0.25 });
+      return;
+    case 'operate_extinguisher':
+      // agentFrom is checked against the earlier steps in checkSteps
+      c.string(p, 'targetZone', path);
+      c.strings(p, 'offTargetZones', path);
+      c.number(p, 'dischargeSec', path, { min: 1 });
       return;
     case 'find_marker': {
       const marker = c.string(p, 'marker', path);
@@ -292,6 +313,7 @@ function checkRules(c: Checker, value: unknown, steps: Map<string, Step>, varian
       c.fail(`${path}.criticalOn`, 'must be "forbidden" on a critical rule');
     }
     c.string(r, 'feedbackKey', path);
+    if (r.choiceFeedback !== undefined && type !== 'correct_choice') c.fail(`${path}.choiceFeedback`, 'only for correct_choice rules');
     const scopedTo = c.strings(r, 'variants', path, true);
     c.subset(scopedTo, variantIds, `${path}.variants`, 'variant');
     c.bool(r, 'needsReview', path, true);
@@ -333,6 +355,7 @@ function checkRules(c: Checker, value: unknown, steps: Map<string, Step>, varian
           c.fail(`${path}.params.partial`, 'only for choose_many and checklist steps');
         }
         checkCorrect(c, params.correct, step, appliesIn, `${path}.params.correct`);
+        if (r.choiceFeedback !== undefined) checkChoiceFeedback(c, r.choiceFeedback, step, `${path}.choiceFeedback`);
         break;
       }
       case 'no_forbidden': {
@@ -340,11 +363,18 @@ function checkRules(c: Checker, value: unknown, steps: Map<string, Step>, varian
         if (tag !== '' && !forbiddenTags.has(tag)) c.fail(`${path}.params.tag`, `no forbidden option has tag ${tag}`);
         break;
       }
-      case 'hold':
-        stepRef('step', ['aim_and_hold']);
+      case 'hold': {
+        const step = stepRef('step', HOLD_INTERACTIONS);
         c.number(params, 'minOnTargetSec', `${path}.params`, { min: 0 });
         c.number(params, 'maxOffTargetRatio', `${path}.params`, { min: 0, max: 1 });
+        // PASS sub-steps (D-038): only an operate_extinguisher step records a pin and an aim
+        const pullPin = c.bool(params, 'requirePinPulled', `${path}.params`, true);
+        if (params.minSweeps !== undefined) c.number(params, 'minSweeps', `${path}.params`, { min: 0, integer: true });
+        if ((pullPin !== undefined || params.minSweeps !== undefined) && step !== undefined && step.interaction !== 'operate_extinguisher') {
+          c.fail(`${path}.params`, 'requirePinPulled and minSweeps need an operate_extinguisher step');
+        }
         break;
+      }
       case 'zone_accuracy':
         stepRef('step', ['mark_zone']);
         c.number(params, 'toleranceM', `${path}.params`, { min: 0.01 });
@@ -353,6 +383,23 @@ function checkRules(c: Checker, value: unknown, steps: Map<string, Step>, varian
   });
   c.unique(ids, 'scenario.rules');
   if (total !== TOTAL_POINTS) c.fail('scenario.rules', `points sum to ${total}, must be ${TOTAL_POINTS}`);
+}
+
+/** `choiceFeedback` (docs/03): string keys, for a single-choice step, naming only its options. */
+function checkChoiceFeedback(c: Checker, value: unknown, step: Step | undefined, path: string): void {
+  const feedback = c.object(value, path);
+  if (feedback === null) return;
+  if (step !== undefined && MULTI_SELECT.includes(step.interaction)) c.fail(path, 'only for single-choice steps');
+  for (const key of Object.keys(feedback)) if (key !== 'correct' && key !== 'options') c.fail(`${path}.${key}`, 'unknown field');
+  if (feedback.correct !== undefined) c.string(feedback, 'correct', path);
+  if (feedback.options === undefined) return;
+  const options = c.object(feedback.options, `${path}.options`);
+  if (options === null) return;
+  const optionIds = new Set(step === undefined ? [] : stepOptions(step).map((o) => o.id));
+  for (const id of Object.keys(options)) {
+    if (step !== undefined && !optionIds.has(id)) c.fail(`${path}.options`, `unknown option ${id}`);
+    c.string(options, id, `${path}.options`);
+  }
 }
 
 function checkCorrect(c: Checker, value: unknown, step: Step | undefined, appliesIn: string[], path: string): void {

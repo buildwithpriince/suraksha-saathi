@@ -1,53 +1,58 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, useWindowDimensions } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
+import { View, useWindowDimensions } from 'react-native';
 
-import { workerCardText } from '@/core/workers/idCard';
+import { shareCard } from '@/cards/shareCard';
+import { cardWidthPx } from '@/core/cards/walletCard';
 import { getWorker } from '@/db/workers';
-import { Body, Button, Card, Screen, Title } from '@/ui/components';
+import { Body, Button, Screen } from '@/ui/components';
 import { space } from '@/ui/theme';
-import { cardLines, printIdCards } from '@/workers/printCard';
+import { WorkerIdCard } from '@/ui/WalletCard';
+import { printIdCards } from '@/workers/printCard';
+import { workerPhotoUri } from '@/workers/photos';
 
-/** A worker's ID card (D-034): the QR to scan at the kiosk, and a button to print it. */
+/** Widest the card is drawn on a tablet or in landscape, dp. */
+const MAX_CARD_DP = 480;
+
+/** A worker's ID card (D-034, D-046): the wallet card with the kiosk QR, to share or print. */
 export default function IdCardScreen() {
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const { workerId } = useLocalSearchParams<{ workerId: string }>();
   const [worker] = useState(() => getWorker(workerId));
-  const [printing, setPrinting] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [problemKey, setProblemKey] = useState<string | null>(null);
+  const card = useRef<View>(null);
+
+  // The photo may have been taken or removed on the worker page since this screen was opened
+  useFocusEffect(useCallback(() => setPhoto(workerPhotoUri(workerId)), [workerId]));
 
   if (worker === null) return null;
 
-  const print = () => {
-    setPrinting(true);
-    setFailed(false);
-    printIdCards([worker])
-      .catch(() => setFailed(true))
-      .finally(() => setPrinting(false));
+  const run = (task: () => Promise<boolean>, failedKey: string) => {
+    setBusy(true);
+    setProblemKey(null);
+    task()
+      .then((ok) => {
+        if (!ok) setProblemKey(failedKey);
+      })
+      .catch(() => setProblemKey(failedKey))
+      .finally(() => setBusy(false));
   };
+
+  const share = () => run(() => shareCard(card, t('card.share.button')), 'card.share.failed');
+  const print = () => run(() => printIdCards([worker]).then(() => true), 'card.print.failed');
 
   return (
     <Screen>
       <Stack.Screen options={{ title: t('card.title') }} />
-      <Card>
-        <View style={styles.qr}>
-          <QRCode value={workerCardText(worker.id)} size={Math.round(width * 0.6)} ecl="Q" quietZone={16} backgroundColor="#FFFFFF" />
-        </View>
-        <Title>{worker.displayName}</Title>
-        {cardLines(worker).map((line) => (
-          <Body key={line}>{line}</Body>
-        ))}
-        <Body muted>{t('card.hint')}</Body>
-      </Card>
-      {failed ? <Body>{t('card.print.failed')}</Body> : null}
-      <Button label={t('card.print.button')} onPress={print} disabled={printing} />
+      <WorkerIdCard worker={worker} photoUri={photo} width={cardWidthPx(width - 2 * space.l, MAX_CARD_DP)} cardRef={card} />
+      <Body muted>{t('card.hint')}</Body>
+      {problemKey !== null ? <Body>{t(problemKey)}</Body> : null}
+      <Button label={t('card.share.button')} onPress={share} disabled={busy} />
+      <Button kind="secondary" label={t('card.print.button')} onPress={print} disabled={busy} />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  qr: { alignItems: 'center', paddingVertical: space.s },
-});

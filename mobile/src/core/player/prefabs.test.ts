@@ -33,7 +33,7 @@ describe.each([
     for (const step of scenario.steps) {
       const p = step.params;
       if (step.interaction === 'tap_target') expect(prefab.labels).toHaveProperty(p.target as string);
-      if (step.interaction === 'aim_and_hold') {
+      if (step.interaction === 'aim_and_hold' || step.interaction === 'operate_extinguisher') {
         expect(prefab.zones).toHaveProperty(p.targetZone as string);
         for (const z of p.offTargetZones as string[]) expect(prefab.zones).toHaveProperty(z);
       }

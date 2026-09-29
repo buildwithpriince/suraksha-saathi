@@ -6,6 +6,7 @@
 import type { JsonValue, Rule, Scenario, Step } from '../scenarios/types';
 import { MULTI_SELECT } from '../scenarios/types';
 import { findVariant, resolveParams, stepOptions, stepRunsIn } from '../scenarios/variants';
+import { sweepReversals } from './sweeps';
 import type { AttemptEvent, Evaluation, RuleResult } from './types';
 
 // Event times carry 2 decimals; compare with a tolerance so 0.1 + 0.2 style noise can't flip a rule.
@@ -35,7 +36,7 @@ export function evaluate(scenario: Scenario, variantId: string, events: readonly
       max: rule.points,
       critical: rule.critical,
       passed: rule.critical ? !criticalFailure : earned === rule.points,
-      feedbackKey: rule.feedbackKey,
+      feedbackKey: failedStep ? rule.feedbackKey : feedbackKeyFor(rule, earned, log),
     });
     earnedTotal += earned;
     maxTotal += rule.points;
@@ -132,7 +133,8 @@ function earnedPoints(
       return log.all.some((e) => e.type === 'forbidden_action' && e.data?.tag === p.tag) ? 0 : full;
     case 'hold': {
       const step = steps.get(p.step as string)!;
-      const offTargetZones = (resolvedParams(step).offTargetZones ?? []) as string[];
+      const resolved = resolvedParams(step);
+      const offTargetZones = (resolved.offTargetZones ?? []) as string[];
       // D-028: each hold_progress is one 0.25 s sample; onTargetSec is cumulative
       const samples = log.inStep(step.id, 'hold_progress');
       const onTarget = Math.max(0, ...samples.map((e) => Number(e.data?.onTargetSec ?? 0)));
@@ -140,7 +142,14 @@ function earnedPoints(
       const offRatio = samples.length === 0 ? 1 : offSamples / samples.length;
       const onMet = onTarget + EPSILON >= (p.minOnTargetSec as number);
       const offMet = offRatio <= (p.maxOffTargetRatio as number) + EPSILON;
-      if (onMet && offMet) return full;
+      // D-038 PASS sub-steps (operate_extinguisher): Pull before the first spray, and Sweep
+      // across the base, counted from the aim of the samples on the target zone
+      const pin = log.first(step.id, 'pin_pulled');
+      // Position in the time-sorted (stable) log, so a pin and a spray in the same tick keep their order
+      const pinMet = p.requirePinPulled !== true || (pin !== undefined && (samples.length === 0 || log.all.indexOf(pin) < log.all.indexOf(samples[0]!)));
+      const onBase = samples.filter((e) => e.data?.zone === resolved.targetZone && typeof e.data?.aimDh === 'number');
+      const sweepMet = p.minSweeps === undefined || sweepReversals(onBase.map((e) => e.data!.aimDh as number)) >= (p.minSweeps as number);
+      if (onMet && offMet && pinMet && sweepMet) return full;
       return onMet ? half : 0;
     }
     case 'zone_accuracy': {
@@ -154,6 +163,20 @@ function earnedPoints(
       return error <= 2 * tolerance + EPSILON ? half : 0;
     }
   }
+}
+
+/**
+ * The feedback to show and speak for a rule (docs/03). A `correct_choice` rule with
+ * `choiceFeedback` answers what was picked: praise for a correct pick, the specific mistake for a
+ * wrong one, so nobody hears "never use water" who did not pick water. Otherwise `feedbackKey`.
+ */
+function feedbackKeyFor(rule: Rule, earned: number, log: EventLog): string {
+  const feedback = rule.choiceFeedback;
+  if (feedback === undefined) return rule.feedbackKey;
+  const choice = log.first(rule.params.step as string, 'choice_made');
+  if (choice === undefined || choice.data?.option === undefined) return rule.feedbackKey;
+  if (earned === rule.points) return feedback.correct ?? rule.feedbackKey;
+  return feedback.options?.[String(choice.data.option)] ?? rule.feedbackKey;
 }
 
 function correctChoicePoints(rule: Rule, variantId: string, step: Step, log: EventLog): number {

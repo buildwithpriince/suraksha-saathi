@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { api, type FailedRule } from "../../api";
+import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { api, type FailedRule, type Retention } from "../../api";
 import { formatDateTime, modeName, scenarioName } from "../../components/format";
 import { Card, EmptyState, FlagBadge, PageHeader, PassBadge, QueryView, SkeletonRows, Table } from "../../components/ui";
 
 export function OverviewPage() {
   const overview = useQuery({ queryKey: ["overview"], queryFn: () => api.overview() });
   const latest = useQuery({ queryKey: ["attempts", { page: 1 }], queryFn: () => api.attempts({ page: 1 }) });
+  const retention = useQuery({ queryKey: ["retention"], queryFn: () => api.retention() });
 
   return (
     <>
@@ -97,7 +98,94 @@ export function OverviewPage() {
             </Link>
           </div>
         </Card>
+
+        <Card title="Retention: initial training vs refreshers" className="xl:col-span-5">
+          <QueryView query={retention} skeletonRows={4}>
+            {(data) =>
+              data.scenarios.every((s) => s.points.every((p) => p.workers === 0)) ? (
+                <EmptyState message="No refresher drills yet. Workers are asked for one 7 and 30 days after passing a module." />
+              ) : (
+                <RetentionChart retention={data} />
+              )
+            }
+          </QueryView>
+        </Card>
       </div>
+    </>
+  );
+}
+
+// Safety palette (docs/08): navy for the baseline, blue then safety orange as time passes
+const STAGE_COLORS = ["#1F3864", "#0070C0", "#E0620B", "#6B7280"];
+
+function stageName(stage: number): string {
+  return stage === 0 ? "Initial training" : `Day ${stage}`;
+}
+
+/** D-044: per module, average score at the first pass vs each refresher stage, on the same rules. */
+function RetentionChart({ retention }: { retention: Retention }) {
+  // Zero-padded keys, so legend and tooltip sorted by dataKey list the stages in time order
+  const key = (stage: number) => `s${String(stage).padStart(4, "0")}`;
+  const rows = retention.scenarios.map((s) => ({
+    module: scenarioName(s.scenarioId),
+    ...Object.fromEntries(s.points.map((p) => [key(p.stage), p.avgScore])),
+    ...Object.fromEntries(s.points.map((p) => [`n${key(p.stage)}`, p.workers])),
+  }));
+  return (
+    <>
+      <p className="mb-3 text-sm text-slate-600">
+        Average score on the refresher&apos;s critical-step rules. Initial = each worker&apos;s first passing run; Day N = their first
+        refresher at that stage.
+      </p>
+      <div className="h-72" aria-hidden="true">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={rows} margin={{ left: 0, right: 16 }}>
+            <CartesianGrid vertical={false} stroke="#e2e8f0" />
+            <XAxis dataKey="module" tick={{ fontSize: 12 }} />
+            <YAxis domain={[0, 100]} tick={{ fontSize: 12 }} unit="%" />
+            <Tooltip
+              itemSorter="dataKey"
+              formatter={(value, name, item) => {
+                const workers = (item.payload as Record<string, number>)[`n${String(item.dataKey)}`] ?? 0;
+                return [value === null ? "no data" : `${String(value)}% (${workers} workers)`, name];
+              }}
+            />
+            <Legend itemSorter="dataKey" />
+            {retention.stages.map((stage, i) => (
+              <Bar
+                key={stage}
+                dataKey={key(stage)}
+                name={stageName(stage)}
+                fill={STAGE_COLORS[Math.min(i, STAGE_COLORS.length - 1)]}
+                radius={[4, 4, 0, 0]}
+              />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      <table className="sr-only">
+        <caption>Retention by refresher stage</caption>
+        <thead>
+          <tr>
+            <th>Module</th>
+            <th>Stage</th>
+            <th>Average score (percent)</th>
+            <th>Workers</th>
+          </tr>
+        </thead>
+        <tbody>
+          {retention.scenarios.flatMap((s) =>
+            s.points.map((p) => (
+              <tr key={`${s.scenarioId}/${p.stage}`}>
+                <td>{scenarioName(s.scenarioId)}</td>
+                <td>{stageName(p.stage)}</td>
+                <td>{p.avgScore ?? "no data"}</td>
+                <td>{p.workers}</td>
+              </tr>
+            )),
+          )}
+        </tbody>
+      </table>
     </>
   );
 }

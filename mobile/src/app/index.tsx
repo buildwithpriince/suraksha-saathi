@@ -1,15 +1,17 @@
 import { Redirect, Stack, useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import type { WorkerRecord } from '@/core/sync/payloads';
 import { outboxCount } from '@/db/database';
 import { getDevice } from '@/db/device';
 import { listWorkers } from '@/db/workers';
+import { hasRefresherDue } from '@/refresher/refreshers';
 import { AppTitle } from '@/ui/AppTitle';
 import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
-import { Body, Button, Card, Screen, Title } from '@/ui/components';
+import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
+import { SantaliDraftNote } from '@/ui/SantaliDraftNote';
 import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
@@ -18,12 +20,16 @@ export default function HomeScreen() {
   const router = useRouter();
   const [device, setDevice] = useState(getDevice);
   const [workers, setWorkers] = useState<WorkerRecord[]>([]);
+  const [refresherDue, setRefresherDue] = useState<ReadonlySet<string>>(new Set());
   const [pending, setPending] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       setDevice(getDevice());
-      setWorkers(listWorkers());
+      const list = listWorkers();
+      setWorkers(list);
+      // D-044: flag workers who are due a refresher drill
+      setRefresherDue(new Set(list.filter((w) => hasRefresherDue(w.id)).map((w) => w.id)));
       setPending(outboxCount());
     }, []),
   );
@@ -34,6 +40,7 @@ export default function HomeScreen() {
     <Screen>
       {/* Home is the only screen that shows the app name, so it is the only one carrying the mark */}
       <Stack.Screen options={{ headerTitle: () => <AppTitle /> }} />
+      <SantaliDraftNote />
       <Body muted>
         {t('home.site.label', { site: device.siteCode })} · {t('home.pending_sync.label', { count: pending })}
       </Body>
@@ -49,7 +56,10 @@ export default function HomeScreen() {
             onPress={() => router.push({ pathname: '/worker/[id]', params: { id: w.id } })}
             style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
           >
-            <Text style={styles.rowTitle}>{w.displayName}</Text>
+            <View style={styles.rowMain}>
+              <Text style={styles.rowTitle}>{w.displayName}</Text>
+              {refresherDue.has(w.id) ? <Badge label={t('refresher.due.short')} tone="amber" /> : null}
+            </View>
             <Text style={styles.rowMeta}>{t(`lang.${w.preferredLang}`)}</Text>
           </Pressable>
         ))}
@@ -59,7 +69,13 @@ export default function HomeScreen() {
       <Card>
         <LanguageSwitcher label={t('home.language.label')} />
       </Card>
-      <Button kind="secondary" label={t('home.settings.button')} onPress={() => router.push('/settings')} />
+      {/* Long-press: hidden camera calibration and rotation self-test (D-039) */}
+      <Button
+        kind="secondary"
+        label={t('home.settings.button')}
+        onPress={() => router.push('/settings')}
+        onLongPress={() => router.push('/calibrate')}
+      />
     </Screen>
   );
 }
@@ -75,6 +91,7 @@ const styles = StyleSheet.create({
     paddingVertical: space.s,
   },
   rowPressed: { backgroundColor: colors.background },
+  rowMain: { flexShrink: 1, gap: space.xs },
   rowTitle: { fontSize: 18, color: colors.text, fontWeight: '600' },
   rowMeta: { fontSize: 16, color: colors.muted },
 });

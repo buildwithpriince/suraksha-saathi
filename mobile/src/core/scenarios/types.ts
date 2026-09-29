@@ -15,11 +15,14 @@ export const INTERACTION_TYPES = [
   'mark_zone',
   'checklist',
   'decision',
+  'operate_extinguisher',
 ] as const;
 export type InteractionType = (typeof INTERACTION_TYPES)[number];
 
 /** Interaction types whose `choice_made` carries `options[]` rather than `option`. */
 export const MULTI_SELECT: readonly InteractionType[] = ['choose_many', 'checklist'];
+/** Interaction types whose `hold_progress` samples a `hold` rule scores. */
+export const HOLD_INTERACTIONS: readonly InteractionType[] = ['aim_and_hold', 'operate_extinguisher'];
 /** Interaction types that carry `params.options`. */
 export const WITH_OPTIONS: readonly InteractionType[] = ['choose_one', 'choose_many', 'checklist', 'decision'];
 
@@ -63,7 +66,18 @@ export interface Rule {
   criticalOn?: 'forbidden';
   variants?: string[];
   feedbackKey: string;
+  /**
+   * `correct_choice` on a single-choice step only: feedback that depends on what was picked
+   * (docs/03). `correct` for a correct pick; `options[id]` for a wrong pick of that option. Anything
+   * not listed (and no choice at all) falls back to `feedbackKey`.
+   */
+  choiceFeedback?: ChoiceFeedback;
   needsReview?: boolean;
+}
+
+export interface ChoiceFeedback {
+  correct?: string;
+  options?: Record<string, string>;
 }
 
 export interface Variant {

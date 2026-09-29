@@ -11,6 +11,9 @@ from app.schemas.admin import (
     HeatmapCell,
     Overview,
     RecertDueItem,
+    Retention,
+    RetentionPoint,
+    RetentionScenario,
     SiteOut,
 )
 from app.services.admin_auth import CurrentAdmin
@@ -19,6 +22,7 @@ from app.services.compliance import (
     load_scope,
     percent,
     recert_due,
+    retention,
     statuses_by_worker,
     top_failed_rules,
 )
@@ -95,6 +99,26 @@ async def heatmap(request: Request, admin: CurrentAdmin, session: Session) -> He
                 )
             )
     return Heatmap(sites=[s.code for s in scope.sites], scenarios=scenario_ids, cells=cells)
+
+
+@router.get("/retention")
+async def retention_by_stage(request: Request, admin: CurrentAdmin, session: Session) -> Retention:
+    """Average score at initial training vs each refresher stage, per module (D-044)."""
+    catalog: ContentCatalog = request.app.state.catalog
+    stages, by_scenario = retention(await load_scope(session, admin), catalog)
+    return Retention(
+        stages=stages,
+        scenarios=[
+            RetentionScenario(
+                scenarioId=scenario_id,
+                points=[
+                    RetentionPoint(stage=p.stage, avgScore=p.avg_score, workers=p.workers)
+                    for p in points
+                ],
+            )
+            for scenario_id, points in by_scenario.items()
+        ],
+    )
 
 
 @router.get("/recert-due")

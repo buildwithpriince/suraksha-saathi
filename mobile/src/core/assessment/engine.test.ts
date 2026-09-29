@@ -40,13 +40,17 @@ class Run {
   forbidden(stepId: string, tag: string): this {
     return this.push('forbidden_action', stepId, { tag });
   }
-  /** `zones` has one entry per 0.25 s sample; onTargetSec is cumulative (D-028). */
-  hold(stepId: string, zones: string[], targetZone: string): this {
+  /**
+   * `zones` has one entry per 0.25 s sample; onTargetSec is cumulative (D-028). `aim` (D-038):
+   * the horizontal aim per sample, repeated; by default a sweep across the base.
+   */
+  hold(stepId: string, zones: string[], targetZone: string, aim: readonly number[] = SWEEP_AIM): this {
     let onTarget = 0;
-    for (const zone of zones) {
+    zones.forEach((zone, i) => {
+      this.t += 0.25; // one sample every 0.25 s, as the player records them
       if (zone === targetZone) onTarget += 0.25;
-      this.push('hold_progress', stepId, { zone, onTargetSec: onTarget });
-    }
+      this.push('hold_progress', stepId, { zone, onTargetSec: onTarget, aimDh: aim[i % aim.length]! });
+    });
     return this;
   }
   event(type: AttemptEvent['type'], stepId?: string, data?: JsonObject): this {
@@ -60,9 +64,15 @@ interface FireOptions {
   alarmLast?: boolean;
   holdZones?: string[];
   evacuateSec?: number;
+  /** PASS (D-038): pin pulled before the first spray (default), after it, or never. */
+  pin?: 'before' | 'after' | 'never';
+  /** Horizontal aim per sample, repeated (default: sweeping 5° each way). */
+  aim?: readonly number[];
 }
 
 const ON_BASE_5S = Array<string>(20).fill('FireBase');
+/** Swinging 5° each way across the base: a reversal every 4 samples. */
+const SWEEP_AIM = [-5, -2.5, 0, 2.5, 5, 2.5, 0, -2.5];
 
 function fireRun(o: FireOptions = {}): Run {
   const r = new Run();
@@ -75,7 +85,12 @@ function fireRun(o: FireOptions = {}): Run {
     if (o.forbiddenTag) x.forbidden('pick_extinguisher', o.forbiddenTag);
   });
   r.step('approach', 10, (x) => x.event('position_reached', 'approach', { anchor: 'AttackSpot', distanceM: 0.8 }), { exitBehind: true });
-  r.step('extinguish', 10, (x) => x.hold('extinguish', o.holdZones ?? ON_BASE_5S, 'FireBase'));
+  r.step('extinguish', 10, (x) => {
+    const pin = o.pin ?? 'before';
+    if (pin === 'before') x.event('pin_pulled', 'extinguish');
+    x.hold('extinguish', o.holdZones ?? ON_BASE_5S, 'FireBase', o.aim);
+    if (pin === 'after') x.event('pin_pulled', 'extinguish');
+  });
   r.step('escalation', 5, (x) => x.choice('escalation', 'evacuate_alert'));
   r.step('evacuate', o.evacuateSec ?? 35, (x) => x.event('position_reached', 'evacuate', { anchor: 'EXIT_A', distanceM: 1 }));
   r.step('assembly', 5, (x) => x.choice('assembly', 'report_headcount'));
@@ -235,6 +250,100 @@ describe('docs/03 required tests', () => {
   });
 });
 
+describe('R_RIGHT_EXTINGUISHER: which extinguisher suits which fire (D-042)', () => {
+  // Found on a device: DCP on the ordinary fire scored 0/15 because the rule listed only water
+  const cases = [
+    { variant: 'ordinary', pick: 'water', earned: 15, feedback: 'fire01.rule.right_extinguisher.correct' },
+    { variant: 'ordinary', pick: 'dcp', earned: 15, feedback: 'fire01.rule.right_extinguisher.correct' },
+    { variant: 'ordinary', pick: 'co2', earned: 0, feedback: 'fire01.rule.right_extinguisher.co2_on_ordinary' },
+    { variant: 'oil', pick: 'dcp', earned: 15, feedback: 'fire01.rule.right_extinguisher.correct' },
+    { variant: 'oil', pick: 'co2', earned: 15, feedback: 'fire01.rule.right_extinguisher.correct' },
+  ] as const;
+  for (const c of cases) {
+    test(`${c.variant} + ${c.pick} -> ${c.earned}/15, feedback ${c.feedback.split('.').pop()}`, () => {
+      const e = evaluate(FIRE, c.variant, fireRun({ extinguisher: c.pick }).events);
+      expect(rule(e, 'R_RIGHT_EXTINGUISHER')).toMatchObject({ earned: c.earned, max: 15, feedbackKey: c.feedback });
+      expect(e.criticalFailures).toEqual([]);
+    });
+  }
+
+  test('oil + water: forbidden, fails the attempt whatever the score, and says why', () => {
+    const e = evaluate(FIRE, 'oil', fireRun({ extinguisher: 'water', forbiddenTag: 'water_on_oil' }).events);
+    expect(rule(e, 'R_RIGHT_EXTINGUISHER')).toMatchObject({
+      earned: 0,
+      passed: false,
+      feedbackKey: 'fire01.rule.right_extinguisher.water_on_oil',
+    });
+    expect(e.scorePercent).toBeGreaterThanOrEqual(FIRE.passThresholdPercent);
+    expect(e.criticalFailures).toEqual(['R_RIGHT_EXTINGUISHER']);
+    expect(e.passed).toBe(false);
+  });
+
+  test('"never use water" is only said to someone who picked water', () => {
+    for (const variant of ['ordinary', 'oil'] as const) {
+      for (const pick of ['water', 'dcp', 'co2']) {
+        const events = fireRun({ extinguisher: pick, forbiddenTag: variant === 'oil' && pick === 'water' ? 'water_on_oil' : undefined }).events;
+        const key = rule(evaluate(FIRE, variant, events), 'R_RIGHT_EXTINGUISHER').feedbackKey;
+        expect(key === 'fire01.rule.right_extinguisher.water_on_oil').toBe(pick === 'water' && variant === 'oil');
+      }
+    }
+  });
+
+  test('a skipped pick gets the general feedback', () => {
+    const run = new Run();
+    run.step('brief', 1).skip('pick_extinguisher');
+    const e = evaluate(FIRE, 'ordinary', run.events);
+    expect(rule(e, 'R_RIGHT_EXTINGUISHER').feedbackKey).toBe('fire01.rule.right_extinguisher');
+  });
+
+  test('rules without choiceFeedback keep their feedbackKey', () => {
+    const e = evaluate(FIRE, 'ordinary', fireRun().events);
+    expect(rule(e, 'R_EVACUATE_DECISION').feedbackKey).toBe('fire01.rule.evacuate_decision');
+  });
+});
+
+describe('PASS extinguisher technique under R_AIM_BASE (D-038)', () => {
+  const aimBase = (o: FireOptions) => rule(evaluate(FIRE, 'ordinary', fireRun(o).events), 'R_AIM_BASE');
+
+  test('pull, aim at the base, squeeze and sweep -> full points', () => {
+    expect(aimBase({})).toMatchObject({ earned: 15, max: 15, passed: true });
+  });
+
+  test('a static aim on the base (no sweep) -> half', () => {
+    expect(aimBase({ aim: [0] })).toMatchObject({ earned: 7, passed: false });
+  });
+
+  test('hand tremor under the swing threshold is not sweeping -> half', () => {
+    expect(aimBase({ aim: [-1.5, 1.5] })).toMatchObject({ earned: 7 });
+  });
+
+  test('pin never pulled -> half; pin pulled only after spraying -> half', () => {
+    expect(aimBase({ pin: 'never' })).toMatchObject({ earned: 7 });
+    expect(aimBase({ pin: 'after' })).toMatchObject({ earned: 7 });
+  });
+
+  test('spraying only the flame tops -> 0, however well swept', () => {
+    expect(aimBase({ holdZones: Array<string>(40).fill('FlameTop') })).toMatchObject({ earned: 0 });
+  });
+
+  test('sweeping the base but under minOnTargetSec -> 0', () => {
+    expect(aimBase({ holdZones: Array<string>(15).fill('FireBase') })).toMatchObject({ earned: 0 }); // 3.75 s
+  });
+
+  test('sweeps count only on the base: swinging across the flame tops does not count', () => {
+    // 20 static samples on the base, then 20 sweeping samples on the flame tops (ratio 0.5: off-target fails too)
+    const zones = [...ON_BASE_5S, ...Array<string>(20).fill('FlameTop')];
+    const aim = [...Array<number>(20).fill(0), ...Array.from({ length: 20 }, (_, i) => SWEEP_AIM[i % 8]!)];
+    expect(aimBase({ holdZones: zones, aim })).toMatchObject({ earned: 7 });
+  });
+
+  test('discharge, pin and reposition events never change other rules', () => {
+    const run = fireRun();
+    run.event('discharge_started', 'extinguish').event('discharge_stopped', 'extinguish').event('anchor_repositioned', 'extinguish', { headingDeg: 1, elevationDeg: 2 });
+    expect(evaluate(FIRE, 'ordinary', run.events)).toEqual(evaluate(FIRE, 'ordinary', fireRun().events));
+  });
+});
+
 describe('scoring details', () => {
   test('scorePercent rounds half away from zero (D-022)', () => {
     expect(roundPercent(33, 40)).toBe(83); // 82.5
@@ -245,7 +354,7 @@ describe('scoring details', () => {
   });
 
   test('criticalOn forbidden: a wrong pick without a forbidden action only loses points', () => {
-    const e = evaluate(FIRE, 'oil', fireRun({ extinguisher: 'co2' }).events);
+    const e = evaluate(FIRE, 'ordinary', fireRun({ extinguisher: 'co2' }).events);
     expect(rule(e, 'R_RIGHT_EXTINGUISHER')).toMatchObject({ earned: 0, passed: true });
     expect(e.criticalFailures).toEqual([]);
   });

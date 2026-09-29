@@ -8,10 +8,13 @@ import { usableAttestation } from '@/core/certificates/issue';
 import { lastSyncAt, nowSeconds, outboxCount } from '@/db/database';
 import { getDevice } from '@/db/device';
 import { TRUST } from '@/device/trust';
+import { isAutoSpeechMuted, setAutoSpeechMuted } from '@/i18n/speech';
+import { getDemoClockOffsetDays, setDemoClockOffsetDays } from '@/refresher/refreshers';
 import { formatDate } from '@/ui/CertificateDetails';
 import { DemoKeysBanner } from '@/ui/DemoKeysBanner';
+import { getAnchoringMode, getDebugOverlay, setAnchoringMode, setDebugOverlay, type AnchoringMode } from '@/training/anchoringSetting';
 import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
-import { Body, Button, Card, Screen, Title } from '@/ui/components';
+import { Body, Button, Card, Screen, Segmented, Title } from '@/ui/components';
 
 /** docs/01 Settings: language, this device's status, sync, and versions (T-41). */
 export default function SettingsScreen() {
@@ -19,6 +22,10 @@ export default function SettingsScreen() {
   const [device, setDevice] = useState(getDevice);
   const [pending, setPending] = useState(0);
   const [lastSync, setLastSync] = useState<number | null>(null);
+  const [anchoring, setAnchoring] = useState<AnchoringMode>(getAnchoringMode);
+  const [debugOverlay, setDebugOverlayState] = useState(getDebugOverlay);
+  const [muted, setMuted] = useState(isAutoSpeechMuted);
+  const [clockOffset, setClockOffset] = useState(getDemoClockOffsetDays);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,6 +54,80 @@ export default function SettingsScreen() {
 
       <Card>
         <LanguageSwitcher label={t('home.language.label')} />
+      </Card>
+
+      {/* D-041: steps read themselves aloud; this mutes that, Replay still speaks */}
+      <Card>
+        <Title>{t('settings.narration.title')}</Title>
+        <Body>{t('settings.narration.body')}</Body>
+        <Segmented
+          options={[
+            { value: 'on', label: t('settings.narration.on') },
+            { value: 'off', label: t('settings.narration.off') },
+          ]}
+          value={muted ? 'off' : 'on'}
+          onChange={(v) => {
+            setAutoSpeechMuted(v === 'off');
+            setMuted(v === 'off');
+          }}
+        />
+      </Card>
+
+      {/* D-036: the old anchoring maths stays one tap away in case the new one misbehaves on a phone */}
+      <Card>
+        <Title>{t('settings.anchoring.title')}</Title>
+        <Body>{t('settings.anchoring.body')}</Body>
+        <Segmented
+          options={[
+            { value: 'stabilised', label: t('settings.anchoring.stabilised') },
+            { value: 'legacy', label: t('settings.anchoring.legacy') },
+          ]}
+          value={anchoring}
+          onChange={(mode) => {
+            setAnchoringMode(mode);
+            setAnchoring(mode);
+          }}
+        />
+        <Body>{t('settings.anchoring.debug.label')}</Body>
+        <Segmented
+          options={[
+            { value: 'off', label: t('settings.anchoring.debug.off') },
+            { value: 'on', label: t('settings.anchoring.debug.on') },
+          ]}
+          value={debugOverlay ? 'on' : 'off'}
+          onChange={(v) => {
+            setDebugOverlay(v === 'on');
+            setDebugOverlayState(v === 'on');
+          }}
+        />
+        <Body muted>{t('settings.anchoring.note')}</Body>
+      </Card>
+
+      {/* D-044: demo only. Moves when refreshers fall due, nothing else */}
+      <Card>
+        <Title>{t('settings.demo_clock.title')}</Title>
+        <Body>{t('settings.demo_clock.body')}</Body>
+        <Body>{t('settings.demo_clock.value', { days: clockOffset })}</Body>
+        {[1, 7, 30].map((days) => (
+          <Button
+            key={days}
+            kind="secondary"
+            label={t('settings.demo_clock.plus', { days })}
+            onPress={() => {
+              setDemoClockOffsetDays(clockOffset + days);
+              setClockOffset(getDemoClockOffsetDays());
+            }}
+          />
+        ))}
+        <Button
+          kind="secondary"
+          label={t('settings.demo_clock.reset')}
+          disabled={clockOffset === 0}
+          onPress={() => {
+            setDemoClockOffsetDays(0);
+            setClockOffset(0);
+          }}
+        />
       </Card>
 
       <Card>

@@ -39,6 +39,10 @@ Also stored (T-50): `devices.attestation_expires_at`, `devices.created_at`, `att
 `result_json` (D-022). Schema lives in `backend/app/db/models.py` + Alembic; tests run it on SQLite (D-019).
 
 ## Device authentication
+The device generates its Ed25519 key pair on first launch. The private key is held in
+`expo-secure-store` (Android Keystore-backed) and never leaves the device or appears in logs;
+this supersedes D-004's package choice. Moving to a hardware-backed key is roadmap, not built.
+
 Every device API call (except register) carries:
 - `X-Device-Id`: device id
 - `X-Timestamp`: unix seconds (server rejects if |now − ts| > 300)
@@ -83,7 +87,8 @@ Trigger: app resume, "Sync now" button, every 10 minutes while app is open and o
   - Attempt: `result.attemptId` must equal the item id (`invalid_payload`); `scenarioId`+`scenarioVersion` must
     exist in `/content` (`unknown_scenario`, not retryable). Identical = same workerId, result and events.
   - Attempt recheck: the server trusts per-rule `earned`/`passed` but takes rule `max`, `critical` and
-    variant scoping from the scenario file. A critical rule without `criticalOn` fails when it earns 0.
+    variant scoping from the scenario file. A `kind: "refresher"` attempt is rechecked against the rules the
+    refresher scores (docs/03 "Refresher drills"; `app/services/refresher.py`, same derivation as the app). A critical rule without `criticalOn` fails when it earns 0.
     Stored `score_percent`/`passed` are the server's values; `flag_reason` lists every disagreement
     (score, passed, criticalFailures, unknown/missing/duplicate rules, unknown variant). `eventsSha256` is
     not checked (the server can't reproduce the device's exact bytes).

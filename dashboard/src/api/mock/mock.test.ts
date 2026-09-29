@@ -14,12 +14,29 @@ describe("mock API matches docs/08 demo data", () => {
   const db = buildMockDb(NOW);
   const api = apiAs(adminAccount, db);
 
-  test("3 sites, 40 workers, ~150 attempts", async () => {
+  test("3 sites, 40 workers, ~150 training attempts plus refreshers", async () => {
     expect((await api.sites()).map((s) => s.code)).toEqual(["DHN-01", "JSR-02", "KDM-03"]);
     expect((await api.workers({})).total).toBe(40);
-    const attempts = (await api.attempts({})).total;
-    expect(attempts).toBeGreaterThan(110);
-    expect(attempts).toBeLessThan(190);
+    const all = (await db).attempts;
+    const training = all.filter((a) => a.result.kind !== "refresher").length;
+    expect(training).toBeGreaterThan(110);
+    expect(training).toBeLessThan(190);
+    expect(all.length - training).toBeGreaterThan(20);
+    expect((await api.attempts({})).total).toBe(all.length);
+  });
+
+  test("retention: initial vs day 7 vs day 30 per module (D-044)", async () => {
+    const retention = await api.retention();
+    expect(retention.stages).toEqual([0, 7, 30]);
+    expect(retention.scenarios.map((s) => s.scenarioId)).toEqual(["FIRE_01", "GAS_01"]);
+    for (const { points } of retention.scenarios) {
+      expect(points.map((p) => p.stage)).toEqual([0, 7, 30]);
+      for (const p of points) {
+        expect(p.workers).toBeGreaterThan(0);
+        expect(p.avgScore).toBeGreaterThanOrEqual(0);
+        expect(p.avgScore).toBeLessThanOrEqual(100);
+      }
+    }
   });
 
   test("12 recertifications due, 1 revoked, 2 flagged, 1 pending device", async () => {

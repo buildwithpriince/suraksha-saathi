@@ -57,6 +57,7 @@ export function createHttpApi(baseUrl: string, getToken: () => Promise<string | 
 
   return {
     overview: () => get("/v1/admin/overview"),
+    retention: () => get("/v1/admin/retention"),
     sites: () => get("/v1/admin/sites"),
     heatmap: () => get("/v1/admin/compliance/heatmap"),
     workers: (q: WorkerQuery) => get("/v1/admin/workers", { ...q }),

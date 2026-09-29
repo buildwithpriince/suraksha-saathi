@@ -74,6 +74,20 @@ async def test_dashboard_numbers(
     assert revoked["total"] == 1
 
 
+async def test_refreshers_fill_the_retention_chart(
+    client: AsyncClient, seeded: seed_demo.SeedSummary, admin: dict[str, str]
+) -> None:
+    """D-044: certified workers came back for refreshers, none of which is flagged."""
+    assert seeded.refreshers >= 20
+    body = (await client.get("/v1/admin/retention", headers=admin)).json()
+
+    assert body["stages"] == [0, 7, 30]
+    for scenario in body["scenarios"]:
+        initial, day7, day30 = scenario["points"]
+        assert min(initial["workers"], day7["workers"], day30["workers"]) > 0, scenario
+        assert initial["avgScore"] >= day30["avgScore"], scenario  # skills fade a little
+
+
 async def test_every_certificate_verifies_publicly(
     client: AsyncClient, db: AsyncSession, seeded: seed_demo.SeedSummary
 ) -> None:

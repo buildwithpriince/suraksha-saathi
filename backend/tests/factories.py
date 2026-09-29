@@ -17,7 +17,7 @@ from app.crypto.keys import public_key_b64url
 from app.crypto.tokens import Prefix, sign_token
 from app.db.ids import uuid7
 from app.db.models import AdminProfile, Device, Site, Worker
-from app.services.content import Scenario
+from app.services.content import ContentCatalog, Scenario
 
 NOW = 1789100000  # pinned server clock for API tests (docs/04 V1 "now")
 JWT_ISSUER = "https://test.supabase.co/auth/v1"
@@ -207,3 +207,8 @@ def signed_headers(
         "X-Timestamp": str(timestamp),
         "X-Signature": base64url.encode(key.sign(message.encode("ascii"))),
     }
+
+
+def latest_scenario(catalog: ContentCatalog, scenario_id: str) -> Scenario:
+    """The newest version of a scenario in /content, so tests follow content bumps."""
+    return next(s for s in catalog.latest() if s.id == scenario_id)

@@ -19,8 +19,8 @@ export const space = { xs: 4, s: 8, m: 12, l: 16, xl: 24 } as const;
 
 /**
  * Noto Sans Devanagari faces (docs/07), loaded by the root layout. The font also covers the Latin
- * text, so en, hi and sat all use it. Runtime-loaded fonts get one family name per weight, so
- * `ui/Text` picks the face from `fontWeight`.
+ * text, so en and hi use it. Runtime-loaded fonts get one family name per weight, so `ui/Text`
+ * picks the face from `fontWeight`.
  */
 export const fonts = {
   regular: 'NotoSansDevanagari_400Regular',
@@ -28,3 +28,16 @@ export const fonts = {
   bold: 'NotoSansDevanagari_700Bold',
   extraBold: 'NotoSansDevanagari_800ExtraBold',
 } as const;
+
+/**
+ * Noto Sans Ol Chiki faces for Santali (D-047), loaded by the root layout. It also has Latin, digits
+ * and common punctuation, so English terms inside a Santali sentence match. It has no 800 weight.
+ */
+export const olChikiFonts = {
+  regular: 'NotoSansOlChiki_400Regular',
+  semiBold: 'NotoSansOlChiki_600SemiBold',
+  bold: 'NotoSansOlChiki_700Bold',
+  extraBold: 'NotoSansOlChiki_700Bold',
+} as const;
+
+export type FontSet = typeof fonts | typeof olChikiFonts;

@@ -1,13 +1,13 @@
 {
   "id": "FIRE_01",
-  "version": 1,
+  "version": 3,
   "domain": "fire_explosion",
   "titleKey": "fire01.title",
   "needsReview": true,
   "passThresholdPercent": 70,
   "validityDays": 365,
   "timeLimitSec": 420,
-  "setup": { "requiresPlane": true, "markers": ["EXIT_A"] },
+  "setup": { "requiresPlane": true, "markers": ["EXIT_A", "HAZARD_A"] },
   "variants": [
     { "id": "ordinary", "params": { "fireType": "ordinary_combustibles" } },
     { "id": "oil", "params": { "fireType": "oil" } }
@@ -25,7 +25,7 @@
       "interaction": "place_on_plane",
       "instructionKey": "fire01.place_fire.instruction",
       "audioKey": "fire01.place_fire.audio",
-      "params": { "prefab": "WorkshopFire", "fireType": "$fireType" }
+      "params": { "prefab": "WorkshopFire", "fireType": "$fireType", "anchorMarker": "HAZARD_A" }
     },
     {
       "id": "raise_alarm",
@@ -74,10 +74,15 @@
     },
     {
       "id": "extinguish",
-      "interaction": "aim_and_hold",
+      "interaction": "operate_extinguisher",
       "instructionKey": "fire01.extinguish.instruction",
       "audioKey": "fire01.extinguish.audio",
-      "params": { "targetZone": "FireBase", "offTargetZones": ["FlameTop"], "durationSec": 10 }
+      "params": {
+        "agentFrom": "pick_extinguisher",
+        "targetZone": "FireBase",
+        "offTargetZones": ["FlameTop"],
+        "dischargeSec": 12
+      }
     },
     {
       "id": "escalation",
@@ -154,13 +159,20 @@
       "type": "correct_choice",
       "params": {
         "step": "pick_extinguisher",
-        "correct": { "ordinary": ["water"], "oil": ["dcp"] }
+        "correct": { "ordinary": ["water", "dcp"], "oil": ["dcp", "co2"] }
       },
       "points": 15,
       "critical": true,
       "criticalOn": "forbidden",
       "needsReview": true,
-      "feedbackKey": "fire01.rule.right_extinguisher"
+      "feedbackKey": "fire01.rule.right_extinguisher",
+      "choiceFeedback": {
+        "correct": "fire01.rule.right_extinguisher.correct",
+        "options": {
+          "water": "fire01.rule.right_extinguisher.water_on_oil",
+          "co2": "fire01.rule.right_extinguisher.co2_on_ordinary"
+        }
+      }
     },
     {
       "id": "R_EXIT_BEHIND",
@@ -173,7 +185,13 @@
     {
       "id": "R_AIM_BASE",
       "type": "hold",
-      "params": { "step": "extinguish", "minOnTargetSec": 4, "maxOffTargetRatio": 0.4 },
+      "params": {
+        "step": "extinguish",
+        "minOnTargetSec": 4,
+        "maxOffTargetRatio": 0.4,
+        "requirePinPulled": true,
+        "minSweeps": 2
+      },
       "points": 15,
       "critical": false,
       "feedbackKey": "fire01.rule.aim_base"

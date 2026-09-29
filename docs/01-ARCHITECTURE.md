@@ -2,9 +2,9 @@
 
 ## Components
 ```
-+---------------------------- Android app (Unity) ----------------------------+
-|  UI Toolkit screens  ->  ScenarioPlayer (AR or Tabletop)  ->  Core engine   |
-|                                     |                         (pure C#)     |
++--------------------- Android app (Expo React Native) -----------------------+
+|  expo-router screens ->  ScenarioPlayer (camera or tabletop) -> Core engine |
+|                                     |                    (pure TypeScript)  |
 |  Verify screen (QR scan) <----------+--- Certificates (sign/verify)         |
 |  SQLite: workers, attempts, certificates, outbox, revocations, attestation |
 +---------------------------------------|-------------------------------------+
@@ -36,6 +36,8 @@ Full format and test vectors: `docs/04-CERTIFICATES.md`.
 - Writes go to local tables and an `outbox` row in the same SQLite transaction.
 - Sync runs on app resume and every 10 minutes when online; pushes outbox, pulls revocations,
   content manifest, and attestation status. Details: `docs/05-DATA-AND-SYNC.md`.
+  **Not built yet (T-57):** the backend accepts `POST /v1/sync`, but the app has no sync client,
+  so the outbox accumulates and never drains. Everything else on the device works without it.
 
 ## App flow (screens)
 Boot -> (first run) Device setup (choose site, register) -> Home
@@ -45,16 +47,28 @@ Home -> Kiosk login (scan worker ID QR or pick worker) -> Module list -> Pre-bri
 Home -> Verify (scan certificate QR) -> Result card
 Home -> Settings (language, sync now, device status)
 
-## Scenes
-| Scene | Purpose |
+## Screens (`mobile/src/app/`, one file per route)
+| Route | Purpose |
 |---|---|
-| Boot | AR availability check, DB migration, locale load, route to Setup or Home |
-| Home | All non-AR screens as UI Toolkit panels |
-| ARTraining | AR Session Origin, plane + image managers, ScenarioPlayer |
-| TabletopTraining | Virtual room at table scale, same ScenarioPlayer, touch camera |
-| Verify | Camera QR scan + verification result |
+| `_layout` | Font load, i18n init, shared header; splash until ready |
+| `index` | Home: site and pending-sync line, worker list, scan card, verify, settings |
+| `setup` | First run: choose site, generate the device key, register |
+| `enrol`, `worker-edit/[id]` | Enrol a worker; edit or soft-delete one |
+| `worker/[id]` | Worker detail, module list, switches to their language |
+| `card/[workerId]` | Printable worker ID card (QR `SW1:<uuid>`, D-034) |
+| `scan` | Kiosk login: scan a worker ID card QR |
+| `train/[scenarioId]` | Camera permission gate, then one attempt in `ar` or `tabletop` |
+| `result/[attemptId]` | Per-rule result feedback, tap to hear |
+| `certificate/[workerId]` | Issued certificate + QR |
+| `verify` | Camera QR scan + verification result |
+| `settings` | Language, device status |
+
+Both modes run through the same `training/TrainingRun.tsx`: `ar` draws overlays over the camera
+feed anchored to device orientation, `tabletop` draws the same room without the feed. Same steps,
+same events, same scoring.
 
 ## Key design choices (see DECISIONS.md for rationale)
 - Scenario steps are data (`content/scenarios/*.json`), played by one generic player.
-- Scoring lives in pure C# Core and is unit-tested outside Unity.
+- Scoring lives in pure TypeScript (`mobile/src/core/`, no react/react-native/expo imports) and is
+  unit-tested in Node with Vitest.
 - Signed tokens are compact `header.body.sig` strings; verifiers never re-serialize JSON.

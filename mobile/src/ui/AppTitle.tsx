@@ -9,7 +9,7 @@ import { colors, space } from '@/ui/theme';
  * same rule as the launcher icon (scripts/icons.mjs). Use it as the `headerTitle` of any screen
  * that shows `app.title`, so the mark appears everywhere the app names itself.
  *
- * The name is the localized `app.title` (Devanagari in hi and sat), so no second line is added
+ * The name is the localized `app.title` (Devanagari in hi, Ol Chiki in sat), so no second line is added
  * here; on the dashboard the English and Devanagari names sit together because it has no locale
  * switch. The mark keeps its 32 dp and the name shrinks and ellipsizes instead, so the lockup
  * still fits a 320 dp header: 32 + 8 leaves about 240 dp for a name that needs roughly 160.

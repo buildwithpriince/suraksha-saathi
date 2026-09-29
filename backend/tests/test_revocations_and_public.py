@@ -1,6 +1,8 @@
 """T-54: revocation (SR1 on revoke), GET /v1/revocations, content manifest, public verify."""
 
+import json
 import uuid
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -17,6 +19,8 @@ from app.crypto.bodies import RevocationListBody
 from app.crypto.tokens import Prefix, verify_token
 from app.db.models import Certificate, RevocationList, Worker
 from tests.factories import NOW, add_admin, add_device, add_site, add_worker, admin_token, bearer
+
+CONTENT = Path(__file__).resolve().parents[2] / "content"
 
 pytestmark = pytest.mark.anyio
 
@@ -228,10 +232,22 @@ async def test_supervisor_revokes_at_own_site(
 async def test_manifest_lists_content_version_and_scenarios(client: AsyncClient) -> None:
     response = await client.get("/v1/content/manifest")
 
+    # Expected values come from /content itself, so a content bump needs no test change
+    manifest = json.loads((CONTENT / "manifest.json").read_text(encoding="utf-8"))
+    versions = {
+        raw["id"]: raw["version"]
+        for raw in (
+            json.loads(p.read_text(encoding="utf-8"))
+            for p in (CONTENT / "scenarios").glob("*.json")
+        )
+    }
     assert response.status_code == 200
     assert response.json() == {
-        "contentVersion": "2026.09.7",
-        "scenarios": [{"id": "FIRE_01", "version": 1}, {"id": "GAS_01", "version": 1}],
+        "contentVersion": manifest["contentVersion"],
+        "scenarios": [
+            {"id": "FIRE_01", "version": versions["FIRE_01"]},
+            {"id": "GAS_01", "version": versions["GAS_01"]},
+        ],
     }
 
 

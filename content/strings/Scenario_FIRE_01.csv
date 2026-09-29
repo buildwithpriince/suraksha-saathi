@@ -1,40 +1,43 @@
 key,en,hi,sat,needsReview,notes
-fire01.title,Fire and explosion response,आग और विस्फोट से बचाव,सेंगेल आर बिस्फोट खोन बाँचाव,true,scenario title
-fire01.brief.instruction,A small fire has started near waste material.,कचरे के पास छोटी आग लग गई है।,कचरा सोरे हुडिञ सेंगेल लागाव एना।,true,step caption
-fire01.brief.audio,A small fire has started near waste material in the workshop.,वर्कशॉप में कचरे के पास एक छोटी आग लग गई है।,वर्कशॉप रे कचरा सोरे मित् हुडिञ सेंगेल लागाव एना।,true,narration script
-fire01.place_fire.instruction,Tap the floor to place the fire.,आग रखने के लिए फ़र्श को छुएँ।,सेंगेल दोहो लागित् ओते टिपावमे।,true,step caption
-fire01.place_fire.audio,Point your camera at the floor. Tap to place the fire.,कैमरा फ़र्श की ओर करें। आग रखने के लिए छुएँ।,कैमरा ओते सेच् दोहोयमे। सेंगेल दोहो लागित् टिपावमे।,true,narration script
-fire01.raise_alarm.instruction,Raise the alarm. Press the call point and shout Fire.,अलार्म बजाएँ। कॉल पॉइंट दबाएँ और ज़ोर से आग चिल्लाएँ।,अलार्म बाजावमे। कॉल पॉइंट टिपावमे आर सेंगेल मेनते होहोयमे।,true,step caption
-fire01.raise_alarm.audio,Raise the alarm now. Press the call point and shout Fire.,अभी अलार्म बजाएँ। कॉल पॉइंट दबाएँ और ज़ोर से आग चिल्लाएँ।,नितोः अलार्म बाजावमे। कॉल पॉइंट टिपावमे आर सेंगेल मेनते होहोयमे।,true,narration script
-fire01.find_exit.instruction,Find the nearest exit sign with your camera.,कैमरे से सबसे पास का निकास चिह्न ढूँढें।,कैमरा ते सानाम खोन सोर ओडोक् होर चिन्हा पानतेयमे।,true,step caption
-fire01.find_exit.audio,Find the nearest exit. Point your camera at the exit sign.,सबसे पास का निकास ढूँढें। कैमरा निकास चिह्न की ओर करें।,सानाम खोन सोर ओडोक् होर पानतेयमे। कैमरा ओडोक् होर चिन्हा सेच् दोहोयमे।,true,narration script
-fire01.pick_extinguisher.instruction,Choose the right extinguisher for this fire.,इस आग के लिए सही अग्निशामक चुनें।,नोवा सेंगेल लागित् थिक सेंगेल बुझाव जिनिस बाछावमे।,true,step caption
-fire01.pick_extinguisher.audio,Look at the fire. Choose the right extinguisher for it.,आग को देखें। इसके लिए सही अग्निशामक चुनें।,सेंगेल ञेलमे। नोवा लागित् थिक बुझाव जिनिस बाछावमे।,true,narration script
-fire01.pick_extinguisher.option.water,Water-type extinguisher,पानी वाला अग्निशामक,दाः रेयाः सेंगेल बुझाव जिनिस,true,option label
-fire01.pick_extinguisher.option.dcp,Dry chemical powder (DCP) extinguisher,सूखा रासायनिक पाउडर (DCP) अग्निशामक,रोहोड़ केमिकल पाउडर (DCP) बुझाव जिनिस,true,option label
-fire01.pick_extinguisher.option.co2,CO2 extinguisher,CO2 अग्निशामक,CO2 बुझाव जिनिस,true,option label
-fire01.approach.instruction,Move closer with the exit behind you.,निकास को पीछे रखते हुए पास जाएँ।,ओडोक् होर आम तायोम रे दोहो काते सोर सेनोःमे।,true,step caption
-fire01.approach.audio,Walk toward the fire. Keep the exit behind you.,आग की ओर बढ़ें। निकास को अपने पीछे रखें।,सेंगेल सेच् सेनोःमे। ओडोक् होर आम तायोम रे दोहोयमे।,true,narration script
-fire01.extinguish.instruction,Aim at the base of the fire and hold.,आग की जड़ पर निशाना लगाएँ और दबाकर रखें।,सेंगेल रेयाः रेहेद् रे निसाना दोहो काते सापाःमे।,true,step caption
-fire01.extinguish.audio,"Aim at the base of the fire, not the flame tops. Hold steady.","आग की जड़ पर निशाना लगाएँ, लपटों के ऊपर नहीं। हाथ स्थिर रखें।","सेंगेल रेयाः रेहेद् रे निसाना दोहोयमे, जाला चेतान रे बाङ। ती थिर ते दोहोयमे।",true,narration script
-fire01.escalation.instruction,The fire is spreading. What do you do?,आग फैल रही है। आप क्या करेंगे?,सेंगेल पासनावोः काना। आम चेद् बेनावाम?,true,step caption
-fire01.escalation.audio,The fire is spreading. What do you do now?,आग फैल रही है। अब आप क्या करेंगे?,सेंगेल पासनावोः काना। नितोः आम चेद् बेनावाम?,true,narration script
-fire01.escalation.option.keep_fighting,Keep fighting the fire,आग से लड़ते रहें,सेंगेल सांव लोड़ाय चालावमे,true,option label
-fire01.escalation.option.evacuate_alert,Evacuate and alert others,बाहर निकलें और दूसरों को सावधान करें,बाहरे ओडोक्मे आर एटाः होड़को खोबोर एमाकोमे,true,option label
-fire01.escalation.option.collect_belongings,Collect your belongings,अपना सामान इकट्ठा करें,आपनार जिनिस जामावमे,true,option label
-fire01.evacuate.instruction,Follow the arrows to the exit.,तीर के निशानों के पीछे निकास तक जाएँ।,सार चिन्हा तायोम तायोम ओडोक् होर हाबिज सेनोःमे।,true,step caption
-fire01.evacuate.audio,Leave now. Follow the arrows to the exit.,अभी निकलें। तीर के निशानों के पीछे निकास तक जाएँ।,नितोः ओडोक्मे। सार चिन्हा तायोम तायोम ओडोक् होर हाबिज सेनोःमे।,true,narration script
-fire01.assembly.instruction,You are at the assembly point. What next?,आप असेंबली पॉइंट पर हैं। अब क्या करेंगे?,आम जारवा ठाँव रे मेनामा। नितोः चेद्?,true,step caption
-fire01.assembly.audio,You reached the assembly point. What do you do now?,आप असेंबली पॉइंट पर पहुँच गए। अब आप क्या करेंगे?,आम जारवा ठाँव रे सेटेर एनाम। नितोः आम चेद् बेनावाम?,true,narration script
-fire01.assembly.option.report_headcount,Report to the supervisor for headcount,गिनती के लिए सुपरवाइज़र को रिपोर्ट करें,होड़ लेखा लागित् सुपरवाइज़र के लायमे,true,option label
-fire01.assembly.option.go_back_inside,Go back inside,वापस अंदर जाएँ,आरहों भितरी रे रुवाड़ सेनोःमे,true,option label
-fire01.assembly.option.leave_site,Leave the site,साइट छोड़कर चले जाएँ,साइट बागी काते चालाःमे,true,option label
-fire01.rule.alarm_before_fight,Raise the alarm before you fight the fire.,आग बुझाने से पहले अलार्म बजाएँ।,सेंगेल बुझाव लाहा रे अलार्म बाजावमे।,true,rule feedback
-fire01.rule.alarm_fast,Raise the alarm quickly.,जल्दी अलार्म बजाएँ।,जोलदी अलार्म बाजावमे।,true,rule feedback
-fire01.rule.exit_found,Find the nearest exit.,सबसे पास का निकास ढूँढें।,सानाम खोन सोर ओडोक् होर पानतेयमे।,true,rule feedback
-fire01.rule.right_extinguisher,Use the right extinguisher. Never use water on an oil fire.,सही अग्निशामक इस्तेमाल करें। तेल की आग पर कभी पानी न डालें।,थिक बुझाव जिनिस बेबहारमे। सुनुम सेंगेल रे जाहाँ ओकतोहों दाः आलोम ढालाया।,true,rule feedback
-fire01.rule.exit_behind,Keep the exit behind you while you fight a fire.,आग बुझाते समय निकास को अपने पीछे रखें।,सेंगेल बुझाव जोखेच् ओडोक् होर आम तायोम रे दोहोयमे।,true,rule feedback
-fire01.rule.aim_base,Aim at the base of the fire.,आग की जड़ पर निशाना लगाएँ।,सेंगेल रेयाः रेहेद् रे निसाना दोहोयमे।,true,rule feedback
-fire01.rule.evacuate_decision,"If the fire spreads, evacuate and alert others.",आग फैले तो बाहर निकलें और दूसरों को सावधान करें।,सेंगेल पासनावोः खान बाहरे ओडोक्मे आर एटाः होड़को खोबोर एमाकोमे।,true,rule feedback
-fire01.rule.evacuate_time,Evacuate quickly along the marked route.,तय रास्ते से जल्दी बाहर निकलें।,चिन्हा होर ते जोलदी बाहरे ओडोक्मे।,true,rule feedback
-fire01.rule.assembly_report,Report to your supervisor at the assembly point.,असेंबली पॉइंट पर अपने सुपरवाइज़र को रिपोर्ट करें।,जारवा ठाँव रे आमाः सुपरवाइज़र के लायमे।,true,rule feedback
+fire01.title,Fire and explosion response,आग और विस्फोट से बचाव,ᱥᱮᱸᱜᱮᱞ ᱟᱨ ᱵᱤᱥᱯᱷᱚᱴ,true,scenario title
+fire01.brief.instruction,A small fire has started near waste material.,कचरे के पास छोटी आग लग गई है।,ᱠᱚᱪᱲᱟ ᱥᱚᱨ ᱨᱮ ᱢᱤᱫ ᱦᱩᱰᱤᱧ ᱥᱮᱸᱜᱮᱞ ᱞᱟᱜᱟᱣ ᱮᱱᱟ᱾,true,step caption
+fire01.brief.audio,A small fire has started near waste material in the workshop.,वर्कशॉप में कचरे के पास एक छोटी आग लग गई है।,ᱣᱚᱨᱠᱥᱚᱯ ᱨᱮ ᱠᱚᱪᱲᱟ ᱥᱚᱨ ᱨᱮ ᱢᱤᱫ ᱦᱩᱰᱤᱧ ᱥᱮᱸᱜᱮᱞ ᱞᱟᱜᱟᱣ ᱮᱱᱟ᱾,true,narration script
+fire01.place_fire.instruction,"Tap the floor to place the fire away from the EXIT sign or EXIT marker, so you can face the fire with the exit behind you.","आग को EXIT चिह्न या EXIT मार्कर से दूर रखने के लिए फ़र्श को छुएँ, ताकि आग की ओर मुँह करने पर निकास आपके पीछे रहे।","EXIT ᱪᱤᱱᱦᱟᱹ ᱥᱮ EXIT ᱢᱟᱨᱠᱟᱨ ᱠᱷᱚᱱ ᱥᱟᱝᱜᱤᱧ ᱥᱮᱸᱜᱮᱞ ᱫᱚᱦᱚ ᱞᱟᱹᱜᱤᱫ ᱚᱛᱮ ᱴᱤᱯᱟᱹᱣᱢᱮ, ᱡᱮᱢᱚᱱ ᱚᱰᱚᱜ ᱦᱚᱨ ᱟᱢ ᱛᱟᱭᱚᱢ ᱨᱮ ᱛᱟᱦᱮᱸᱱ ᱠᱟᱛᱮ ᱥᱮᱸᱜᱮᱞ ᱥᱟᱢᱟᱝ ᱨᱮ ᱛᱤᱝᱜᱩ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ᱾",true,"step caption; sat is the old text without the exit sentence (D-043, T-72)"
+fire01.place_fire.audio,"Point your camera at the floor. Place the fire away from the EXIT sign or EXIT marker, so you can face the fire with the exit behind you. Tap to place it.","कैमरा फ़र्श की ओर करें। आग को EXIT चिह्न या EXIT मार्कर से दूर रखें, ताकि आग की ओर मुँह करने पर निकास आपके पीछे रहे। रखने के लिए छुएँ।","ᱠᱮᱢᱮᱨᱟ ᱚᱛᱮ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ᱾ EXIT ᱪᱤᱱᱦᱟᱹ ᱥᱮ EXIT ᱢᱟᱨᱠᱟᱨ ᱠᱷᱚᱱ ᱥᱟᱝᱜᱤᱧ ᱥᱮᱸᱜᱮᱞ ᱫᱚᱦᱚᱭᱢᱮ, ᱡᱮᱢᱚᱱ ᱚᱰᱚᱜ ᱦᱚᱨ ᱟᱢ ᱛᱟᱭᱚᱢ ᱨᱮ ᱛᱟᱦᱮᱸᱱ ᱠᱟᱛᱮ ᱥᱮᱸᱜᱮᱞ ᱥᱟᱢᱟᱝ ᱨᱮ ᱛᱤᱝᱜᱩ ᱫᱟᱲᱮᱭᱟᱜᱼᱟᱢ᱾ ᱫᱚᱦᱚ ᱞᱟᱹᱜᱤᱫ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,"narration script; sat is the old text without the exit sentence (D-043, T-72)"
+fire01.raise_alarm.instruction,Raise the alarm. Press the call point and shout Fire.,अलार्म बजाएँ। कॉल पॉइंट दबाएँ और ज़ोर से आग चिल्लाएँ।,"ᱮᱞᱟᱨᱢ ᱵᱟᱡᱟᱣᱢᱮ᱾ Call point ᱴᱤᱯᱟᱹᱣᱢᱮ ᱟᱨ ""ᱥᱮᱸᱜᱮᱞ"" ᱢᱮᱱᱛᱮ ᱦᱚᱦᱚᱭᱢᱮ᱾",true,step caption
+fire01.raise_alarm.audio,Raise the alarm now. Press the call point and shout Fire.,अभी अलार्म बजाएँ। कॉल पॉइंट दबाएँ और ज़ोर से आग चिल्लाएँ।,"ᱱᱤᱛᱚᱜ ᱮᱞᱟᱨᱢ ᱵᱟᱡᱟᱣᱢᱮ᱾ Call point ᱴᱤᱯᱟᱹᱣᱢᱮ ᱟᱨ ""ᱥᱮᱸᱜᱮᱞ"" ᱢᱮᱱᱛᱮ ᱦᱚᱦᱚᱭᱢᱮ᱾",true,narration script
+fire01.find_exit.instruction,Find the nearest exit sign with your camera.,कैमरे से सबसे पास का निकास चिह्न ढूँढें।,ᱠᱮᱢᱮᱨᱟ ᱛᱮ ᱥᱟᱱᱟᱢ ᱠᱷᱚᱱ ᱥᱚᱨ ᱚᱰᱚᱜ ᱦᱚᱨ ᱪᱤᱱᱦᱟᱹ ᱯᱟᱱᱛᱮᱭᱢᱮ᱾,true,step caption
+fire01.find_exit.audio,Find the nearest exit. Point your camera at the exit sign.,सबसे पास का निकास ढूँढें। कैमरा निकास चिह्न की ओर करें।,ᱥᱟᱱᱟᱢ ᱠᱷᱚᱱ ᱥᱚᱨ ᱚᱰᱚᱜ ᱦᱚᱨ ᱯᱟᱱᱛᱮᱭᱢᱮ᱾ ᱚᱰᱚᱜ ᱦᱚᱨ ᱪᱤᱱᱦᱟᱹ ᱥᱮᱫ ᱠᱮᱢᱮᱨᱟ ᱫᱚᱦᱚᱭᱢᱮ᱾,true,narration script
+fire01.pick_extinguisher.instruction,Choose the right extinguisher for this fire.,इस आग के लिए सही अग्निशामक चुनें।,ᱱᱚᱶᱟ ᱥᱮᱸᱜᱮᱞ ᱞᱟᱹᱜᱤᱫ ᱴᱷᱤᱠ extinguisher ᱵᱟᱪᱷᱟᱣᱢᱮ᱾,true,step caption
+fire01.pick_extinguisher.audio,Look at the fire. Choose the right extinguisher for it.,आग को देखें। इसके लिए सही अग्निशामक चुनें।,ᱥᱮᱸᱜᱮᱞ ᱧᱮᱞᱢᱮ᱾ ᱱᱚᱶᱟ ᱞᱟᱹᱜᱤᱫ ᱴᱷᱤᱠ extinguisher ᱵᱟᱪᱷᱟᱣᱢᱮ᱾,true,narration script
+fire01.pick_extinguisher.option.water,Water-type extinguisher,पानी वाला अग्निशामक,ᱫᱟᱜ ᱠᱤᱥᱤᱢ extinguisher,true,option label
+fire01.pick_extinguisher.option.dcp,Dry chemical powder (DCP) extinguisher,सूखा रासायनिक पाउडर (DCP) अग्निशामक,Dry chemical powder (DCP) extinguisher,true,option label
+fire01.pick_extinguisher.option.co2,CO2 extinguisher,CO2 अग्निशामक,CO2 extinguisher,true,option label
+fire01.approach.instruction,Move closer with the exit behind you.,निकास को पीछे रखते हुए पास जाएँ।,ᱚᱰᱚᱜ ᱦᱚᱨ ᱟᱢ ᱛᱟᱭᱚᱢ ᱨᱮ ᱫᱚᱦᱚ ᱠᱟᱛᱮ ᱥᱚᱨ ᱥᱮᱱᱚᱜᱢᱮ᱾,true,step caption
+fire01.approach.audio,Walk toward the fire. Keep the exit behind you.,आग की ओर बढ़ें। निकास को अपने पीछे रखें।,ᱥᱮᱸᱜᱮᱞ ᱥᱮᱫ ᱥᱮᱱᱚᱜᱢᱮ᱾ ᱚᱰᱚᱜ ᱦᱚᱨ ᱟᱢ ᱛᱟᱭᱚᱢ ᱨᱮ ᱫᱚᱦᱚᱭᱢᱮ᱾,true,narration script
+fire01.extinguish.instruction,"Put out the fire: Pull the pin, Aim at the base, Squeeze, Sweep.","आग बुझाएँ: पिन खींचें, जड़ पर निशाना लगाएँ, लीवर दबाएँ, दाएँ-बाएँ घुमाएँ।","ᱥᱮᱸᱜᱮᱞ ᱵᱩᱡᱷᱟᱹᱣᱢᱮ: ᱯᱤᱱ ᱚᱨᱢᱮ, ᱞᱟᱛᱟᱨ ᱦᱟᱹᱴᱤᱧ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ, lever ᱪᱟᱯᱟᱣᱢᱮ, ᱞᱮᱸᱜᱟ-ᱡᱚᱡᱚᱢ ᱜᱷᱩᱢᱟᱹᱣᱢᱮ᱾",true,step caption (PASS; D-038)
+fire01.extinguish.audio,"Pull the pin. Aim the nozzle at the base of the fire, not the flame tops. Squeeze the lever and sweep from side to side.","पिन खींचें। नोज़ल को आग की जड़ पर रखें, लपटों के ऊपर नहीं। लीवर दबाएँ और दाएँ-बाएँ घुमाते रहें।","ᱯᱤᱱ ᱚᱨᱢᱮ᱾ Nozzle ᱥᱮᱸᱜᱮᱞ ᱨᱮᱭᱟᱜ ᱞᱟᱛᱟᱨ ᱦᱟᱹᱴᱤᱧ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ, ᱪᱮᱛᱟᱱ ᱦᱟᱹᱴᱤᱧ ᱥᱮᱫ ᱵᱟᱝ᱾ Lever ᱪᱟᱯᱟᱣᱢᱮ ᱟᱨ ᱞᱮᱸᱜᱟ-ᱡᱚᱡᱚᱢ ᱜᱷᱩᱢᱟᱹᱣᱢᱮ᱾",true,narration script (PASS; D-038)
+fire01.escalation.instruction,The fire is spreading. What do you do?,आग फैल रही है। आप क्या करेंगे?,ᱥᱮᱸᱜᱮᱞ ᱯᱟᱥᱱᱟᱣᱚᱜ ᱠᱟᱱᱟ᱾ ᱟᱢ ᱪᱮᱫ ᱠᱟᱹᱢᱤᱭᱟᱢ?,true,step caption
+fire01.escalation.audio,The fire is spreading. What do you do now?,आग फैल रही है। अब आप क्या करेंगे?,ᱥᱮᱸᱜᱮᱞ ᱯᱟᱥᱱᱟᱣᱚᱜ ᱠᱟᱱᱟ᱾ ᱱᱤᱛᱚᱜ ᱟᱢ ᱪᱮᱫ ᱠᱟᱹᱢᱤᱭᱟᱢ?,true,narration script
+fire01.escalation.option.keep_fighting,Keep fighting the fire,आग से लड़ते रहें,ᱥᱮᱸᱜᱮᱞ ᱥᱟᱶ ᱞᱚᱲᱟᱹᱭ ᱪᱟᱞᱟᱣᱢᱮ,true,option label
+fire01.escalation.option.evacuate_alert,Evacuate and alert others,बाहर निकलें और दूसरों को सावधान करें,ᱵᱟᱦᱨᱮ ᱚᱰᱚᱜᱢᱮ ᱟᱨ ᱮᱴᱟᱜ ᱦᱚᱲᱠᱚ ᱠᱷᱚᱵᱚᱨ ᱮᱢᱟᱠᱚᱢᱮ,true,option label
+fire01.escalation.option.collect_belongings,Collect your belongings,अपना सामान इकट्ठा करें,ᱟᱯᱱᱟᱨ ᱡᱤᱱᱤᱥ ᱡᱟᱢᱟᱹᱣᱢᱮ,true,option label
+fire01.evacuate.instruction,Follow the arrows to the exit.,तीर के निशानों के पीछे निकास तक जाएँ।,ᱥᱟᱨ ᱪᱤᱱᱦᱟᱹ ᱛᱟᱭᱚᱢ ᱛᱟᱭᱚᱢ ᱚᱰᱚᱜ ᱦᱚᱨ ᱦᱟᱹᱵᱤᱡ ᱥᱮᱱᱚᱜᱢᱮ᱾,true,step caption
+fire01.evacuate.audio,Leave now. Follow the arrows to the exit.,अभी निकलें। तीर के निशानों के पीछे निकास तक जाएँ।,ᱱᱤᱛᱚᱜ ᱚᱰᱚᱜᱢᱮ᱾ ᱥᱟᱨ ᱪᱤᱱᱦᱟᱹ ᱛᱟᱭᱚᱢ ᱛᱟᱭᱚᱢ ᱚᱰᱚᱜ ᱦᱚᱨ ᱦᱟᱹᱵᱤᱡ ᱥᱮᱱᱚᱜᱢᱮ᱾,true,narration script
+fire01.assembly.instruction,You are at the assembly point. What next?,आप असेंबली पॉइंट पर हैं। अब क्या करेंगे?,ᱟᱢ ᱡᱟᱨᱣᱟ ᱴᱷᱟᱶ (assembly point) ᱨᱮ ᱢᱮᱱᱟᱢᱟ᱾ ᱛᱟᱭᱚᱢ ᱪᱮᱫ?,true,step caption
+fire01.assembly.audio,You reached the assembly point. What do you do now?,आप असेंबली पॉइंट पर पहुँच गए। अब आप क्या करेंगे?,ᱟᱢ ᱡᱟᱨᱣᱟ ᱴᱷᱟᱶ (assembly point) ᱨᱮ ᱥᱮᱴᱮᱨ ᱮᱱᱟᱢ᱾ ᱱᱤᱛᱚᱜ ᱟᱢ ᱪᱮᱫ ᱠᱟᱹᱢᱤᱭᱟᱢ?,true,narration script
+fire01.assembly.option.report_headcount,Report to the supervisor for headcount,गिनती के लिए सुपरवाइज़र को रिपोर्ट करें,ᱦᱚᱲ ᱞᱮᱠᱷᱟ ᱞᱟᱹᱜᱤᱫ ᱥᱩᱯᱚᱨᱵᱟᱭᱡᱚᱨ ᱴᱷᱮᱱ ᱞᱟᱹᱭᱢᱮ,true,option label
+fire01.assembly.option.go_back_inside,Go back inside,वापस अंदर जाएँ,ᱟᱨᱦᱚᱸ ᱵᱷᱤᱛᱤᱨ ᱨᱩᱣᱟᱹᱲ ᱥᱮᱱᱚᱜᱢᱮ,true,option label
+fire01.assembly.option.leave_site,Leave the site,साइट छोड़कर चले जाएँ,ᱥᱟᱭᱤᱴ ᱵᱟᱹᱜᱤ ᱠᱟᱛᱮ ᱪᱟᱞᱟᱜᱢᱮ,true,option label
+fire01.rule.alarm_before_fight,Raise the alarm before you fight the fire.,आग बुझाने से पहले अलार्म बजाएँ।,ᱥᱮᱸᱜᱮᱞ ᱥᱟᱶ ᱞᱚᱲᱟᱹᱭ ᱞᱟᱦᱟ ᱨᱮ ᱮᱞᱟᱨᱢ ᱵᱟᱡᱟᱣᱢᱮ᱾,true,rule feedback
+fire01.rule.alarm_fast,Raise the alarm quickly.,जल्दी अलार्म बजाएँ।,ᱡᱚᱞᱫᱤ ᱮᱞᱟᱨᱢ ᱵᱟᱡᱟᱣᱢᱮ᱾,true,rule feedback
+fire01.rule.exit_found,Find the nearest exit.,सबसे पास का निकास ढूँढें।,ᱥᱟᱱᱟᱢ ᱠᱷᱚᱱ ᱥᱚᱨ ᱚᱰᱚᱜ ᱦᱚᱨ ᱯᱟᱱᱛᱮᱭᱢᱮ᱾,true,rule feedback
+fire01.rule.right_extinguisher,Pick an extinguisher that suits the fire.,आग के हिसाब से सही अग्निशामक चुनें।,ᱥᱮᱸᱜᱮᱞ ᱞᱮᱠᱟ ᱴᱷᱤᱠ extinguisher ᱵᱟᱪᱷᱟᱣᱢᱮ᱾,true,rule feedback when no extinguisher was picked (D-042)
+fire01.rule.right_extinguisher.correct,Right choice: this extinguisher suits this fire.,सही चुनाव: यह अग्निशामक इस आग के लिए सही है।,ᱴᱷᱤᱠ ᱵᱟᱪᱷᱟᱣ: ᱱᱚᱶᱟ extinguisher ᱱᱚᱶᱟ ᱥᱮᱸᱜᱮᱞ ᱞᱟᱹᱜᱤᱫ ᱴᱷᱤᱠ ᱠᱟᱱᱟ᱾,true,rule feedback: a correct pick (D-042)
+fire01.rule.right_extinguisher.water_on_oil,Never use water on an oil fire: it spreads the burning oil. Use DCP or CO2.,तेल की आग पर कभी पानी न डालें: इससे जलता हुआ तेल फैलता है। DCP या CO2 इस्तेमाल करें।,ᱥᱩᱱᱩᱢ ᱥᱮᱸᱜᱮᱞ ᱨᱮ ᱡᱟᱦᱟᱸ ᱚᱠᱛᱚ ᱦᱚᱸ ᱫᱟᱜ ᱟᱞᱚᱢ ᱵᱮᱵᱷᱟᱨᱟ: ᱫᱟᱜ ᱞᱚᱜ ᱠᱟᱱ ᱥᱩᱱᱩᱢ ᱯᱟᱥᱱᱟᱣᱟ᱾ DCP ᱥᱮ CO2 ᱵᱮᱵᱷᱟᱨᱢᱮ᱾,true,rule feedback: water picked on the oil fire (D-042)
+fire01.rule.right_extinguisher.co2_on_ordinary,"CO2 does not work well on burning wood, paper or cloth: the fire can flare up again. Use water or DCP.","CO2 जलती लकड़ी, कागज़ या कपड़े पर ठीक से काम नहीं करता: आग फिर भड़क सकती है। पानी या DCP इस्तेमाल करें।","ᱞᱚᱜ ᱠᱟᱱ ᱥᱟᱹᱱ, ᱠᱟᱜᱚᱡ ᱥᱮ ᱞᱩᱜᱲᱤ ᱨᱮ CO2 ᱵᱮᱥ ᱛᱮ ᱵᱟᱝ ᱠᱟᱹᱢᱤᱭᱟ: ᱥᱮᱸᱜᱮᱞ ᱟᱨᱦᱚᱸ ᱞᱚᱜ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾ ᱫᱟᱜ ᱥᱮ DCP ᱵᱮᱵᱷᱟᱨᱢᱮ᱾",true,rule feedback: CO2 picked on the ordinary fire (D-042)
+fire01.rule.exit_behind,Keep the exit behind you while you fight a fire.,आग बुझाते समय निकास को अपने पीछे रखें।,ᱥᱮᱸᱜᱮᱞ ᱥᱟᱶ ᱞᱚᱲᱟᱹᱭ ᱚᱠᱛᱚ ᱨᱮ ᱚᱰᱚᱜ ᱦᱚᱨ ᱟᱢ ᱛᱟᱭᱚᱢ ᱨᱮ ᱫᱚᱦᱚᱭᱢᱮ᱾,true,rule feedback
+fire01.rule.aim_base,"Pull the pin first, aim at the base of the fire and sweep side to side.","पहले पिन खींचें, आग की जड़ पर निशाना लगाएँ और दाएँ-बाएँ घुमाएँ।","ᱯᱟᱹᱦᱤᱞ ᱯᱤᱱ ᱚᱨᱢᱮ, ᱥᱮᱸᱜᱮᱞ ᱨᱮᱭᱟᱜ ᱞᱟᱛᱟᱨ ᱦᱟᱹᱴᱤᱧ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ ᱟᱨ ᱞᱮᱸᱜᱟ-ᱡᱚᱡᱚᱢ ᱜᱷᱩᱢᱟᱹᱣᱢᱮ᱾",true,rule feedback (PASS; D-038)
+fire01.rule.evacuate_decision,"If the fire spreads, evacuate and alert others.",आग फैले तो बाहर निकलें और दूसरों को सावधान करें।,ᱥᱮᱸᱜᱮᱞ ᱯᱟᱥᱱᱟᱣ ᱠᱷᱟᱱ ᱵᱟᱦᱨᱮ ᱚᱰᱚᱜᱢᱮ ᱟᱨ ᱮᱴᱟᱜ ᱦᱚᱲᱠᱚ ᱠᱷᱚᱵᱚᱨ ᱮᱢᱟᱠᱚᱢᱮ᱾,true,rule feedback
+fire01.rule.evacuate_time,Evacuate quickly along the marked route.,तय रास्ते से जल्दी बाहर निकलें।,ᱪᱤᱱᱦᱟᱹ ᱦᱚᱨ ᱛᱮ ᱡᱚᱞᱫᱤ ᱵᱟᱦᱨᱮ ᱚᱰᱚᱜᱢᱮ᱾,true,rule feedback
+fire01.rule.assembly_report,Report to your supervisor at the assembly point.,असेंबली पॉइंट पर अपने सुपरवाइज़र को रिपोर्ट करें।,ᱡᱟᱨᱣᱟ ᱴᱷᱟᱶ (assembly point) ᱨᱮ ᱟᱢᱟᱜ ᱥᱩᱯᱚᱨᱵᱟᱭᱡᱚᱨ ᱴᱷᱮᱱ ᱞᱟᱹᱭᱢᱮ᱾,true,rule feedback

@@ -84,7 +84,7 @@ Seeds are raw 32-byte Ed25519 private key seeds.
 - Device seed (hex): `2122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f40`
 - Device public key: `5_FioQvsVZr-oZXk3OhLaVaNXSywlj60RsBoXisX8vA`
 
-Every implementation (C# Core, Python backend, TS dashboard) must pass all four:
+Every implementation (TypeScript app core, Python backend, TypeScript dashboard) must pass all four:
 | # | Input | now | Expected |
 |---|---|---|---|
 | V1 | `cert` | 1789100000 | `VALID` |

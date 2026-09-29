@@ -1,5 +1,6 @@
 """T-53: server recheck of AttemptResults and the content catalog it reads."""
 
+import json
 from fractions import Fraction
 from pathlib import Path
 
@@ -7,6 +8,7 @@ import pytest
 
 from app.services.content import ContentCatalog, load_catalog
 from app.services.scoring import RuleResult, recheck_attempt, round_half_away_from_zero
+from tests.factories import latest_scenario
 
 CONTENT = Path(__file__).resolve().parents[2] / "content"
 
@@ -32,21 +34,24 @@ def test_round_half_away_from_zero(value: Fraction, expected: int) -> None:
 
 
 def test_catalog_reads_the_repo_content(catalog: ContentCatalog) -> None:
-    fire = catalog.scenario("FIRE_01", 1)
-    gas = catalog.scenario("GAS_01", 1)
+    fire = latest_scenario(catalog, "FIRE_01")
+    gas = latest_scenario(catalog, "GAS_01")
 
     assert fire is not None
     assert gas is not None
     assert (fire.pass_threshold_percent, fire.validity_days) == (70, 365)
     assert sum(rule.points for rule in fire.rules.values()) == 100
     assert [s.id for s in catalog.latest()] == ["FIRE_01", "GAS_01"]
-    assert catalog.content_version == "2026.09.7"
+    assert (
+        catalog.content_version
+        == json.loads((CONTENT / "manifest.json").read_text(encoding="utf-8"))["contentVersion"]
+    )
     assert gas.rules["R_PPE"].critical_on == "forbidden"
     assert gas.rules["R_SELF_RESCUER"].variants == frozenset({"major"})
 
 
 def _honest(catalog: ContentCatalog, scenario_id: str, variant: str) -> list[RuleResult]:
-    scenario = catalog.scenario(scenario_id, 1)
+    scenario = latest_scenario(catalog, scenario_id)
     assert scenario is not None
     return [
         RuleResult(r.id, Fraction(r.points), Fraction(r.points), r.critical, True)
@@ -64,7 +69,7 @@ def _recheck(
     passed: bool = True,
     critical: list[str] | None = None,
 ):
-    scenario = catalog.scenario(scenario_id, 1)
+    scenario = latest_scenario(catalog, scenario_id)
     assert scenario is not None
     return recheck_attempt(
         scenario,

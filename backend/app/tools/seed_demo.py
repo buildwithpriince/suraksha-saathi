@@ -36,6 +36,7 @@ from app.db.engine import create_engine, create_sessionmaker
 from app.db.ids import uuid7
 from app.db.models import AdminProfile, Attempt, Certificate, Device, Site, Worker
 from app.services.content import ContentCatalog, Scenario, load_catalog
+from app.services.refresher import refresher_scenario
 from app.services.revocations import publish_revocation_list
 from app.services.scoring import RuleResult, recheck_attempt
 
@@ -68,6 +69,8 @@ FAIL_RATE = {
     "R_RETREAT_TIME": 0.18, "R_REPORT": 0.12,
 }  # fmt: skip
 HALF_POINT_RULES = {"R_AIM_BASE", "R_ZONE_ACCURACY"}  # hold / zone_accuracy can score half
+# Refresher (D-044) fail-rate multiplier by stage: a little is forgotten by day 7, more by day 30
+REFRESHER_SKILL = {7: 1.4, 30: 1.9}
 
 
 def _rule_results(rules: list[dict[str, Any]]) -> list[RuleResult]:
@@ -104,7 +107,8 @@ class Kiosk:
 class SeedSummary:
     sites: int = 0
     workers: int = 0
-    attempts: int = 0
+    attempts: int = 0  # training attempts (docs/08 "~150")
+    refreshers: int = 0  # refresher attempts (D-044), on top
     certificates: int = 0
     expiring_30d: int = 0
     revoked: int = 0
@@ -127,11 +131,12 @@ class DemoBuilder:
         self.summary = SeedSummary()
         self.content: dict[str, ScenarioContent] = {}
         for scenario_id in REQUIRED:
-            spec = catalog.scenario(scenario_id, 1)
-            assert spec is not None, f"{scenario_id} v1 missing from /content"
             raw = json.loads(
                 (content_dir / "scenarios" / f"{scenario_id}.json").read_text(encoding="utf-8")
             )
+            # Version from the scenario file itself: a content bump needs no change here
+            spec = catalog.scenario(scenario_id, int(raw["version"]))
+            assert spec is not None, f"{scenario_id} v{raw['version']} missing from /content"
             self.content[scenario_id] = ScenarioContent(spec, raw)
 
     def _id(self, at: int) -> uuid.UUID:
@@ -216,11 +221,11 @@ class DemoBuilder:
     # --- attempts ---
 
     def _roll_rules(
-        self, content: ScenarioContent, variant: str, skill: float
+        self, content: ScenarioContent, spec: Scenario, variant: str, skill: float
     ) -> tuple[list[dict[str, Any]], set[str]]:
         """Per-rule results as an honest device engine reports them; plus forbidden steps."""
         rules, forbidden_steps = [], set()
-        for rule in content.spec.rules_for(variant).values():
+        for rule in spec.rules_for(variant).values():
             raw = content.rule_raw(rule.id)
             earned: float = rule.points
             if self.rng.random() < FAIL_RATE.get(rule.id, 0.1) * skill:
@@ -243,9 +248,15 @@ class DemoBuilder:
         return rules, forbidden_steps
 
     def _events(
-        self, content: ScenarioContent, variant: str, forbidden_steps: set[str], duration: float
+        self,
+        content: ScenarioContent,
+        spec: Scenario,
+        variant: str,
+        forbidden_steps: set[str],
+        duration: float,
     ) -> list[dict[str, Any]]:
-        steps = content.steps(variant)
+        kept = {s.id for s in spec.steps}
+        steps = [s for s in content.steps(variant) if s["id"] in kept]
         slot = duration / max(len(steps), 1)
         events, t = [], 0.0
         for step in steps:
@@ -277,14 +288,17 @@ class DemoBuilder:
         must_pass: bool | None = None,
         skill: float = 1.0,
         dishonest: bool = False,
+        refresher_day: int | None = None,
     ) -> Attempt:
-        """must_pass: True/False forces the outcome by re-rolling; None leaves it to chance."""
+        """must_pass: True/False forces the outcome by re-rolling; None leaves it to chance.
+        refresher_day: a refresher of that stage, scored on the short scenario (D-044)."""
         content = self.content[scenario_id]
+        spec = content.spec if refresher_day is None else refresher_scenario(content.spec)
         variant = self.rng.choice(sorted(content.spec.variants))
         for _ in range(200):
-            rules, forbidden = self._roll_rules(content, variant, skill)
+            rules, forbidden = self._roll_rules(content, spec, variant, skill)
             recheck = recheck_attempt(
-                content.spec,
+                spec,
                 variant,
                 _rule_results(rules),
                 [],
@@ -295,7 +309,7 @@ class DemoBuilder:
             if must_pass is None or recheck.passed == must_pass:
                 break
             skill = skill * 0.8 if must_pass else min(skill * 1.3 + 0.1, 3.0)
-        duration = round(self.rng.uniform(150, 300), 1)
+        duration = round(self.rng.uniform(150, 300) * len(spec.steps) / len(content.spec.steps), 1)
         attempt_id = self._id(started_at)
         result = {
             "attemptId": str(attempt_id),
@@ -304,6 +318,8 @@ class DemoBuilder:
             "variant": variant,
             "seed": self.rng.randrange(2**31),
             "mode": "tabletop" if self.rng.random() < 0.15 else "ar",
+            "kind": "training" if refresher_day is None else "refresher",
+            **({} if refresher_day is None else {"refresher": {"dueDay": refresher_day}}),
             "startedAt": started_at,
             "durationSec": duration,
             "scorePercent": recheck.score_percent,
@@ -312,9 +328,9 @@ class DemoBuilder:
             "rules": rules,
             "eventsSha256": "0" * 64,
         }
-        events = self._events(content, variant, forbidden, duration)
+        events = self._events(content, spec, variant, forbidden, duration)
         final = recheck_attempt(
-            content.spec,
+            spec,
             variant,
             _rule_results(rules),
             events,
@@ -342,7 +358,10 @@ class DemoBuilder:
             received_at=started_at + self.rng.randrange(600, 3 * DAY),
         )
         self.session.add(attempt)
-        self.summary.attempts += 1
+        if refresher_day is None:
+            self.summary.attempts += 1
+        else:
+            self.summary.refreshers += 1
         self.summary.flagged += attempt.flagged
         return attempt
 
@@ -412,6 +431,7 @@ async def seed(
     await session.flush()
 
     names = b.names(40)
+    certified: list[tuple[Worker, Kiosk, int]] = []
     # 12 due for recertification, 10 certified recently, 18 still training
     for i, name in enumerate(names):
         kiosk = kiosks[i % len(kiosks)]
@@ -425,6 +445,7 @@ async def seed(
                 b.add_attempt(worker, kiosk, "GAS_01", worker.created_at + 3600, must_pass=False)
             # Issued about a year ago under the older attestation: expires within 30 days
             b.certify(worker, kiosk, first_pass, kiosk.old_attestation)
+            certified.append((worker, kiosk, first_pass))
             b.summary.expiring_30d += 1
         elif i < 22:
             first_pass = now - rng.randrange(8, 110) * DAY
@@ -434,6 +455,7 @@ async def seed(
                 started = worker.created_at + rng.randrange(1, 4) * DAY
                 b.add_attempt(worker, kiosk, rng.choice(REQUIRED), started, must_pass=False)
             cert = b.certify(worker, kiosk, first_pass, kiosk.attestation)
+            certified.append((worker, kiosk, first_pass))
             if i == 21:
                 await session.flush()
                 cert.revoked_at = now - 3 * DAY
@@ -462,6 +484,18 @@ async def seed(
                     skill=1.4,
                     dishonest=dishonest,
                 )
+
+    # D-044 refreshers after everything above, so the rest of the dataset is unchanged by them.
+    # Most certified workers came back at each stage that has passed; skills fade a little.
+    for worker, kiosk, first_pass in certified:
+        for scenario_id in REQUIRED:
+            for day in catalog.refresher_due_days:
+                started = first_pass + day * DAY + rng.randrange(32, 96) * 3600
+                if started < now and rng.random() < 0.85:
+                    skill = REFRESHER_SKILL.get(day, REFRESHER_SKILL[max(REFRESHER_SKILL)])
+                    b.add_attempt(
+                        worker, kiosk, scenario_id, started, skill=skill, refresher_day=day
+                    )
     await session.flush()
 
     await publish_revocation_list(session, root_key, now)
@@ -532,7 +566,8 @@ def main(argv: list[str] | None = None) -> int:
     if not summary.notes:
         print(
             f"Seeded {summary.sites} sites, {summary.workers} workers, {summary.attempts} attempts "
-            f"({summary.flagged} flagged), {summary.certificates} certificates "
+            f"({summary.flagged} flagged) + {summary.refreshers} refreshers, "
+            f"{summary.certificates} certificates "
             f"({summary.expiring_30d} expiring within 30 days, {summary.revoked} revoked), "
             f"{summary.pending_devices} pending device."
         )

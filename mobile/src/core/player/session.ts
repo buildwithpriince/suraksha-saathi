@@ -27,6 +27,8 @@ export class ScenarioSession {
   private done = false;
   private heldSamples = 0;
   private onTargetSec = 0;
+  private pinPulled = false;
+  private discharging = false;
 
   constructor(
     readonly scenario: Scenario,
@@ -109,11 +111,72 @@ export class ScenarioSession {
   }
 
   /**
+   * `operate_extinguisher` PASS "Pull": `pin_pulled{method}`, once per step. `method` is how:
+   * swiped off the handle, or the "Tap to pull the pin" fallback offered after 8 s.
+   */
+  pullPin(method: 'swipe' | 'tap' = 'swipe'): void {
+    const cur = this.requireExtinguisher();
+    if (this.pinPulled) return;
+    this.pinPulled = true;
+    this.emit('pin_pulled', cur.step.id, { method });
+  }
+
+  /** `operate_extinguisher` "Squeeze" lever pressed; ignored until the pin is out (the lever is locked). */
+  startDischarge(): boolean {
+    const cur = this.requireExtinguisher();
+    if (!this.pinPulled || this.discharging) return false;
+    this.discharging = true;
+    this.emit('discharge_started', cur.step.id);
+    return true;
+  }
+
+  /** Lever released. */
+  stopDischarge(): void {
+    const cur = this.requireExtinguisher();
+    if (!this.discharging) return;
+    this.discharging = false;
+    this.emit('discharge_stopped', cur.step.id);
+  }
+
+  get isDischarging(): boolean {
+    return this.discharging;
+  }
+
+  /**
+   * One 0.25 s sample while discharging: `hold_progress{zone, onTargetSec, aimDh}`, the same
+   * sample the `hold` rule scores, plus the horizontal aim it counts sweeps from (D-038).
+   * Returns seconds on target so far.
+   */
+  spraySample(zone: string, aimDh: number): number {
+    const cur = this.requireExtinguisher();
+    if (!this.discharging) throw new Error('not discharging');
+    if (zone === cur.params.targetZone) this.onTargetSec = round2(this.onTargetSec + HOLD_SAMPLE_SEC);
+    this.emit('hold_progress', cur.step.id, { zone, onTargetSec: this.onTargetSec, aimDh: round1(aimDh) });
+    return this.onTargetSec;
+  }
+
+  /** The fire is out, out of control, the extinguisher is empty, or it was the wrong one: next step. */
+  finishExtinguisher(outcome: string, extinguished: boolean): void {
+    this.requireExtinguisher();
+    this.stopDischarge();
+    this.complete({ extinguished, outcome });
+  }
+
+  /**
+   * The worker re-placed the overlay because it drifted (D-036): `anchor_repositioned` with the
+   * new anchor direction, in the current step. Neutral: it neither completes the step nor scores.
+   */
+  reposition(headingDeg: number, elevationDeg: number): void {
+    this.emit('anchor_repositioned', this.require().step.id, { headingDeg: round1(headingDeg), elevationDeg: round1(elevationDeg) });
+  }
+
+  /**
    * The worker couldn't complete the current step ("Skip step", D-033): `step_skipped` with
    * `reason: "no_progress"`, then the next step. The engine scores the step as failed.
    */
   skip(): void {
     const cur = this.require();
+    if (this.discharging) this.stopDischarge(); // close the lever press in the log
     this.emit('step_skipped', cur.step.id, { reason: 'no_progress' });
     this.advance();
   }
@@ -121,6 +184,7 @@ export class ScenarioSession {
   /** The worker stopped: `attempt_aborted`; the attempt still gets scored for feedback. */
   abort(): void {
     if (this.done) return;
+    if (this.discharging) this.stopDischarge();
     this.emit('attempt_aborted', this.current()?.step.id);
     this.done = true;
   }
@@ -133,6 +197,8 @@ export class ScenarioSession {
   private advance(): void {
     this.heldSamples = 0;
     this.onTargetSec = 0;
+    this.pinPulled = false;
+    this.discharging = false;
     for (this.index += 1; this.index < this.scenario.steps.length; this.index += 1) {
       const step = this.scenario.steps[this.index]!;
       if (stepRunsIn(step, this.variantId)) {
@@ -159,6 +225,12 @@ export class ScenarioSession {
     this.events.push(event);
   }
 
+  private requireExtinguisher(): CurrentStep {
+    const cur = this.require();
+    if (cur.step.interaction !== 'operate_extinguisher') throw new Error(`${cur.step.id} is not operate_extinguisher`);
+    return cur;
+  }
+
   private require(): CurrentStep {
     const cur = this.current();
     if (cur === null) throw new Error('no current step');
@@ -168,4 +240,8 @@ export class ScenarioSession {
 
 function round2(x: number): number {
   return Math.round(x * 100) / 100;
+}
+
+function round1(x: number): number {
+  return Math.round(x * 10) / 10;
 }

@@ -18,18 +18,21 @@ export interface AttemptSummary {
   scorePercent: number;
   passed: boolean;
   startedAt: number;
+  /** D-044: absent = `training`. */
+  kind?: 'training' | 'refresher';
 }
 
 /**
  * docs/04 step 1: a passing attempt for every required module. Uses each module's newest passing
- * attempt on the current scenario version; `mods` follows the order of `required`.
+ * attempt on the current scenario version; `mods` follows the order of `required`. A refresher
+ * (D-044) is a shortened run, so it never counts: `mods[].s` stays a full-module score.
  */
 export function pickModules(required: readonly RequiredModule[], attempts: readonly AttemptSummary[]): { mods: ModuleScore[] } | { missing: string[] } {
   const mods: ModuleScore[] = [];
   const missing: string[] = [];
   for (const m of required) {
     const newest = attempts
-      .filter((a) => a.passed && a.scenarioId === m.id && a.scenarioVersion === m.version)
+      .filter((a) => a.passed && a.kind !== 'refresher' && a.scenarioId === m.id && a.scenarioVersion === m.version)
       .reduce<AttemptSummary | null>((best, a) => (best === null || a.startedAt > best.startedAt ? a : best), null);
     if (newest === null) missing.push(m.id);
     else mods.push({ id: m.id, v: m.version, s: newest.scorePercent });

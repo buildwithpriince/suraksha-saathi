@@ -57,6 +57,21 @@ describe('malformed scenarios are rejected', () => {
     expect(problems(s).join()).toMatch(/unknown option foam/);
   });
 
+  test('choiceFeedback naming an option the step does not offer (D-042)', () => {
+    const s = fireCopy();
+    s.rules.find((r: Mutable) => r.id === 'R_RIGHT_EXTINGUISHER').choiceFeedback.options.foam = 'fire01.rule.foam';
+    expect(problems(s).join()).toMatch(/choiceFeedback.options: unknown option foam/);
+  });
+
+  test('choiceFeedback on a rule that is not correct_choice, or with an unknown field (D-042)', () => {
+    const s = fireCopy();
+    s.rules.find((r: Mutable) => r.id === 'R_EXIT_FOUND').choiceFeedback = { correct: 'x' };
+    s.rules.find((r: Mutable) => r.id === 'R_RIGHT_EXTINGUISHER').choiceFeedback.wrong = 'x';
+    const found = problems(s).join();
+    expect(found).toMatch(/R_EXIT_FOUND].choiceFeedback: only for correct_choice rules/);
+    expect(found).toMatch(/choiceFeedback.wrong: unknown field/);
+  });
+
   test('forbidden option without a tag', () => {
     const s = fireCopy();
     delete s.steps.find((st: Mutable) => st.id === 'escalation').params.options[0].tag;
@@ -79,6 +94,45 @@ describe('malformed scenarios are rejected', () => {
     const s = fireCopy();
     s.steps.find((st: Mutable) => st.id === 'find_exit').params.marker = 'EXIT_Z';
     expect(problems(s).join()).toMatch(/EXIT_Z is not in setup.markers/);
+  });
+
+  test('place_on_plane anchorMarker not listed in setup.markers (D-036)', () => {
+    const s = fireCopy();
+    s.steps.find((st: Mutable) => st.id === 'place_fire').params.anchorMarker = 'HAZARD_Z';
+    expect(problems(s).join()).toMatch(/HAZARD_Z is not in setup.markers/);
+  });
+
+  test('operate_extinguisher: agentFrom must be an earlier choose_one step (D-038)', () => {
+    const s = fireCopy();
+    const step = s.steps.find((st: Mutable) => st.id === 'extinguish');
+    step.params.agentFrom = 'escalation'; // a later decision
+    expect(problems(s).join()).toMatch(/escalation must be an earlier choose_one step/);
+    step.params.agentFrom = 'raise_alarm'; // earlier, but not a choice
+    expect(problems(s).join()).toMatch(/raise_alarm must be an earlier choose_one step/);
+  });
+
+  test('operate_extinguisher needs dischargeSec and zones', () => {
+    const s = fireCopy();
+    const step = s.steps.find((st: Mutable) => st.id === 'extinguish');
+    delete step.params.dischargeSec;
+    delete step.params.targetZone;
+    const found = problems(s).join();
+    expect(found).toMatch(/dischargeSec/);
+    expect(found).toMatch(/targetZone/);
+  });
+
+  test('PASS params on a hold rule need an operate_extinguisher step', () => {
+    const s = fireCopy();
+    const step = s.steps.find((st: Mutable) => st.id === 'extinguish');
+    step.interaction = 'aim_and_hold';
+    step.params = { targetZone: 'FireBase', offTargetZones: ['FlameTop'], durationSec: 10 };
+    expect(problems(s).join()).toMatch(/requirePinPulled and minSweeps need an operate_extinguisher step/);
+  });
+
+  test('minSweeps must be a whole number', () => {
+    const s = fireCopy();
+    s.rules.find((r: Mutable) => r.id === 'R_AIM_BASE').params.minSweeps = 1.5;
+    expect(problems(s).join()).toMatch(/minSweeps/);
   });
 
   test('per-variant correct map missing a variant', () => {

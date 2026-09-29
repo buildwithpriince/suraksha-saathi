@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, ScrollView, StyleSheet, View, useWindowDimensions, type GestureResponderEvent } from 'react-native';
-import { useSharedValue, withTiming } from 'react-native-reanimated';
+import { useDerivedValue, useSharedValue, withTiming, type SharedValue } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { buildAttemptResult } from '@/core/assessment/result';
@@ -37,7 +37,7 @@ import { AnchoringDebug, AnchoringStatus, liveAnchoring } from './AnchoringDebug
 import { getAnchoringMode, getCameraFov, getDebugOverlay } from './anchoringSetting';
 import { createDischargeFeedback } from './dischargeFeedback';
 import { Extinguisher, SprayCone, type PinMethod, type Point } from './interactions/Extinguisher';
-import { Anchored, Cone, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
+import { Anchored, Cone, ExitIndicator, Fire, GasCloud, Reticle, RouteArrow, TargetButton, Waypoint, type ScreenGeometry } from './overlays';
 import { useCameraDirection } from './useCameraDirection';
 
 const EMPTY_PREFAB: Prefab = { objects: {}, labels: {}, zones: {}, paths: {} };
@@ -158,6 +158,10 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
   }, [scenario, mode, pinhole]);
   const markers = scenario.setup.markers;
   const exitHeading = useRef<number | null>(null);
+  // D-043: the exit's direction in the compass-free gyro frame, captured when the exit is scanned
+  const exitGyroHeading = useRef<number | null>(null);
+  const compassHeading = useDerivedValue(() => camera.direction.value.headingDeg);
+  const [exitIsBehind, setExitIsBehind] = useState(false);
   const handledScan = useRef(-1);
   const [waypoint, setWaypoint] = useState(0);
   const [held, setHeld] = useState(0);
@@ -344,9 +348,21 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     return mode === 'tabletop' && a !== null ? (a.headingDeg + VIRTUAL_MARKER_OFFSET.dh) % 360 : null;
   };
 
+  /**
+   * The exit and where the camera faces, in one frame (D-043). Camera mode: the compass-free gyro
+   * heading, measured from the scan of the exit, so steel and indoor wiring cannot move it.
+   * Tabletop: the drawn exit sign in the same frame as the drawn room.
+   */
+  const exitBearing = (): { exit: number; heading: SharedValue<number> } | null => {
+    if (exitGyroHeading.current !== null) return { exit: exitGyroHeading.current, heading: camera.gyroHeading };
+    const exit = exitHeadingNow();
+    return exit === null ? null : { exit, heading: compassHeading };
+  };
+
   const markerReached = (c: CurrentStep, marker: string) => {
     if (c.step.interaction === 'find_marker') {
       exitHeading.current = mode === 'ar' ? camera.read().headingDeg : exitHeadingNow();
+      exitGyroHeading.current = mode === 'ar' ? camera.readGyroHeading() : null;
       session.record('marker_found', { marker });
       session.complete();
     } else {
@@ -480,11 +496,11 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       return;
     }
     const behind = c.params.exitBehind as { minAngleDeg: number } | undefined;
-    const exit = behind === undefined ? null : exitHeadingNow();
+    const bearing = behind === undefined ? null : exitBearing();
     session.arrive(
       String(c.params.anchor),
       0,
-      behind === undefined ? undefined : { exitBehind: exit !== null && isBehind(exit, camera.read().headingDeg, behind.minAngleDeg) },
+      behind === undefined ? undefined : { exitBehind: bearing !== null && isBehind(bearing.exit, bearing.heading.get(), behind.minAngleDeg) },
     );
     refresh();
   };
@@ -538,6 +554,27 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     }),
     [width, cardBottom, panelTop],
   );
+  // D-043: "keep the exit behind you" is shown live on the step that scores it (a move_to with
+  // exitBehind) and on an operate_extinguisher step right after it, where the worker keeps facing the fire
+  const exitMinAngle = ((): number | null => {
+    if (cur === null) return null;
+    const own = cur.params.exitBehind as { minAngleDeg: number } | undefined;
+    const before = scenario.steps[cur.index - 1]?.params.exitBehind as { minAngleDeg: number } | undefined;
+    return (own ?? (interaction === 'operate_extinguisher' ? before : undefined))?.minAngleDeg ?? null;
+  })();
+  useEffect(() => {
+    if (exitMinAngle === null) return;
+    const check = () => {
+      const bearing = exitBearing();
+      setExitIsBehind(bearing !== null && isBehind(bearing.exit, bearing.heading.get(), exitMinAngle));
+    };
+    check();
+    const id = setInterval(check, 250);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exitMinAngle, stepIndex]);
+  const exitShown = exitMinAngle === null ? null : exitBearing();
+
   const waypointBand = useMemo(() => bandFor(WAYPOINT_PX, WAYPOINT_PX), [bandFor]);
   const labelBand = useMemo(() => bandFor(LABEL_BOX_PX.width, LABEL_BOX_PX.height), [bandFor]);
   const cloudAt = prefab.cloud === undefined ? undefined : prefab.objects[prefab.cloud.at];
@@ -708,6 +745,14 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
             {mode === 'tabletop' ? <Text style={styles.mode}>{t('training.tabletop.label')}</Text> : null}
             <Text style={styles.instruction}>{t(cur.step.instructionKey)}</Text>
             {hint !== null ? <Text style={styles.hint}>{hint}</Text> : null}
+            {exitShown !== null ? (
+              <ExitIndicator
+                exitHeading={exitShown.exit}
+                heading={exitShown.heading}
+                behind={exitIsBehind}
+                label={t(exitIsBehind ? 'training.exit_behind.ok' : 'training.exit_behind.turn')}
+              />
+            ) : null}
             {/* D-039: always say which anchoring is live, so drift can be reported precisely */}
             <AnchoringStatus live={liveAnchoring(anchoringMode, markerLocked)} gyro={camera.gyroAvailable} />
             {debug ? (

@@ -119,3 +119,38 @@ export function updateGyroBias(bias: Vec3, gyro: Vec3, referenceTurnDegPerSec: n
   const k = gain(dt, BIAS_TAU_SEC);
   return { x: bias.x + rx * k, y: bias.y + ry * k, z: bias.z + rz * k };
 }
+
+// --- Compass-free heading for "keep the exit behind you" (D-043) -------------------------------
+// The anchoring filter above still leans on the compass over seconds, which steel and indoor wiring
+// bend by tens of degrees. The exit check only needs how far the phone has turned since the exit
+// was scanned, so this orientation follows the gyroscope alone for heading: tilt is still pulled to
+// the reference (it comes from gravity, not the compass), heading never is. Its absolute heading is
+// arbitrary; only differences between two readings mean anything. Gyro drift after bias removal is
+// a few degrees over a drill, far inside the 120° the check needs.
+
+export interface HeadingHoldState {
+  q: Quaternion;
+  initialised: boolean;
+}
+
+export const INITIAL_HEADING_HOLD: HeadingHoldState = { q: { qw: 1, qx: 0, qy: 0, qz: 0 }, initialised: false };
+
+/**
+ * One step of the compass-free orientation. `gyro` is the bias-corrected rate (rad/s, device axes);
+ * with no gyroscope it simply follows the reference (the compass), the best a phone can then do.
+ * A frame gap longer than 0.5 s skips that interval instead of re-seeding from the compass.
+ */
+export function headingHoldStep(state: HeadingHoldState, reference: Quaternion, gyro: Vec3 | null, dt: number): HeadingHoldState {
+  'worklet';
+  if (!isValid(reference)) return state;
+  const ref = quatNormalize(reference);
+  if (!state.initialised || gyro === null) return { q: ref, initialised: true };
+  if (!(dt > 0) || dt > 0.5) return state;
+  const predicted = quatNormalize(quatMultiply(state.q, quatFromRotationVector({ x: gyro.x * dt, y: gyro.y * dt, z: gyro.z * dt })));
+  // Tilt only (world x, y); a large tilt error (a glitch) is corrected at once, heading never
+  const error = rotationVectorOf(quatMultiply(ref, quatConjugate(predicted)));
+  const tiltDeg = (Math.sqrt(error.x * error.x + error.y * error.y) * 180) / Math.PI;
+  const k = tiltDeg > SNAP_DEG ? 1 : gain(dt, TILT_TAU_SEC);
+  const correction = quatFromRotationVector({ x: error.x * k, y: error.y * k, z: 0 });
+  return { q: quatNormalize(quatMultiply(correction, predicted)), initialised: true };
+}

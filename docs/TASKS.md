@@ -41,6 +41,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [ ] T-28 [F] Device test: full FIRE_01 run on 2 phones, bug list filed as tasks
 - [ ] T-29 [B] Lottie fire (`lottie-react-native`, bundled `assets/fire.json` from `npm run fire`) scaled by the fire level, with smoke that thickens as it grows (D-040) — Done when: escalation and the extinguisher visibly grow and shrink it in Expo Go on a phone; scoring, events and scenario JSON unchanged (deps: T-27)
 - [x] T-34 [B] Fix R_RIGHT_EXTINGUISHER from device testing: DCP correct on both variants, CO2 on oil; feedback by pick (`choiceFeedback`); regression tests incl. water on oil failing the attempt (D-042)
+- [ ] T-35 [B] Exit-behind made visible: compass-free gyro heading from the EXIT scan, live arrow and status on approach and extinguish, placement instruction (D-043) — Done when: on a phone, turning around during approach flips the status and the arrow points at the printed EXIT sign
 
 ## M3 — GAS_01 + fallback (target: ____)
 - [x] T-30 [B] Interactions: `choose_many`, `checklist`, `mark_zone` (cones on the placed overlay, radius in overlay metres); gas cloud overlay + detector reading by waypoint progress

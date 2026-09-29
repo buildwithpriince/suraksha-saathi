@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 
-import { angleDiff, cameraDirection, quatFromRotationVector, quatMultiply, type Quaternion } from './orientation';
-import { INITIAL_FILTER_STATE, filterStep, updateGyroBias, type FilterState } from './orientationFilter';
+import { angleDiff, cameraDirection, isBehind, quatFromRotationVector, quatMultiply, type Quaternion } from './orientation';
+import { INITIAL_FILTER_STATE, INITIAL_HEADING_HOLD, filterStep, headingHoldStep, updateGyroBias, type FilterState, type HeadingHoldState } from './orientationFilter';
 
 const DEG = Math.PI / 180;
 const DT = 1 / 60;
@@ -172,5 +172,48 @@ describe('gyro bias (iOS gives raw gyro data, D-039)', () => {
     // A slow pan the reference barely sees is still above the motion limit
     for (let i = 0; i < 600; i++) bias = updateGyroBias(bias, { x: 0, y: -8 * DEG, z: 0 }, 1, DT);
     expect(bias).toEqual({ x: 0, y: 0, z: 0 });
+  });
+});
+
+describe('compass-free heading for the exit check (D-043)', () => {
+  function hold(steps: number, reference: (i: number) => Quaternion, gyro: (i: number) => { x: number; y: number; z: number } | null, from: HeadingHoldState) {
+    let state = from;
+    for (let i = 0; i < steps; i++) state = headingHoldStep(state, reference(i), gyro(i), DT);
+    return state;
+  }
+  const heading = (s: HeadingHoldState) => cameraDirection(s.q).headingDeg;
+  const start = headingHoldStep(INITIAL_HEADING_HOLD, facing(0), { x: 0, y: 0, z: 0 }, DT);
+  const still = () => ({ x: 0, y: 0, z: 0 });
+
+  test('near steel: the compass swings 50° while the phone is still, the heading stays put', () => {
+    const swinging = (i: number) => facing(50 * Math.min(1, i / 300)); // 50° over 5 s, then held
+    const held = hold(900, swinging, still, start);
+    expect(Math.abs(angleDiff(heading(held), 0))).toBeLessThan(0.5);
+    // The anchoring filter, by design, follows a slow compass change; that is what broke the exit check
+    let filtered = filterStep(INITIAL_FILTER_STATE, facing(0), still(), DT);
+    for (let i = 0; i < 900; i++) filtered = filterStep(filtered, swinging(i), still(), DT);
+    expect(Math.abs(angleDiff(cameraDirection(filtered.q).headingDeg, 0))).toBeGreaterThan(20);
+  });
+
+  test('turning round: follows the gyroscope, whatever the compass says', () => {
+    const rate = -90 * DEG; // turn right at 90°/s for 2 s: 180°
+    const turned = hold(120, () => facing(30), () => ({ x: 0, y: rate, z: 0 }), start);
+    expect(Math.abs(angleDiff(heading(turned), 180))).toBeLessThan(1);
+    expect(isBehind(0, heading(turned), 120)).toBe(true);
+  });
+
+  test('tilt still follows the reference', () => {
+    const tilted = quatMultiply(quatFromRotationVector({ x: 20 * DEG, y: 0, z: 0 }), facing(0));
+    const s = hold(600, () => tilted, still, start);
+    expect(cameraDirection(s.q).elevationDeg).toBeCloseTo(cameraDirection(tilted).elevationDeg, 0);
+  });
+
+  test('a frame gap keeps the heading instead of jumping to the compass', () => {
+    const s = headingHoldStep(start, facing(70), still(), 2);
+    expect(heading(s)).toBeCloseTo(0);
+  });
+
+  test('without a gyroscope it can only follow the compass', () => {
+    expect(heading(headingHoldStep(start, facing(70), null, DT))).toBeCloseTo(70);
   });
 });

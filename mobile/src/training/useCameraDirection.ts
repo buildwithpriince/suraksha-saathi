@@ -13,7 +13,7 @@ import {
   type RotationConvention,
   type Vec3,
 } from '@/core/orientation';
-import { filterStep, updateGyroBias, type FilterState } from '@/core/orientationFilter';
+import { INITIAL_HEADING_HOLD, filterStep, headingHoldStep, updateGyroBias, type FilterState, type HeadingHoldState } from '@/core/orientationFilter';
 
 import type { AnchoringMode } from './anchoringSetting';
 
@@ -41,6 +41,13 @@ export interface CameraDirection {
   readGyroBias: () => number;
   /** The bias estimate itself (rad/s, device axes), for code that integrates the gyroscope. */
   gyroBias: SharedValue<Vec3>;
+  /**
+   * Where the camera points by the gyroscope alone, never pulled to the compass (D-043), in both
+   * anchoring modes. Its absolute heading is arbitrary: compare two readings, e.g. now against
+   * the moment the exit was scanned. Without a gyroscope it is the compass heading.
+   */
+  gyroHeading: SharedValue<number>;
+  readGyroHeading: () => number;
 }
 
 /** Phone held upright in portrait, back camera facing the sensor's north: the resting orientation. */
@@ -70,6 +77,7 @@ export function useCameraDirection(mode: AnchoringMode): CameraDirection {
   const reference = useSharedValue<Quaternion>(UPRIGHT);
   const frame = useSharedValue<ConventionState>({ convention: FIRST_GUESS, votes: 0, mismatchDeg: 0 });
   const bias = useSharedValue<Vec3>({ x: 0, y: 0, z: 0 });
+  const hold = useSharedValue<HeadingHoldState>(INITIAL_HEADING_HOLD);
 
   useFrameCallback((info) => {
     'worklet';
@@ -85,27 +93,33 @@ export function useCameraDirection(mode: AnchoringMode): CameraDirection {
       const checked = conventionStep(frame.value, raw, { x: g.x, y: g.y, z: g.z });
       frame.value = { convention: checked.convention, votes: checked.votes, mismatchDeg: checked.mismatchDeg };
       // A new reading of the quaternion: start the filter again from it
-      if (checked.switched) state.value = { ...state.value, initialised: false };
+      if (checked.switched) {
+        state.value = { ...state.value, initialised: false };
+        hold.value = INITIAL_HEADING_HOLD;
+      }
     }
     const ref = quatNormalize(toDeviceToWorld(raw, frame.value.convention));
     const refTurn = dt > 0 ? angleBetween(ref, reference.value) / dt : 0;
     reference.value = ref;
 
-    if (mode === 'legacy') {
-      state.value = { q: ref, initialised: true, speedDegPerSec: 0, refDisagreeDeg: 0 };
-      return;
-    }
     let rate: Vec3 | null = null;
-    if (withGyro) {
+    if (gyroAvailable) {
       const g = gyro.sensor.value;
       const measured = { x: g.x, y: g.y, z: g.z };
       bias.value = updateGyroBias(bias.value, measured, refTurn, dt);
       rate = { x: measured.x - bias.value.x, y: measured.y - bias.value.y, z: measured.z - bias.value.z };
     }
-    state.value = filterStep(state.value, ref, rate, dt);
+    hold.value = headingHoldStep(hold.value, ref, rate, dt);
+
+    if (mode === 'legacy') {
+      state.value = { q: ref, initialised: true, speedDegPerSec: 0, refDisagreeDeg: 0 };
+      return;
+    }
+    state.value = filterStep(state.value, ref, withGyro ? rate : null, dt);
   });
 
   const orientation = useDerivedValue<Quaternion>(() => state.value.q);
+  const gyroHeading = useDerivedValue<number>(() => cameraDirection(hold.value.q).headingDeg);
   const direction = useDerivedValue<Direction>(() => {
     // Legacy behaviour without a sensor: a fixed straight-ahead direction
     if (!available) return { headingDeg: 0, elevationDeg: 0 };
@@ -123,6 +137,8 @@ export function useCameraDirection(mode: AnchoringMode): CameraDirection {
     readDisagreement: () => state.get().refDisagreeDeg,
     readFrameCheck: () => frame.get(),
     gyroBias: bias,
+    gyroHeading,
+    readGyroHeading: () => gyroHeading.get(),
     readGyroBias: () => {
       const b = bias.get();
       return (Math.sqrt(b.x * b.x + b.y * b.y + b.z * b.z) * 180) / Math.PI;

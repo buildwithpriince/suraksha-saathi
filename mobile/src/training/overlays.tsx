@@ -219,7 +219,27 @@ export function RouteArrow({ targetHeading, direction }: { targetHeading: number
   );
 }
 
+/**
+ * "Keep the exit behind you" made visible (D-043): an arrow pointing to the exit as the phone
+ * turns (UI thread), and whether the exit is behind the worker now, in green or amber. `heading`
+ * and `exitHeading` must be in the same frame: the compass-free gyro heading in camera mode.
+ */
+export function ExitIndicator({ exitHeading, heading, behind, label }: { exitHeading: number; heading: SharedValue<number>; behind: boolean; label: string }) {
+  const arrow = useAnimatedStyle(() => ({ transform: [{ rotate: `${angleDiff(exitHeading, heading.value)}deg` }] }));
+  return (
+    <View accessibilityRole="text" accessibilityLabel={label} style={[styles.exit, { backgroundColor: behind ? colors.greenBg : colors.amberBg }]}>
+      <Animated.View style={arrow}>
+        <Text style={[styles.exitArrow, { color: behind ? colors.green : colors.amber }]}>⬆</Text>
+      </Animated.View>
+      <Text style={[styles.exitText, { color: behind ? colors.green : colors.amber }]}>{label}</Text>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  exit: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4 },
+  exitArrow: { fontSize: 26, lineHeight: 32, fontWeight: '800' },
+  exitText: { flex: 1, fontSize: 16, lineHeight: 24, fontWeight: '700' },
   anchored: { position: 'absolute', left: 0, top: 0, alignItems: 'center', justifyContent: 'center' },
   center: { alignItems: 'center', justifyContent: 'center' },
   gas: { position: 'absolute', backgroundColor: 'rgba(190,214,60,0.35)' },

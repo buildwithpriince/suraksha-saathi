@@ -30,6 +30,8 @@ attempt.pass.label,PASS,पास,पास,true,result badge
 attempt.not_yet.label,NOT YET,अभी नहीं,नितोःहों बाङ,true,result badge
 worker.modules.title,Training modules,प्रशिक्षण मॉड्यूल,ट्रेनिंग मॉड्यूल,true,section title
 training.replay.button,Replay,फिर सुनें,आरहों आञजोममे,true,button: hear the instruction again
+training.exit_behind.ok,Exit behind you ✓,निकास आपके पीछे है ✓,,true,live exit indicator: exit is behind the worker (D-043)
+training.exit_behind.turn,Turn — keep the exit behind you,मुड़ें — निकास को अपने पीछे रखें,,true,live exit indicator: exit is not behind the worker (D-043)
 training.stop.button,Stop,रोकें,बोंदमे,true,button: end the drill early
 training.continue.button,Continue,आगे बढ़ें,आगु सेनोःमे,true,button
 training.hold.button,Hold to spray,दबाकर रखें और छिड़कें,सापाः काते छिटावमे,true,press-and-hold button for aim_and_hold

@@ -122,11 +122,11 @@ by a backend running this content. Version 3 (D-042): DCP is correct on both var
 | # | Step id | Interaction | What the worker does | Notes |
 |---|---|---|---|---|
 | 1 | `brief` | narration | Hears the situation | Not scored |
-| 2 | `place_fire` | place_on_plane | Places the fire on the real floor (tap, or point at the printed `HAZARD_A`) | Setup, not scored; `anchorMarker: HAZARD_A` |
+| 2 | `place_fire` | place_on_plane | Places the fire on the real floor (tap, or point at the printed `HAZARD_A`), away from the EXIT sign or marker | Setup, not scored; `anchorMarker: HAZARD_A`. The exit is found later (step 4), so the instruction names the printed sign (D-043) |
 | 3 | `raise_alarm` | tap_target | Raises the alarm (call point / shouts "Fire") | Must happen before fighting |
 | 4 | `find_exit` | find_marker | Finds the nearest printed EXIT marker | Anchors the escape route |
 | 5 | `pick_extinguisher` | choose_one | Chooses from: water-type, dry chemical powder (DCP), CO2 | Correct: `ordinary` water or DCP; `oil` DCP or CO2. `oil` variant: water-type is `forbidden` |
-| 6 | `approach` | move_to | Moves to the attack spot with the exit behind them | Checked: exit marker direction is behind camera forward (angle > 120°) |
+| 6 | `approach` | move_to | Moves to the attack spot with the exit behind them | Checked on arrival: the exit is more than 120° from camera forward, measured by the gyroscope from the moment EXIT was scanned (not the compass, D-043). Shown live here and during `extinguish`: an arrow to the exit and "Exit behind you ✓" / "Turn — keep the exit behind you" |
 | 7 | `extinguish` | operate_extinguisher | PASS: pulls the pin, aims at the base of the fire, squeezes, sweeps side to side | Aiming at flame tops counts as off-target and does not reduce the fire; the extinguisher from step 5 is used, and a pick that is `forbidden` here (water on oil) has no effect |
 | 8 | `escalation` | decision | Fire spreads (scripted). Options: keep fighting / evacuate and alert / collect belongings | Only "evacuate and alert" is correct; "keep fighting" and "collect belongings" are `forbidden` |
 | 9 | `evacuate` | move_to | Follows AR arrows to the exit marker | Time limited |

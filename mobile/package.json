@@ -11,7 +11,8 @@
     "l10n:build": "node scripts/l10n.mjs build",
     "l10n:report": "node scripts/l10n.mjs report",
     "markers": "node scripts/markers.mjs",
-    "icons": "node scripts/icons.mjs"
+    "icons": "node scripts/icons.mjs",
+    "fire": "node scripts/fire-lottie.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/noto-sans-devanagari": "^0.4.1",
@@ -33,6 +34,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-system-ui": "~57.0.4",
     "i18next": "^26.4.2",
+    "lottie-react-native": "~7.3.8",
     "qrcode": "^1.5.4",
     "react": "19.2.3",
     "react-dom": "19.2.3",

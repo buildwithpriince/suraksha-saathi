@@ -1,3 +1,4 @@
+import LottieView from 'lottie-react-native';
 import { useEffect, type ReactNode } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
@@ -5,12 +6,13 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withRepeat,
-  withSequence,
   withTiming,
   type SharedValue,
 } from 'react-native-reanimated';
 
+import fireAnimation from '@/assets/fire.json';
 import { angleDiff, type Direction, type Quaternion } from '@/core/orientation';
+import { FIRE_MAX } from '@/core/player/extinguisher';
 import { LABEL_BOX_PX, type Band } from '@/core/player/layout';
 import { overlayPlacement } from '@/core/player/overlay';
 import type { Offset } from '@/core/player/prefabs';
@@ -87,24 +89,57 @@ export function Anchored({
   );
 }
 
-/** Flickering fire; `level` grows it when the scenario escalates. */
+/**
+ * The fire (D-040): a looping Lottie flame (`assets/fire.json`, drawn by `scripts/fire-lottie.mjs`)
+ * scaled by `level`, with its base kept on the ground, so the escalation and the extinguisher
+ * simulation still visibly grow and shrink it. Smoke rises above it and thickens as it grows.
+ */
 export function Fire({ size, level }: { size: number; level: SharedValue<number> }) {
-  const flicker = useSharedValue(1);
-  useEffect(() => {
-    flicker.value = withRepeat(
-      withSequence(withTiming(1.08, { duration: 180, easing: Easing.inOut(Easing.quad) }), withTiming(0.96, { duration: 220 })),
-      -1,
-      true,
-    );
-  }, [flicker]);
   const style = useAnimatedStyle(() => ({
-    transform: [{ translateY: (size * (1 - level.value)) / 2 }, { scale: flicker.value * level.value }],
+    transform: [{ translateY: (size * (1 - level.value)) / 2 }, { scale: level.value }],
   }));
   return (
-    <Animated.View style={[styles.center, { width: size, height: size }, style]} pointerEvents="none">
-      <Text style={{ fontSize: size * 0.8, lineHeight: size }}>🔥</Text>
-    </Animated.View>
+    <View style={{ width: size, height: size }} pointerEvents="none">
+      <Animated.View style={[StyleSheet.absoluteFill, style]}>
+        <LottieView source={fireAnimation} autoPlay loop style={{ width: size, height: size }} />
+      </Animated.View>
+      {SMOKE_PUFFS.map((k) => (
+        <SmokePuff key={k} index={k} size={size} level={level} />
+      ))}
+    </View>
   );
+}
+
+const SMOKE_PUFFS = [0, 1, 2, 3];
+/** Seconds for one puff to rise and fade. */
+const SMOKE_RISE_SEC = 2.8;
+/** The flame's tip, as a fraction of `size` above its base, at level 1 (see scripts/fire-lottie.mjs). */
+const FLAME_TOP = 0.86;
+
+/**
+ * One translucent smoke puff above the fire. Puffs are spread evenly through the rise so there is
+ * always smoke; how dark and big they are follows the fire level (none at 0, thickest at FIRE_MAX).
+ */
+function SmokePuff({ index, size, level }: { index: number; size: number; level: SharedValue<number> }) {
+  const rise = useSharedValue(0);
+  useEffect(() => {
+    rise.value = withRepeat(withTiming(1, { duration: SMOKE_RISE_SEC * 1000, easing: Easing.linear }), -1, false);
+  }, [rise]);
+  const d = size * 0.5;
+  const style = useAnimatedStyle(() => {
+    const p = (rise.value + index / SMOKE_PUFFS.length) % 1;
+    const l = Math.max(0, level.value);
+    const thickness = Math.min(1, Math.max(0, (l - 0.1) / (FIRE_MAX - 0.1)));
+    const spread = 0.6 + 0.4 * l;
+    const baseY = size - FLAME_TOP * size * l * 0.85; // just inside the flame tip, so the smoke leaves it
+    const x = size / 2 + Math.sin((p + index * 0.37) * 2 * Math.PI) * size * 0.08 * spread;
+    const y = baseY - p * size * 1.1 * spread;
+    return {
+      opacity: (0.15 + 0.5 * thickness) * thickness * Math.sin(Math.PI * p),
+      transform: [{ translateX: x - d / 2 }, { translateY: y - d / 2 }, { scale: (0.45 + 0.9 * p) * spread }],
+    };
+  });
+  return <Animated.View style={[styles.smoke, { width: d, height: d, borderRadius: d / 2 }, style]} />;
 }
 
 /** Gas drifting around the leak; `level` fades it in when the leak develops (GAS_01 `detect`). */
@@ -189,6 +224,7 @@ const styles = StyleSheet.create({
   center: { alignItems: 'center', justifyContent: 'center' },
   gas: { position: 'absolute', backgroundColor: 'rgba(190,214,60,0.35)' },
   gasCore: { backgroundColor: 'rgba(214,226,70,0.45)' },
+  smoke: { position: 'absolute', left: 0, top: 0, backgroundColor: 'rgb(62,62,66)' },
   coneIcon: { color: '#FF7A00', fontSize: 40, lineHeight: 44, textShadowColor: '#000', textShadowRadius: 3 },
   coneReading: {
     color: '#FFFFFF',

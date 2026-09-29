@@ -39,6 +39,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [x] T-26 [C] Result screen per docs/03 (sorted rules, tap-to-hear feedback, try again)
 - [ ] T-27 [B] Fire overlay (animated 2D, Reanimated/SVG) + escalation spread; 30 fps on target phone
 - [ ] T-28 [F] Device test: full FIRE_01 run on 2 phones, bug list filed as tasks
+- [ ] T-29 [B] Lottie fire (`lottie-react-native`, bundled `assets/fire.json` from `npm run fire`) scaled by the fire level, with smoke that thickens as it grows (D-040) — Done when: escalation and the extinguisher visibly grow and shrink it in Expo Go on a phone; scoring, events and scenario JSON unchanged (deps: T-27)
 
 ## M3 — GAS_01 + fallback (target: ____)
 - [x] T-30 [B] Interactions: `choose_many`, `checklist`, `mark_zone` (cones on the placed overlay, radius in overlay metres); gas cloud overlay + detector reading by waypoint progress

@@ -44,6 +44,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [x] T-36 [A] Refresher drills in the app (D-044): derived short run of the critical steps at day 7 and 30 after the first pass, `kind: "refresher"` attempts, due badge on Home and the worker page, Settings demo clock, exit indicator hidden without an exit scan — Done when: core tests cover derivation, schedule and scoring, and a refresher runs on a phone after +7 days
 - [x] T-37 [D/E] Refreshers on the server and dashboard (D-044): backend recheck against the derived rule set (Python port + shared expected rule ids), `GET /v1/admin/retention`, seeded refreshers, Overview chart "initial vs day 7 vs day 30" per module (deps: T-36)
 - [ ] T-35 [B] Exit-behind made visible: compass-free gyro heading from the EXIT scan, live arrow and status on approach and extinguish, placement instruction (D-043) — Done when: on a phone, turning around during approach flips the status and the arrow points at the printed EXIT sign
+- [ ] T-85 [B] Extinguisher pin pulls on a device (D-045): drag out in any direction with a gesture-handler pan on the UI thread, pin follows the finger, buzz when it pops, fallback button after 10 s — Done when: on a phone, a slow or short drag in any direction pulls the pin without the fallback button
 
 ## M3 — GAS_01 + fallback (target: ____)
 - [x] T-30 [B] Interactions: `choose_many`, `checklist`, `mark_zone` (cones on the placed overlay, radius in overlay metres); gas cloud overlay + detector reading by waypoint progress

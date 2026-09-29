@@ -11,6 +11,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { colors, fonts } from '@/ui/theme';
 
@@ -35,8 +37,9 @@ export default function RootLayout() {
   // If loading fails the app still starts with the system font rather than never leaving the splash
   if (!ready) return null;
 
+  // Gesture handler gestures (the extinguisher pin) only receive touches inside this root view
   return (
-    <>
+    <GestureHandlerRootView style={styles.root}>
       <StatusBar style="dark" />
       <Stack
         screenOptions={{
@@ -47,6 +50,8 @@ export default function RootLayout() {
           title: t('app.title'),
         }}
       />
-    </>
+    </GestureHandlerRootView>
   );
 }
+
+const styles = StyleSheet.create({ root: { flex: 1 } });

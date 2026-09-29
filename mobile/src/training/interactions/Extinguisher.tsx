@@ -1,14 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { PanResponder, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { StyleSheet, Vibration, View, useWindowDimensions } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withSpring, withTiming } from 'react-native-reanimated';
 import Svg, { Circle, Line, Path, Polygon, Rect } from 'react-native-svg';
+import { scheduleOnRN } from 'react-native-worklets';
 
 import { Text } from '@/ui/Text';
 
-/** How far the pin must be dragged to the right to come out, px. */
-const PULL_DISTANCE_PX = 36;
+/** How far the pin must be dragged, in any direction, to come out, px. */
+const PULL_DISTANCE_PX = 28;
+/** Movement before the drag starts following the finger, px: low, so a slow swipe still counts. */
+const DRAG_START_PX = 2;
 /** Pin touch target: at least 64 dp (accessibility minimum for a gloved hand). */
 const PIN_BOX = 72;
+/** Extra touch area around the pin box on every side, px. */
+const PIN_HIT_SLOP = 24;
+/** How far the pulled pin flies before it has faded out, px. */
+const PIN_FLY_PX = 140;
+/** Short buzz when the pin comes out, ms. */
+const PIN_POP_VIBRATE_MS = 40;
 /** Space above the extinguisher body for the valve, lever and pin. */
 const HEAD_ROOM = 60;
 
@@ -22,7 +32,7 @@ export interface Point {
 /**
  * First-person extinguisher for `operate_extinguisher` (D-038), laid out in the bottom panel so it
  * is always centred and inside the safe area on any phone; sizes come from the panel's width.
- * The worker swipes the pin (highlighted, with an arrow) to the right to pull it (PASS "Pull").
+ * The worker drags the pin (highlighted, with an arrow) out in any direction to pull it (PASS "Pull").
  * The nozzle points at the aiming ring; `onNozzle` reports the nozzle tip in window coordinates so
  * the spray can be drawn from it (`SprayCone`).
  */
@@ -69,34 +79,62 @@ export function Extinguisher({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [origin?.x, origin?.y, tip.x, tip.y]);
 
-  // The pin: pulses until pulled, follows the finger to the right, flies off when pulled
+  // The pin: pulses until pulled, follows the finger on the UI thread, and pops out as soon as it
+  // is dragged PULL_DISTANCE_PX in any direction, flying off that way
   const pinX = useSharedValue(0);
+  const pinY = useSharedValue(0);
+  const pulled = useSharedValue(false);
   const glow = useSharedValue(0);
+  // The parent re-renders every 0.25 s during this step, so the gesture must not depend on its
+  // callbacks: it reads the latest one through this ref and is rebuilt only when the pin state changes
+  const onPulled = useRef(onPinPulled);
+  onPulled.current = onPinPulled;
   useEffect(() => {
     glow.value = pinOut ? withTiming(0) : withRepeat(withTiming(1, { duration: 700, easing: Easing.inOut(Easing.quad) }), -1, true);
-    pinX.value = pinOut ? withTiming(140, { duration: 250 }) : withSpring(0);
-  }, [pinOut, pinX, glow]);
-  const pinStyle = useAnimatedStyle(() => ({ transform: [{ translateX: pinX.value }], opacity: 1 - Math.min(1, pinX.value / 140) }));
+    if (!pinOut) {
+      pulled.value = false;
+      pinX.value = withSpring(0);
+      pinY.value = withSpring(0);
+    } else if (!pulled.value) {
+      // Pulled without a drag (the fallback button or TalkBack): fly off to the right
+      pulled.value = true;
+      pinX.value = withTiming(PIN_FLY_PX, { duration: 250 });
+    }
+  }, [pinOut, pinX, pinY, pulled, glow]);
+  const pinStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: pinX.value }, { translateY: pinY.value }],
+    opacity: pulled.value ? 1 - Math.min(1, Math.hypot(pinX.value, pinY.value) / PIN_FLY_PX) : 1,
+  }));
   const glowStyle = useAnimatedStyle(() => ({ opacity: 0.35 + 0.45 * glow.value, transform: [{ scale: 0.9 + 0.2 * glow.value }] }));
-  const responder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => !pinOut,
-        onMoveShouldSetPanResponder: () => !pinOut,
-        onPanResponderTerminationRequest: () => false,
-        onPanResponderMove: (_, g) => {
-          pinX.value = Math.max(0, g.dx);
-        },
-        onPanResponderRelease: (_, g) => {
-          if (g.dx >= PULL_DISTANCE_PX) onPinPulled('swipe');
-          else pinX.value = withSpring(0);
-        },
-        onPanResponderTerminate: () => {
-          pinX.value = withSpring(0);
-        },
-      }),
-    [pinOut, pinX, onPinPulled],
-  );
+  const pan = useMemo(() => {
+    const popOut = () => {
+      Vibration.vibrate(PIN_POP_VIBRATE_MS);
+      onPulled.current('swipe');
+    };
+    return Gesture.Pan()
+      .enabled(!pinOut)
+      .minDistance(DRAG_START_PX)
+      .hitSlop(PIN_HIT_SLOP)
+      .shouldCancelWhenOutside(false)
+      .onUpdate((e) => {
+        if (pulled.value) return;
+        const d = Math.hypot(e.translationX, e.translationY);
+        if (d < PULL_DISTANCE_PX) {
+          pinX.value = e.translationX;
+          pinY.value = e.translationY;
+          return;
+        }
+        pulled.value = true;
+        pinX.value = withTiming((e.translationX / d) * PIN_FLY_PX, { duration: 250 });
+        pinY.value = withTiming((e.translationY / d) * PIN_FLY_PX, { duration: 250 });
+        scheduleOnRN(popOut);
+      })
+      .onFinalize(() => {
+        if (pulled.value) return;
+        pinX.value = withSpring(0);
+        pinY.value = withSpring(0);
+      });
+  }, [pinOut, pinX, pinY, pulled]);
 
   return (
     <View
@@ -130,22 +168,22 @@ export function Extinguisher({
               <Text style={styles.arrowText}>➜</Text>
             </View>
           ) : null}
-          <Animated.View
-            {...responder.panHandlers}
-            accessible
-            accessibilityRole="button"
-            accessibilityLabel={pinLabel}
-            accessibilityActions={[{ name: 'activate' }]}
-            onAccessibilityAction={() => onPinPulled('tap')}
-            hitSlop={12}
-            style={[styles.pin, { left: pinCentre.x - PIN_BOX / 2, top: pinCentre.y - PIN_BOX / 2 }, pinStyle]}
-          >
-            <Animated.View pointerEvents="none" style={[styles.glow, glowStyle]} />
-            <Svg pointerEvents="none" width={PIN_BOX} height={PIN_BOX}>
-              <Line x1={0} y1={PIN_BOX / 2} x2={PIN_BOX / 2 - 10} y2={PIN_BOX / 2} stroke="#E0E0E0" strokeWidth={4} strokeLinecap="round" />
-              <Circle cx={PIN_BOX / 2 + 4} cy={PIN_BOX / 2} r={13} stroke="#FFD43B" strokeWidth={6} fill="none" />
-            </Svg>
-          </Animated.View>
+          <GestureDetector gesture={pan}>
+            <Animated.View
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={pinLabel}
+              accessibilityActions={[{ name: 'activate' }]}
+              onAccessibilityAction={() => onPinPulled('tap')}
+              style={[styles.pin, { left: pinCentre.x - PIN_BOX / 2, top: pinCentre.y - PIN_BOX / 2 }, pinStyle]}
+            >
+              <Animated.View pointerEvents="none" style={[styles.glow, glowStyle]} />
+              <Svg pointerEvents="none" width={PIN_BOX} height={PIN_BOX}>
+                <Line x1={0} y1={PIN_BOX / 2} x2={PIN_BOX / 2 - 10} y2={PIN_BOX / 2} stroke="#E0E0E0" strokeWidth={4} strokeLinecap="round" />
+                <Circle cx={PIN_BOX / 2 + 4} cy={PIN_BOX / 2} r={13} stroke="#FFD43B" strokeWidth={6} fill="none" />
+              </Svg>
+            </Animated.View>
+          </GestureDetector>
         </>
       ) : null}
     </View>

@@ -44,7 +44,7 @@ import { useCameraDirection } from './useCameraDirection';
 const EMPTY_PREFAB: Prefab = { objects: {}, labels: {}, zones: {}, paths: {} };
 const WAYPOINT_PX = 64;
 /** operate_extinguisher: offer "Tap to pull the pin" if the pin is still in after this long. */
-const PIN_HELP_AFTER_MS = 8000;
+const PIN_HELP_AFTER_MS = 10000;
 /** Space kept between a pinned overlay and the screen edge, card or bottom panel (D-033). */
 const PIN_GAP_PX = 8;
 

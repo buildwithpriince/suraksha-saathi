@@ -59,36 +59,41 @@ Smart India Hackathon 2026 · PS 26041 (Govt. of Jharkhand) · Team Caffeine Cod
 ## Architecture
 
 ```mermaid
-flowchart LR
-  subgraph Phone["Android app (Expo React Native, works in airplane mode)"]
+flowchart TB
+  Content["content/scenarios/*.json<br/>single source of truth for steps and rules"]
+  subgraph Phone["Android app: Expo React Native, works in airplane mode"]
+    direction LR
     Player["ScenarioPlayer<br/>camera overlays or virtual room"] --> Engine["Assessment engine<br/>rules + critical steps"]
     Engine --> DB[("SQLite<br/>attempts + outbox")]
-    Engine --> Issue["Issue certificate<br/>device key signs SS1"]
+    Engine --> Issue["Issue certificate<br/>(SS1 QR)"]
     Verify["Verify screen"]
   end
-  subgraph Server["Backend (FastAPI + PostgreSQL on Supabase)"]
-    API["REST API /v1"] --> PG[("PostgreSQL")]
-    Root["Root key<br/>(env var only)"]
+  subgraph Server["Backend: FastAPI"]
+    direction LR
+    API["REST API /v1<br/>sync, attestations, admin"] --> PG[("PostgreSQL<br/>Supabase")]
   end
-  subgraph Web["Dashboard (React + Vite)"]
-    Dash["Compliance, workers,<br/>retention, revocation"]
+  subgraph Web["Dashboard: React + Vite"]
+    direction LR
+    Dash["Compliance, workers,<br/>retention chart, revocation"]
     WebVerify["Public /verify"]
   end
-  Content["content/scenarios/*.json<br/>single source of truth"] --> Player
+  Content --> Player
   Content --> API
   DB -. "sync (roadmap)" .-> API
   API --> Dash
+```
 
-  subgraph Chain["Certificate trust chain (Ed25519, docs/04)"]
-    direction TB
-    R["Root key"] -- "signs" --> A["SA1 device attestation<br/>device public key, site, expiry"]
-    A -- "embedded in" --> C["SS1 certificate QR<br/>worker, modules, scores, expiry"]
-    D["Device key<br/>(phone secure store)"] -- "signs" --> C
-    RL["SR1 revocation list<br/>(root-signed, cached)"]
-  end
-  Root --> R
-  C -- "scan" --> Verify
-  C -- "scan" --> WebVerify
+**Certificate trust chain** (Ed25519, [docs/04](docs/04-CERTIFICATES.md)):
+
+```mermaid
+flowchart LR
+  R["Root key<br/>backend env only"] -- signs --> A["SA1 device attestation<br/>device public key, site, expiry"]
+  A -- embedded in --> C["SS1 certificate QR<br/>worker, modules, scores, expiry"]
+  D["Device key<br/>phone secure store"] -- signs --> C
+  R -- signs --> L["SR1 revocation list"]
+  C -- scanned by --> V["App or web verifier<br/>root public key + cached SR1"]
+  L -- cached by --> V
+  V --> Out(["Valid / Expired / Revoked / Invalid"])
 ```
 
 The phone only needs the root **public** key and a cached revocation list to decide Valid / Expired / Revoked / Invalid, so an inspector at a site gate gets an answer with no network. Details: [docs/01-ARCHITECTURE.md](docs/01-ARCHITECTURE.md), [docs/04-CERTIFICATES.md](docs/04-CERTIFICATES.md).

@@ -70,4 +70,4 @@ If a change risks any item above, stop and say so before continuing.
 - App core tests: `cd mobile && npm test` (Vitest); `npm run typecheck` (no lint script yet, T-03)
 - Backend tests: `cd backend && uv run pytest -q`
 - Dashboard: `cd dashboard && npm run typecheck && npm run test && npm run build`
-- Validate scenario JSON: `cd backend && uv run python -m app.tools.validate_scenarios ../content/scenarios`
+- Validate scenario JSON: `cd mobile && npm test` checks both committed files against the docs/02 contract (T-10); the backend CLI is not built yet (T-16)

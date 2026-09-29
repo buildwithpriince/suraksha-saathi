@@ -1,4 +1,4 @@
-"""docs/04 shared vectors V1-V4: every implementation (C#, Python, TS) must pass these."""
+"""docs/04 shared vectors V1-V4: every implementation (backend, app, dashboard) must pass these."""
 
 from typing import Any
 

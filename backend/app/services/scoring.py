@@ -17,7 +17,8 @@ from app.services.content import Scenario
 def round_half_away_from_zero(value: Fraction) -> int:
     """docs/03 `round()` for scorePercent (D-022): 82.5 -> 83.
 
-    C# must pass MidpointRounding.AwayFromZero; its default (and Python's round) gives 82.
+    Python's built-in round() rounds half to even and gives 82; the app's `roundPercent`
+    (mobile/src/core/assessment/engine.ts) rounds half away from zero too.
     """
     return (
         math.floor(value + Fraction(1, 2)) if value >= 0 else -math.floor(-value + Fraction(1, 2))

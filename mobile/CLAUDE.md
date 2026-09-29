@@ -19,6 +19,9 @@ Unity, and what we traded away: `docs/DECISIONS.md` D-027.
 - `@noble/ed25519` v3 + `@noble/hashes`: certificate sign/verify (docs/04)
 - `react-native-qrcode-svg`: certificate QR (byte mode, error correction M); worker ID card QR (error correction Q)
 - `expo-print` + `qrcode`: printable worker ID cards, generated offline (D-034)
+- `react-native-view-shot` + `expo-sharing`: "Share card" for the wallet-size ID and certificate cards
+  (`ui/WalletCard.tsx`, `cards/shareCard.ts`, D-046); `expo-file-system`: worker ID photos, on the phone only
+- `react-native-gesture-handler`: the extinguisher pin drag (root wrapped in `GestureHandlerRootView`, D-045)
 - `i18next` + `react-i18next`: `en`, `hi`, `sat`; `expo-font` (Noto Sans Devanagari + Noto Sans);
   `expo-audio` for narration; `expo-speech` TTS until T-73. Automatic speech goes through
   `autoSpeakKey` (muted by Settings → Spoken instructions, D-041), speech the worker asks for through `speakKey`

@@ -147,6 +147,26 @@ card.site.value,Site: {{site}},साइट: {{site}},साइट: {{site}},tru
 card.hint,Print this card for the worker. Scan it on the home screen to open their training.,यह कार्ड कामगार के लिए प्रिंट करें। उनका प्रशिक्षण खोलने के लिए होम स्क्रीन पर इसे स्कैन करें।,नोवा कार्ड कामी होड़ लागित् प्रिंटमे। ओनाः ट्रेनिंग झिज लागित् होम स्क्रीन रे स्कैनमे।,true,under the card preview
 card.print.button,Print ID card,पहचान पत्र प्रिंट करें,चिन्हा कार्ड प्रिंटमे,true,button: opens the print dialog (can also save a PDF)
 card.print.failed,Printing did not work. Try again.,प्रिंट नहीं हो पाया। फिर से कोशिश करें।,प्रिंट बाङ होयेना। आरहों कुरुमुटुयमे।,true,shown when the print dialog fails
+card.brand.name,Suraksha Saathi,Suraksha Saathi,,false,"wallet card brand lockup: the Latin name in every language, with card.brand.subtitle under it (D-046)"
+card.brand.subtitle,सुरक्षा साथी,सुरक्षा साथी,,false,wallet card brand lockup: the Devanagari name in every language (D-046)
+card.worker_id.label,Worker ID,कामगार आईडी,,true,label on the ID card; the value is the employee code or the start of the worker id
+card.language.label,Language,भाषा,,true,label on the ID card
+card.scan_login.label,Scan to log in,लॉग इन के लिए स्कैन करें,,true,under the QR on the ID card
+card.share.button,Share card,कार्ड शेयर करें,,true,button: opens the share sheet with the card as an image (ID and certificate cards)
+card.share.failed,The card could not be shared. Try again.,कार्ड शेयर नहीं हो पाया। फिर से कोशिश करें।,,true,shown when sharing fails or the phone cannot share
+cert.card.title,Safety training certificate,सुरक्षा प्रशिक्षण प्रमाणपत्र,,true,title on the certificate card
+cert.card.scan.label,Scan to verify,जाँच के लिए स्कैन करें,,true,under the QR on the certificate card
+worker.photo.add.button,Take ID card photo,पहचान पत्र के लिए फ़ोटो लें,,true,button on the worker page (no photo yet)
+worker.photo.change.button,Change ID card photo,पहचान पत्र की फ़ोटो बदलें,,true,button on the worker page (a photo exists)
+photo.title,ID card photo,पहचान पत्र की फ़ोटो,,true,screen title
+photo.camera.body,Allow the camera to take the worker's photo for the ID card.,पहचान पत्र के लिए कामगार की फ़ोटो लेने हेतु कैमरे की अनुमति दें।,,true,shown until camera permission is given
+photo.hint,Fit the worker's face and shoulders in the frame. The photo stays on this phone only.,कामगार का चेहरा और कंधे फ़्रेम में रखें। फ़ोटो सिर्फ़ इसी फ़ोन में रहती है।,,true,under the camera preview; D-046: photos are never synced
+photo.capture.button,Take photo,फ़ोटो लें,,true,button
+photo.flip.button,Switch camera,कैमरा बदलें,,true,button: front or back camera
+photo.use.button,Use this photo,यह फ़ोटो रखें,,true,button
+photo.retake.button,Take again,फिर से लें,,true,button
+photo.remove.button,Remove photo,फ़ोटो हटाएँ,,true,button: the card shows the placeholder again
+photo.failed,The photo could not be saved. Try again.,फ़ोटो सेव नहीं हो पाई। फिर से कोशिश करें।,,true,shown when taking or saving the photo fails
 scan.title,Scan ID card,पहचान पत्र स्कैन करें,चिन्हा कार्ड स्कैन,true,screen title
 scan.hint,Point the camera at the QR code on the worker's ID card.,कैमरे को कामगार के पहचान पत्र के QR कोड पर रखें।,कैमरा कामी होड़ रेयाः चिन्हा कार्ड रेन QR कोड सेच् दोहोयमे।,true,scanner hint
 scan.camera.body,Allow the camera to scan worker ID cards.,कामगार पहचान पत्र स्कैन करने के लिए कैमरा चालू करें।,चिन्हा कार्ड स्कैन लागित् कैमरा अनुमति एममे।,true,permission text

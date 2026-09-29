@@ -14,6 +14,7 @@ import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
 import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
 import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
+import { workerPhotoUri } from '@/workers/photos';
 
 export default function WorkerScreen() {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ export default function WorkerScreen() {
   const [worker, setWorker] = useState(() => getWorker(id));
   const [attempts, setAttempts] = useState<AttemptRecord<AttemptResult>[]>([]);
   const [refreshers, setRefreshers] = useState<ModuleRefresher[]>([]);
+  const [hasPhoto, setHasPhoto] = useState(false);
 
   // docs/07: the kiosk switches to the worker's preferred language when they are picked
   useEffect(() => {
@@ -34,6 +36,7 @@ export default function WorkerScreen() {
       setWorker(getWorker(id));
       setAttempts(listAttempts<AttemptResult>(id));
       setRefreshers(workerRefreshers(id));
+      setHasPhoto(workerPhotoUri(id) !== null);
     }, [id]),
   );
 
@@ -87,6 +90,12 @@ export default function WorkerScreen() {
           kind="secondary"
           label={t('worker.card.button')}
           onPress={() => router.push({ pathname: '/card/[workerId]', params: { workerId: worker.id } })}
+        />
+        {/* D-046: the ID card photo, kept on this phone only */}
+        <Button
+          kind="secondary"
+          label={t(hasPhoto ? 'worker.photo.change.button' : 'worker.photo.add.button')}
+          onPress={() => router.push({ pathname: '/worker-photo/[id]', params: { id: worker.id } })}
         />
       </Card>
       <Card>

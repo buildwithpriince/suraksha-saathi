@@ -5,18 +5,18 @@ Owners: **A** App lead/architecture · **B** Camera interactions · **C** App UI
 **D** Backend · **E** Dashboard · **F** Content, QA, demo video. Replace letters with names.
 Rules: one task = one branch = one commit/PR. Only the owner of a screen or interaction edits it.
 Fill in dates for each milestone once the finale date is known.
-The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritten from the Unity plan.
+The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritten for it.
 
 ## M0 — Foundations (target: ____)
-- [x] T-01 [A] Monorepo init: `.gitignore` (Unity/Python/Node), `.gitattributes` with Git LFS for binaries, README skeleton — Done when: fresh clone opens all three apps
+- [x] T-01 [A] Monorepo init: `.gitignore` (Python/Node), `.gitattributes` with Git LFS for binaries, README skeleton — Done when: fresh clone opens all three apps
 - [ ] T-02 [A] Expo app in `mobile/` per `mobile/CLAUDE.md`: TypeScript strict, expo-router, Android package id, minSdk 29 (`expo-build-properties`), `eas.json` with a `preview` profile that builds an APK, `.gitignore` for `android/` `ios/` `.expo/` — Done when: the starter screen runs on a phone via `npx expo start` and `eas build -p android --profile preview` produces an APK that installs (human: expo.dev login)
 - [ ] T-03 [A] Folder layout from `mobile/CLAUDE.md` + ESLint with `no-restricted-imports` keeping `src/core` free of react / react-native / expo — Done when: layout matches, `npm run lint` and `npm run typecheck` green, an RN import in `src/core` fails lint (deps: T-02)
 - [x] T-04 [A] Vitest for `src/core` (`npm test`) — Done when: `npm test` runs 1 sample test (deps: T-03)
 - [x] T-05 [D] Backend skeleton: uv, FastAPI app factory, config, health route, ruff, pytest, docker compose Postgres — Done when: `uv run pytest` green
 - [x] T-06 [E] Dashboard skeleton: Vite React TS strict, Tailwind, Router, TanStack Query, Vitest — Done when: typecheck/test/build green
-- ~~T-07 [A] Unity MCP connected to Claude Code~~ — dropped: no Unity Editor (D-027)
-- [ ] T-08 [A] Bundle `/content` into the app: Metro `watchFolders` + JSON imports of `content/scenarios/*.json` and `content/manifest.json`, and a build script that turns `content/trust/root_public_key.txt` into a TS module (Metro has no `?raw`); replaces the Unity copy step and D-009 — Done when: an APK in airplane mode loads both scenarios and the committed root key (deps: T-02)
-- [x] T-09 [A] Rewrite the Unity-era specs for the Expo app (D-027): docs/00 (R2/R2a wording, D3 as QR markers), docs/01 (component diagram, screens instead of scenes), docs/02 (camera-mode behaviour column per `mobile/CLAUDE.md`, QR markers), docs/03 (TS core path), docs/04 (implementations line), docs/05 (device key in secure store), docs/07 (rendering, i18next tables, report script), docs/09, README, SETUP — Done when: no spec or setup doc mentions Unity, C# Core or ARCore except as history, and `spec-reviewer` finds no contradiction with `mobile/CLAUDE.md`
+- ~~T-07~~ — dropped with the engine change (D-027)
+- [ ] T-08 [A] Bundle `/content` into the app: Metro `watchFolders` + JSON imports of `content/scenarios/*.json` and `content/manifest.json`, and a build script that turns `content/trust/root_public_key.txt` into a TS module (Metro has no `?raw`); replaces D-009 — Done when: an APK in airplane mode loads both scenarios and the committed root key (deps: T-02)
+- [x] T-09 [A] Rewrite the specs for the Expo app (D-027): docs/00 (R2/R2a wording, D3 as QR markers), docs/01 (component diagram, screens instead of scenes), docs/02 (camera-mode behaviour column per `mobile/CLAUDE.md`, QR markers), docs/03 (TS core path), docs/04 (implementations line), docs/05 (device key in secure store), docs/07 (rendering, i18next tables, report script), docs/09, README, SETUP — Done when: no spec or setup doc mentions the old engine except as history in D-027, and `spec-reviewer` finds no contradiction with `mobile/CLAUDE.md`
 
 ## M1 — Core logic, pure TypeScript (target: ____)
 - [x] T-10 [A] Scenario model + JSON loader + validation in `mobile/src/core/scenarios` (docs/02 contract) — Done when: loads both scenario files, rejects 5 malformed cases in tests (deps: T-04)

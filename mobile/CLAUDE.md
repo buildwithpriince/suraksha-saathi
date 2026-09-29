@@ -1,7 +1,7 @@
 # mobile — Android app (Expo, React Native)
 
-Loaded when working inside `mobile/`. Root `CLAUDE.md` rules still apply. Why Expo and not
-Unity, and what we traded away: `docs/DECISIONS.md` D-027.
+Loaded when working inside `mobile/`. Root `CLAUDE.md` rules still apply. Why Expo, and what we
+traded away: `docs/DECISIONS.md` D-027.
 
 ## Stack
 - Expo (current SDK, pinned by `create-expo-app` in T-02), React Native New Architecture, Hermes,
@@ -58,8 +58,8 @@ files); never hand-edit it.
   there and runs under Vitest in Node. Screens and hooks stay thin: read input, call core, render.
 - One `ScenarioPlayer` plays any scenario from JSON. Never write module-specific step logic;
   add a generic interaction type instead (`docs/02-AR-MODULES.md` "Interaction types").
-- Scenario JSON, events, rules and tokens follow docs/02–04 exactly. Behaviour differs from the
-  Unity-era spec only in how steps are presented (table below); events and scoring do not.
+- Scenario JSON, events, rules and tokens follow docs/02–04 exactly. Camera mode changes only
+  how steps are presented (table below); events and scoring do not.
 - Modes (the `mode` field of an attempt): `ar` = camera feed with anchored overlays;
   `tabletop` = drawn virtual room, used when camera permission is denied or there is no camera.
   Same player, same events, same scoring.
@@ -112,7 +112,7 @@ rotate-90°-and-return error.
 
 ## Commands (from `mobile/`)
 - Core tests: `npm test` (Vitest; run after every `src/core` change)
-- `npm run typecheck`, `npm run lint`
+- `npm run typecheck` (no ESLint setup yet, T-03)
 - Dev on a phone: `npx expo start` (Expo Go or a dev build)
 - Printable exit markers: `npm run markers`
 - Fire animation: `npm run fire` (rewrites `assets/fire.json`)

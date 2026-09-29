@@ -43,10 +43,6 @@ If a change risks any item above, stop and say so before continuing.
 | Task board | `docs/TASKS.md` |
 | Decisions log | `docs/DECISIONS.md` |
 
-Until T-09 is done, parts of docs/00–09 still describe the Unity app. Where they disagree with
-`mobile/CLAUDE.md` about how the app is built, `mobile/CLAUDE.md` and D-027 win; data contracts
-(scenario JSON, events, scoring, tokens, API, DB) are unchanged.
-
 ## How to work in this repo
 - Work one task from `docs/TASKS.md` at a time (use `/implement-task T-XX`).
 - Start any task touching more than 2 files in plan mode; show the plan before editing.
@@ -71,7 +67,7 @@ Until T-09 is done, parts of docs/00–09 still describe the Unity app. Where th
 - Everything the worker does must work in airplane mode. Network is only for sync.
 
 ## Commands (quick reference; details in each sub-CLAUDE.md)
-- App core tests: `cd mobile && npm test` (Vitest); `npm run typecheck && npm run lint`
+- App core tests: `cd mobile && npm test` (Vitest); `npm run typecheck` (no lint script yet, T-03)
 - Backend tests: `cd backend && uv run pytest -q`
 - Dashboard: `cd dashboard && npm run typecheck && npm run test && npm run build`
 - Validate scenario JSON: `cd backend && uv run python -m app.tools.validate_scenarios ../content/scenarios`

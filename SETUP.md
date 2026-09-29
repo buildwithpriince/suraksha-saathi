@@ -2,7 +2,7 @@
 
 ## 1. Install (every teammate)
 - Git + **Git LFS** (`git lfs install` once)
-- **Node.js 20+** (the app and the dashboard)
+- **Node.js 22.13+** (24 LTS recommended) for the app and the dashboard; the app tests use `node:sqlite`
 - **Python 3.12** + **uv** (the backend)
 - **Claude Code**: follow https://code.claude.com/docs/en/overview
 - Android phone, Android 10+, with Developer Options + USB debugging. Install **Expo Go** for
@@ -22,7 +22,7 @@ cd mobile
 npm install
 npx expo start          # scan the QR with Expo Go, same Wi-Fi
 ```
-Anything needing a native module Expo Go does not carry carries needs a dev build
+Anything needing a native module that Expo Go does not carry needs a dev build
 (`npx eas-cli@latest build -p android --profile development`).
 
 Build an installable APK (human: needs an expo.dev login):

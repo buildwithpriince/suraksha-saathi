@@ -5,37 +5,8 @@
 *.cmd text eol=crlf
 
 # Better diff hunk headers
-*.cs diff=csharp
 *.py diff=python
 *.md diff=markdown
-
-# Unity YAML: text with LF, smart merge (driver setup: SETUP.md "First clone")
-*.unity   text eol=lf merge=unityyamlmerge
-*.prefab  text eol=lf merge=unityyamlmerge
-*.asset   text eol=lf merge=unityyamlmerge
-*.meta    text eol=lf
-*.mat     text eol=lf merge=unityyamlmerge
-*.anim    text eol=lf merge=unityyamlmerge
-*.controller text eol=lf merge=unityyamlmerge
-*.overrideController text eol=lf merge=unityyamlmerge
-*.physicMaterial text eol=lf merge=unityyamlmerge
-*.mixer   text eol=lf merge=unityyamlmerge
-*.playable text eol=lf merge=unityyamlmerge
-*.signal  text eol=lf merge=unityyamlmerge
-*.mask    text eol=lf merge=unityyamlmerge
-*.preset  text eol=lf merge=unityyamlmerge
-*.lighting text eol=lf merge=unityyamlmerge
-*.renderTexture text eol=lf merge=unityyamlmerge
-*.spriteatlas text eol=lf merge=unityyamlmerge
-*.spriteatlasv2 text eol=lf merge=unityyamlmerge
-*.shadervariants text eol=lf merge=unityyamlmerge
-*.terrainlayer text eol=lf merge=unityyamlmerge
-*.cubemap text eol=lf merge=unityyamlmerge
-*.flare   text eol=lf merge=unityyamlmerge
-*.fontsettings text eol=lf merge=unityyamlmerge
-*.guiskin text eol=lf merge=unityyamlmerge
-*.giparams text eol=lf merge=unityyamlmerge
-*.brush   text eol=lf merge=unityyamlmerge
 
 # Binaries via Git LFS
 # Images
@@ -81,8 +52,6 @@
 *.pdf filter=lfs diff=lfs merge=lfs -text
 *.zip filter=lfs diff=lfs merge=lfs -text
 *.7z filter=lfs diff=lfs merge=lfs -text
-# Unity writes lighting data as binary even with Force Text serialization
-LightingData.asset filter=lfs diff=lfs merge=lfs -text
 
 # Dashboard assets stay in plain git: Vercel does not fetch LFS files unless enabled per project.
 # Must stay below the LFS rules so it overrides them.

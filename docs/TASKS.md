@@ -79,6 +79,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [x] T-71 [F] `content/strings/*.csv` complete in en/hi; sat drafted
 - [ ] T-72 [F] Santali native-speaker review; `needsReview` cleared for demo scenarios
 - [ ] T-73 [F] Narration audio recorded and bundled for hi and sat; report shows zero missing
+- [ ] T-74 [C] Settings "Spoken instructions" on/off: mutes speech the app starts itself (step instructions, result, scan and verify outcomes); Replay and tap-to-hear always speak; muted narration steps wait for Continue (D-041) — Done when: the choice survives an app restart and a muted FIRE_01 run in Expo Go says nothing until Replay
 
 ## M8 — Ship (target: ____)
 - [ ] T-80 [A] Release APK via EAS (signed); install test on 2 phones; size < 150 MB

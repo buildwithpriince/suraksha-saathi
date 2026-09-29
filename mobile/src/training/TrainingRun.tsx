@@ -28,7 +28,7 @@ import { MULTI_SELECT, type Scenario } from '@/core/scenarios/types';
 import { pickVariant, stepOptions } from '@/core/scenarios/variants';
 import { saveAttempt } from '@/db/attempts';
 import { newId, nowSeconds } from '@/db/database';
-import { speakKey, stopSpeaking } from '@/i18n/speech';
+import { autoSpeakKey, speakKey, stopSpeaking } from '@/i18n/speech';
 import { randomBytes } from '@/platform/random';
 import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
@@ -196,7 +196,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     const effect = prefab.stepEffects?.[cur.step.id];
     if (effect?.fireLevel !== undefined) fireLevel.value = withTiming(effect.fireLevel, { duration: 1500 });
     if (effect?.gasLevel !== undefined) gasLevel.value = withTiming(effect.gasLevel, { duration: 2500 });
-    speakKey(cur.step.audioKey, () => {
+    autoSpeakKey(cur.step.audioKey, () => {
       // narration auto-advances when its audio ends (docs/02)
       const now = session.current();
       if (cur.step.interaction === 'narration' && now?.index === cur.index) {

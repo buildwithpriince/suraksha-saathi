@@ -8,7 +8,7 @@ import { statusDisplay, verifyCertificate, type CertificateVerification } from '
 import { nowSeconds } from '@/db/database';
 import { getRevocationList } from '@/db/revocations';
 import { TRUST } from '@/device/trust';
-import { speakKey, stopSpeaking } from '@/i18n/speech';
+import { autoSpeakKey, stopSpeaking } from '@/i18n/speech';
 import { CertificateDetails } from '@/ui/CertificateDetails';
 import { DemoKeysBanner } from '@/ui/DemoKeysBanner';
 import { Body, Button, Card, Screen } from '@/ui/components';
@@ -43,7 +43,7 @@ export default function VerifyScreen() {
     });
     setListIat(result.revocation === 'CHECKED' ? (result.revocationsIat ?? null) : null);
     setCheck(result);
-    speakKey(`verify.status.${statusDisplay(result.status).key}`);
+    autoSpeakKey(`verify.status.${statusDisplay(result.status).key}`);
   };
 
   const again = () => {

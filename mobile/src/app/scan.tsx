@@ -6,7 +6,7 @@ import { StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { parseScannedCard } from '@/core/workers/idCard';
 import { getWorker } from '@/db/workers';
-import { speakKey, stopSpeaking } from '@/i18n/speech';
+import { autoSpeakKey, stopSpeaking } from '@/i18n/speech';
 import { Body, Button, Card, Screen } from '@/ui/components';
 
 /** Kiosk login (docs/01, D-034): scan a worker ID card to open that worker, in their language. */
@@ -31,7 +31,7 @@ export default function ScanWorkerScreen() {
     }
     const key = card.kind === 'worker' ? 'scan.not_found' : card.kind === 'certificate' ? 'scan.certificate' : 'scan.not_card';
     setProblemKey(key);
-    speakKey(key);
+    autoSpeakKey(key);
   };
 
   const again = () => {

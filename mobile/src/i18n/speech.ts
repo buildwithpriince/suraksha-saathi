@@ -1,3 +1,4 @@
+import * as SecureStore from 'expo-secure-store';
 import * as Speech from 'expo-speech';
 
 import i18n, { isLocale, type Locale } from '.';
@@ -28,6 +29,37 @@ export function speakKey(key: string, onDone?: () => void): void {
   done();
 }
 
+/**
+ * Speech the app starts by itself (a step's instruction, a result, a scan outcome), unless
+ * automatic speech is muted in Settings (D-041). When muted nothing is said (a Replay still
+ * playing from the previous step stops, as it would unmuted) and `onDone` never runs, so a
+ * narration step waits for Continue. Speech the worker asks for (Replay, tap to hear) calls
+ * `speakKey` and is never muted.
+ */
+export function autoSpeakKey(key: string, onDone?: () => void): void {
+  if (isAutoSpeechMuted()) {
+    stopSpeaking();
+    return;
+  }
+  speakKey(key, onDone);
+}
+
 export function stopSpeaking(): void {
   void Speech.stop();
+}
+
+// A device preference, not a secret; stored like the anchoring settings (training/anchoringSetting.ts).
+const MUTE_KEY = 'auto_speech_muted_v1';
+
+export function isAutoSpeechMuted(): boolean {
+  try {
+    return SecureStore.getItem(MUTE_KEY) === 'on';
+  } catch {
+    return false;
+  }
+}
+
+export function setAutoSpeechMuted(muted: boolean): void {
+  SecureStore.setItem(MUTE_KEY, muted ? 'on' : 'off');
+  if (muted) stopSpeaking();
 }

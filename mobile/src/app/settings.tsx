@@ -8,6 +8,7 @@ import { usableAttestation } from '@/core/certificates/issue';
 import { lastSyncAt, nowSeconds, outboxCount } from '@/db/database';
 import { getDevice } from '@/db/device';
 import { TRUST } from '@/device/trust';
+import { isAutoSpeechMuted, setAutoSpeechMuted } from '@/i18n/speech';
 import { formatDate } from '@/ui/CertificateDetails';
 import { DemoKeysBanner } from '@/ui/DemoKeysBanner';
 import { getAnchoringMode, getDebugOverlay, setAnchoringMode, setDebugOverlay, type AnchoringMode } from '@/training/anchoringSetting';
@@ -22,6 +23,7 @@ export default function SettingsScreen() {
   const [lastSync, setLastSync] = useState<number | null>(null);
   const [anchoring, setAnchoring] = useState<AnchoringMode>(getAnchoringMode);
   const [debugOverlay, setDebugOverlayState] = useState(getDebugOverlay);
+  const [muted, setMuted] = useState(isAutoSpeechMuted);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,6 +52,23 @@ export default function SettingsScreen() {
 
       <Card>
         <LanguageSwitcher label={t('home.language.label')} />
+      </Card>
+
+      {/* D-041: steps read themselves aloud; this mutes that, Replay still speaks */}
+      <Card>
+        <Title>{t('settings.narration.title')}</Title>
+        <Body>{t('settings.narration.body')}</Body>
+        <Segmented
+          options={[
+            { value: 'on', label: t('settings.narration.on') },
+            { value: 'off', label: t('settings.narration.off') },
+          ]}
+          value={muted ? 'off' : 'on'}
+          onChange={(v) => {
+            setAutoSpeechMuted(v === 'off');
+            setMuted(v === 'off');
+          }}
+        />
       </Card>
 
       {/* D-036: the old anchoring maths stays one tap away in case the new one misbehaves on a phone */}

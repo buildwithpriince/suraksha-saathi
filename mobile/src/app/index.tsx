@@ -11,6 +11,7 @@ import { hasRefresherDue } from '@/refresher/refreshers';
 import { AppTitle } from '@/ui/AppTitle';
 import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
 import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
+import { SantaliDraftNote } from '@/ui/SantaliDraftNote';
 import { Text } from '@/ui/Text';
 import { colors, space } from '@/ui/theme';
 
@@ -39,6 +40,7 @@ export default function HomeScreen() {
     <Screen>
       {/* Home is the only screen that shows the app name, so it is the only one carrying the mark */}
       <Stack.Screen options={{ headerTitle: () => <AppTitle /> }} />
+      <SantaliDraftNote />
       <Body muted>
         {t('home.site.label', { site: device.siteCode })} · {t('home.pending_sync.label', { count: pending })}
       </Body>

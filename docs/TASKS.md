@@ -86,6 +86,7 @@ The app is Expo React Native in `mobile/` (D-027); app tasks below were rewritte
 - [ ] T-72 [F] Santali native-speaker review; `needsReview` cleared for demo scenarios
 - [ ] T-73 [F] Narration audio recorded and bundled for hi and sat; report shows zero missing
 - [ ] T-74 [C] Settings "Spoken instructions" on/off: mutes speech the app starts itself (step instructions, result, scan and verify outcomes); Replay and tap-to-hear always speak; muted narration steps wait for Continue (D-041) — Done when: the choice survives an app restart and a muted FIRE_01 run in Expo Go says nothing until Replay
+- [ ] T-87 [C] Santali in Ol Chiki (D-047): bundled Noto Sans Ol Chiki picked by `ui/Text` from the text, all sat cells drafted in Ol Chiki with needsReview=true, picker "ᱥᱟᱱᱛᱟᱲᱤ (Santali)", dismissible draft note on Home, sat narration speaks Hindi, `l10n:export-review` / `l10n:import-review` — code, drafts, review workflow and report (0 missing) done; Done when: every screen walked in sat in Expo Go with no boxes, raw keys or clipped text
 
 ## M8 — Ship (target: ____)
 - [ ] T-80 [A] Release APK via EAS (signed); install test on 2 phones; size < 150 MB

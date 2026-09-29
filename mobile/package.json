@@ -10,12 +10,15 @@
     "test": "vitest run",
     "l10n:build": "node scripts/l10n.mjs build",
     "l10n:report": "node scripts/l10n.mjs report",
+    "l10n:export-review": "node scripts/l10n.mjs export-review",
+    "l10n:import-review": "node scripts/l10n.mjs import-review",
     "markers": "node scripts/markers.mjs",
     "icons": "node scripts/icons.mjs",
     "fire": "node scripts/fire-lottie.mjs"
   },
   "dependencies": {
     "@expo-google-fonts/noto-sans-devanagari": "^0.4.1",
+    "@expo-google-fonts/noto-sans-ol-chiki": "^0.4.2",
     "@noble/ed25519": "^3.2.0",
     "@noble/hashes": "^2.4.0",
     "expo": "~57.0.24",

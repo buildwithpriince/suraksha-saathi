@@ -1,249 +1,251 @@
 key,en,hi,sat,needsReview,notes
-app.title,Suraksha Saathi,सुरक्षा साथी,सुरक्षा साथी,true,app name
+app.title,Suraksha Saathi,सुरक्षा साथी,ᱥᱩᱨᱚᱠᱷᱟ ᱥᱟᱛᱷᱤ,true,app name
 lang.en,English,English,English,false,picker label: always in its own script (docs/07)
 lang.hi,हिन्दी,हिन्दी,हिन्दी,false,picker label: always in its own script (docs/07)
-lang.sat,संताली,संताली,संताली,true,picker label needs native-speaker confirmation (docs/07)
-setup.title,Set up this device,इस डिवाइस को सेट करें,नोवा डिवाइस रेयाः सेटिंग,true,screen title
-setup.site_code.label,Site code,साइट कोड,साइट कोड,true,input label
-setup.site_code.hint,"The code of this site, for example DHN-01.","इस साइट का कोड, जैसे DHN-01।","नोवा साइट रेयाः कोड, जेमोन DHN-01।",true,input hint
-setup.site_code.invalid,"Use 2 to 16 capital letters, digits or dashes.","2 से 16 बड़े अक्षर, अंक या डैश लिखें।","2 खोन 16 हाबिज माराङ आखोर, अंक से डैश ओलमे।",true,validation error
-setup.save.button,Save,सेव करें,सेव,true,button
-home.workers.title,Workers,कामगार,कामी होड़को,true,section title
-home.workers.empty,No workers yet. Enrol the first worker.,अभी कोई कामगार नहीं है। पहले कामगार को जोड़ें।,नितोः जाहाँय कामी होड़ बानुःआ। पाहिल कामी होड़ ओलमे।,true,empty state
-home.enrol.button,Enrol worker,कामगार जोड़ें,कामी होड़ ओलमे,true,button
-home.verify.button,Verify a certificate,प्रमाणपत्र जाँचें,सर्टिफिकेट जांचावमे,true,button
-home.site.label,Site {{site}},साइट {{site}},साइट {{site}},true,{{site}} = site code
-home.pending_sync.label,{{count}} records waiting to sync,{{count}} रिकॉर्ड सिंक होने बाकी,{{count}} रेकोर्ड सिंक लागित् तांगी काना,true,{{count}} = outbox rows
-enrol.title,Enrol worker,कामगार जोड़ें,कामी होड़ ओल,true,screen title
-enrol.name.label,Name,नाम,ञुतुम,true,input label
-enrol.name.hint,Up to 24 letters. It is printed on the certificate.,24 अक्षर तक। यह प्रमाणपत्र पर छपेगा।,24 आखोर हाबिज। नोवा सर्टिफिकेट रे छापाव होयोःआ।,true,input hint
-enrol.name.required,Enter the worker's name.,कामगार का नाम लिखें।,कामी होड़ रेयाः ञुतुम ओलमे।,true,validation error
-enrol.employee_code.label,Employee code (optional),कर्मचारी कोड (ज़रूरी नहीं),कर्मचारी कोड (बाङ जोरुरी),true,input label
-enrol.language.label,Preferred language,पसंदीदा भाषा,पसंद पारसी,true,picker label
-enrol.save.button,Enrol,जोड़ें,ओलमे,true,button
-worker.attempts.title,Attempts,प्रयास,कुरुमुटु,true,section title
-worker.attempts.empty,No attempts yet.,अभी कोई प्रयास नहीं।,नितोः जाहाँनाक् कुरुमुटु बानुःआ।,true,empty state
-worker.train.button,Start: {{module}},शुरू करें: {{module}},एहोपमे: {{module}},true,{{module}} = scenario title
-worker.certificate.button,Certificate,प्रमाणपत्र,सर्टिफिकेट,true,button
+lang.sat,ᱥᱟᱱᱛᱟᱲᱤ (Santali),ᱥᱟᱱᱛᱟᱲᱤ (Santali),ᱥᱟᱱᱛᱟᱲᱤ (Santali),true,"picker label, Ol Chiki with the English name (D-047); needs native-speaker confirmation"
+setup.title,Set up this device,इस डिवाइस को सेट करें,ᱱᱚᱶᱟ ᱰᱤᱵᱟᱭᱤᱥ ᱥᱮᱴᱢᱮ,true,screen title
+setup.site_code.label,Site code,साइट कोड,ᱥᱟᱭᱤᱴ ᱠᱳᱰ,true,input label
+setup.site_code.hint,"The code of this site, for example DHN-01.","इस साइट का कोड, जैसे DHN-01।","ᱱᱚᱶᱟ ᱥᱟᱭᱤᱴ ᱨᱮᱭᱟᱜ ᱠᱳᱰ, ᱡᱮᱢᱚᱱ DHN-01᱾",true,input hint
+setup.site_code.invalid,"Use 2 to 16 capital letters, digits or dashes.","2 से 16 बड़े अक्षर, अंक या डैश लिखें।","2 ᱠᱷᱚᱱ 16 ᱦᱟᱹᱵᱤᱡ ᱢᱟᱨᱟᱝ ᱟᱠᱷᱚᱨ (A-Z), ᱮᱞ (0-9) ᱥᱮ ᱰᱮᱥ (-) ᱚᱞᱢᱮ᱾",true,validation error
+setup.save.button,Save,सेव करें,ᱥᱮᱵᱢᱮ,true,button
+home.workers.title,Workers,कामगार,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱠᱚ,true,section title
+home.workers.empty,No workers yet. Enrol the first worker.,अभी कोई कामगार नहीं है। पहले कामगार को जोड़ें।,ᱱᱤᱛᱚᱜ ᱦᱟᱹᱵᱤᱡ ᱡᱟᱦᱟᱸᱭ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱵᱟᱹᱱᱩᱜᱼᱟ᱾ ᱯᱟᱹᱦᱤᱞ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱥᱮᱞᱮᱫᱢᱮ᱾,true,empty state
+home.enrol.button,Enrol worker,कामगार जोड़ें,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱥᱮᱞᱮᱫᱢᱮ,true,button
+home.verify.button,Verify a certificate,प्रमाणपत्र जाँचें,ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱡᱟᱸᱪᱢᱮ,true,button
+home.site.label,Site {{site}},साइट {{site}},ᱥᱟᱭᱤᱴ {{site}},true,{{site}} = site code
+home.pending_sync.label,{{count}} records waiting to sync,{{count}} रिकॉर्ड सिंक होने बाकी,{{count}} ᱨᱮᱠᱚᱨᱰ ᱥᱤᱸᱠ ᱞᱟᱹᱜᱤᱫ ᱛᱟᱹᱝᱜᱤ ᱠᱟᱱᱟ,true,{{count}} = outbox rows
+enrol.title,Enrol worker,कामगार जोड़ें,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱥᱮᱞᱮᱫ,true,screen title
+enrol.name.label,Name,नाम,ᱧᱩᱛᱩᱢ,true,input label
+enrol.name.hint,Up to 24 letters. It is printed on the certificate.,24 अक्षर तक। यह प्रमाणपत्र पर छपेगा।,24 ᱟᱠᱷᱚᱨ ᱦᱟᱹᱵᱤᱡ᱾ ᱱᱚᱶᱟ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱨᱮ ᱪᱷᱟᱯᱟᱣᱚᱜᱼᱟ᱾,true,input hint
+enrol.name.required,Enter the worker's name.,कामगार का नाम लिखें।,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱨᱮᱭᱟᱜ ᱧᱩᱛᱩᱢ ᱚᱞᱢᱮ᱾,true,validation error
+enrol.employee_code.label,Employee code (optional),कर्मचारी कोड (ज़रूरी नहीं),ᱠᱚᱨᱢᱚᱪᱟᱨᱤ ᱠᱳᱰ (ᱡᱚᱨᱩᱨᱤ ᱵᱟᱝ),true,input label
+enrol.language.label,Preferred language,पसंदीदा भाषा,ᱠᱩᱥᱤ ᱯᱟᱹᱨᱥᱤ,true,picker label
+enrol.save.button,Enrol,जोड़ें,ᱥᱮᱞᱮᱫᱢᱮ,true,button
+worker.attempts.title,Attempts,प्रयास,ᱠᱩᱨᱩᱢᱩᱴᱩ ᱠᱚ,true,section title
+worker.attempts.empty,No attempts yet.,अभी कोई प्रयास नहीं।,ᱱᱤᱛᱚᱜ ᱦᱟᱹᱵᱤᱡ ᱡᱟᱦᱟᱱᱟᱜ ᱠᱩᱨᱩᱢᱩᱴᱩ ᱵᱟᱹᱱᱩᱜᱼᱟ᱾,true,empty state
+worker.train.button,Start: {{module}},शुरू करें: {{module}},ᱮᱦᱚᱵᱢᱮ: {{module}},true,{{module}} = scenario title
+worker.certificate.button,Certificate,प्रमाणपत्र,ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ,true,button
 attempt.score.label,{{score}}%,{{score}}%,{{score}}%,false,{{score}} = score percent
-attempt.pass.label,PASS,पास,पास,true,result badge
-attempt.not_yet.label,NOT YET,अभी नहीं,नितोःहों बाङ,true,result badge
-worker.modules.title,Training modules,प्रशिक्षण मॉड्यूल,ट्रेनिंग मॉड्यूल,true,section title
-training.replay.button,Replay,फिर सुनें,आरहों आञजोममे,true,button: hear the instruction again
-training.exit_behind.ok,Exit behind you ✓,निकास आपके पीछे है ✓,,true,live exit indicator: exit is behind the worker (D-043)
-training.exit_behind.turn,Turn — keep the exit behind you,मुड़ें — निकास को अपने पीछे रखें,,true,live exit indicator: exit is not behind the worker (D-043)
-training.stop.button,Stop,रोकें,बोंदमे,true,button: end the drill early
-training.continue.button,Continue,आगे बढ़ें,आगु सेनोःमे,true,button
-training.hold.button,Hold to spray,दबाकर रखें और छिड़कें,सापाः काते छिटावमे,true,press-and-hold button for aim_and_hold
-training.held.label,Sprayed {{held}} of {{total}} s,{{total}} में से {{held}} सेकंड छिड़का,{{total}} सेकेंड खोन {{held}} सेकेंड छिटाव एना,true,hold progress
-training.time_left.label,{{seconds}} s,{{seconds}} सेकंड,{{seconds}} सेकेंड,true,step countdown
-training.camera.title,Camera needed,कैमरा चाहिए,कैमरा लाकती,true,permission card title
-training.camera.body,The drill appears on your real floor through the camera.,कैमरे से अभ्यास आपके असली फ़र्श पर दिखेगा।,कैमरा ते ट्रेनिंग आमाः सारि ओते रे ञेलोःआ।,true,permission card text
-training.camera.allow.button,Allow camera,कैमरा चालू करें,कैमरा अनुमति एममे,true,button
-training.camera.skip.button,Train without camera,बिना कैमरे के अभ्यास करें,कैमरा बेगोर ते ट्रेनिंग,true,button: tabletop mode
-training.tabletop.label,Virtual room: no camera,आभासी कमरा: कैमरा नहीं,आभासी ओड़ाः: कैमरा बानुःआ,true,mode banner
-training.hint.scan_marker,Scan the printed exit sign with the camera.,छपे हुए निकास (EXIT) चिह्न को कैमरे से स्कैन करें।,छापाव ओडोक् होर (EXIT) चिन्हा कैमरा ते स्कैनमे।,true,find_marker / move_to marker hint (camera)
-training.hint.tap_marker,Turn around and tap the exit sign.,पीछे मुड़ें और निकास चिह्न को छुएँ।,रुवाड़ काते ओडोक् होर चिन्हा टिपावमे।,true,find_marker / move_to marker hint (no camera)
-training.hint.waypoints,"Tap the yellow mark on the floor. If it is at the screen edge, turn that way.","फ़र्श पर पीले निशान को छुएँ। अगर वह स्क्रीन के किनारे पर है, तो उसी ओर मुड़ें।","ओते रेन सासांग चिन्हा टिपावमे। स्क्रीन सेमेद् रे खान, उनी सेच् ञिरोःमे।",true,move_to waypoint hint (any mark not yet reached takes a tap; D-033)
-training.hint.hold,Press and hold the button to spray.,छिड़कने के लिए बटन दबाकर रखें।,छिटाव लागित् बटन टिपाव काते सापाःमे।,true,aim_and_hold hint
-training.hint.target,Tap it.,इसे छुएँ।,नोवा टिपावमे।,true,tap_target hint
-training.object.alarm_call_point,FIRE ALARM,फ़ायर अलार्म,फायर अलार्म,true,label on the alarm call point overlay
-training.object.exit_sign,EXIT,निकास,ओडोक् होर,true,label on the virtual exit sign (no-camera mode)
-training.detector.label,Gas {{reading}},गैस {{reading}},गैस {{reading}},true,detector reading on move_to with a detector
-training.object.entrance,ENTRANCE,प्रवेश द्वार,बोलोक् होर,true,label on the confined-area entrance overlay
-training.object.leak_source,GAS LEAK,गैस रिसाव,गैस लिक,true,label on the gas leak overlay
-training.done.button,Done,हो गया,चाबाक्,true,button: finish choose_many / checklist / mark_zone
-training.hint.choose_many,"Tap everything you need, then tap Done.","जो कुछ चाहिए, उन सबको छुएँ, फिर हो गया दबाएँ।","चेद् चेद् लाकती सानाम टिपावमे, आर चाबाक् टिपावमे।",true,choose_many hint
-training.hint.checklist,"Tap each item as you check it, then tap Done.","हर चीज़ जाँचते समय उसे छुएँ, फिर हो गया दबाएँ।","मित् मित् जिनिस जांचाव काते टिपावमे, आर चाबाक् टिपावमे।",true,checklist hint
-training.hint.mark_zone,Tap the floor to place cones. Tap a cone to remove it.,फ़र्श को छूकर कोन रखें। कोन हटाने के लिए उसे छुएँ।,कोन दोहो लागित् ओते टिपावमे। कोन हाताव लागित् ओना टिपावमे।,true,mark_zone hint
-training.cones.label,Cones: {{count}} (at least {{min}}),कोन: {{count}} (कम से कम {{min}}),कोन: {{count}} (कोम से कोम {{min}}),true,{{count}} = cones placed; {{min}} = the step's minCones
-training.cone.remove,Remove cone,कोन हटाएँ,कोन हातावमे,true,accessibility label on a placed cone
-training.skip.button,Skip this step (counts as failed),यह चरण छोड़ें (असफल गिना जाएगा),नोवा धाप बागीमे (फेल लेखाव होयोःआ),true,"shown after 30 s without progress in a step; the step is scored as failed (D-033)"
-training.saving.label,Saving your result…,आपका परिणाम सेव हो रहा है…,आमाः फोल सेव होयोः काना…,true,shown while the attempt is saved
-training.reposition.button,Reposition,फिर से रखें,,true,"button: re-place a drifted overlay; recorded as anchor_repositioned, never scored (D-036)"
-training.reposition.cancel,Cancel,रद्द करें,,true,button: leave reposition without moving the overlay
-training.reposition.hint,Tap the floor where it should be.,जहाँ होना चाहिए वहाँ फ़र्श को छुएँ।,,true,shown while repositioning (D-036)
-training.hint.anchor_marker,Or point the camera at the printed marker on the floor.,या कैमरे को फ़र्श पर रखे छपे मार्कर की ओर करें।,,true,place_on_plane hint when the scenario has an anchorMarker (D-036)
-training.extinguisher.pull,Swipe the yellow pin to the right to pull it out.,पीली पिन को दाईं ओर खींचकर बाहर निकालें।,,true,operate_extinguisher: PASS Pull (D-038)
-training.extinguisher.aim,"Point the ring at the base of the fire, then press and hold the lever button.","रिंग को आग की जड़ पर रखें, फिर लीवर वाला बटन दबाकर रखें।",,true,operate_extinguisher: PASS Aim + Squeeze
-training.extinguisher.sweep,Sweep side to side across the base.,जड़ पर दाएँ-बाएँ घुमाएँ।,,true,operate_extinguisher: PASS Sweep (spraying the base without sweeping)
-training.extinguisher.too_high,Too high: aim lower at the base of the fire.,बहुत ऊपर: नीचे आग की जड़ पर निशाना लगाएँ।,,true,spraying the flame tops
-training.extinguisher.missed,Not on the fire: aim at the base.,आग पर नहीं: जड़ पर निशाना लगाएँ।,,true,spraying beside the fire
-training.extinguisher.locked,Pull the pin first.,पहले पिन खींचें।,,true,lever pressed with the pin still in
-training.extinguisher.pin_tap.button,Tap to pull the pin,पिन निकालने के लिए टैप करें,,true,fallback shown if the pin is not swiped out within 8 s; recorded as pin_pulled{method: tap}
-training.extinguisher.squeeze.button,Squeeze lever (hold),लीवर दबाएँ (दबाकर रखें),,true,press-and-hold discharge button
-training.extinguisher.fire.label,Fire: {{percent}}%,आग: {{percent}}%,,true,{{percent}} = fire size (100 = as it started)
-training.extinguisher.left.label,Extinguisher: {{seconds}} s left,अग्निशामक: {{seconds}} सेकंड बाकी,,true,{{seconds}} = discharge time left
-training.extinguisher.pin.label,Safety pin: swipe to pull,सेफ़्टी पिन: खींचने के लिए स्वाइप करें,,true,accessibility label on the pin
-training.extinguisher.outcome.extinguished,The fire is out.,आग बुझ गई।,,true,operate_extinguisher outcome
-training.extinguisher.outcome.out_of_control,The fire is out of control.,आग काबू से बाहर है।,,true,operate_extinguisher outcome
-training.extinguisher.outcome.empty,The extinguisher is empty and the fire is still burning.,अग्निशामक खाली हो गया और आग अभी भी जल रही है।,,true,operate_extinguisher outcome
-training.extinguisher.outcome.wrong_agent,This extinguisher is not putting this fire out.,यह अग्निशामक इस आग को नहीं बुझा रहा है।,,true,"operate_extinguisher outcome: the chosen extinguisher is forbidden for this fire (scenario content, e.g. water on oil)"
-training.anchor.status.marker,MARKER LOCK,मार्कर लॉक,,true,status: overlay pinned by the HAZARD marker in view (D-039)
-training.anchor.status.sensor,SENSOR,सेंसर,,true,"status: sensor anchoring (gyro filter), no marker in view"
-training.anchor.status.legacy,LEGACY,पुराना तरीका,,true,status: Settings chose the old anchoring
-training.anchor.gyro.yes,gyro ✓,जायरो ✓,,true,status: a gyroscope was found
-training.anchor.gyro.no,no gyro,जायरो नहीं,,true,status: no gyroscope on this phone
-training.debug.mode,mode {{mode}} · {{gyro}},मोड {{mode}} · {{gyro}},,true,debug overlay (D-039)
-training.debug.fov,FOV {{across}}° × {{down}}° · {{source}} · lens {{lens}}°,FOV {{across}}° × {{down}}° · {{source}} · लेंस {{lens}}°,,true,"debug overlay: visible FOV across × down, its source, lens long-side FOV"
-training.debug.fov_source.calibrated,calibrated,कैलिब्रेट किया,,true,FOV measured on this phone
-training.debug.fov_source.default,default (not calibrated),डिफ़ॉल्ट (कैलिब्रेट नहीं),,true,"FOV assumed, not measured"
-training.debug.view,view {{w}}×{{h}} dp · f {{f}} px,व्यू {{w}}×{{h}} dp · f {{f}} px,,true,debug overlay: measured camera view size and focal length
-training.debug.filter,filter vs raw sensor {{deg}}°,फ़िल्टर बनाम कच्चा सेंसर {{deg}}°,,true,debug overlay: disagreement between gyro filter and rotation vector
-training.debug.frame,sensor frame {{convention}} · gravity check {{deg}}°,सेंसर फ़्रेम {{convention}} · गुरुत्व जाँच {{deg}}°,,true,debug overlay: how the rotation quaternion is read and its gravity mismatch (D-039)
-training.debug.bias,gyro bias {{deg}}°/s,जायरो बायस {{deg}}°/s,,true,debug overlay: estimated gyroscope bias
-training.debug.residual,marker residual {{deg}}°,मार्कर अंतर {{deg}}°,,true,debug overlay: drift the last marker sighting corrected
-training.debug.pose,heading {{h}}° elev {{e}}° · {{speed}}°/s,दिशा {{h}}° ऊँचाई {{e}}° · {{speed}}°/s,,true,debug overlay: camera direction and turn speed
-result.title,Your result,आपका परिणाम,आमाः फोल,true,screen title
-result.score.label,Score {{score}}%,अंक {{score}}%,नोंबोर {{score}}%,true,{{score}} = score percent
-result.threshold.label,Pass mark {{threshold}}%,पास होने के लिए {{threshold}}%,पास नोंबोर {{threshold}}%,true,{{threshold}} = scenario pass threshold
-result.critical.label,Critical step missed,ज़रूरी कदम छूट गया,जोरुरी काम छुटाव एना,true,rule row tag for a failed critical rule
+attempt.pass.label,PASS,पास,ᱯᱟᱥ,true,result badge
+attempt.not_yet.label,NOT YET,अभी नहीं,ᱱᱤᱛᱚᱜ ᱵᱟᱝ,true,result badge
+worker.modules.title,Training modules,प्रशिक्षण मॉड्यूल,ᱴᱨᱮᱱᱤᱝ ᱢᱳᱰᱭᱩᱞ ᱠᱚ,true,section title
+training.replay.button,Replay,फिर सुनें,ᱟᱨᱦᱚᱸ ᱟᱧᱡᱚᱢ,true,button: hear the instruction again
+training.exit_behind.ok,Exit behind you ✓,निकास आपके पीछे है ✓,ᱚᱰᱚᱜ ᱦᱚᱨ ᱟᱢ ᱛᱟᱭᱚᱢ ᱨᱮ ✓,true,live exit indicator: exit is behind the worker (D-043)
+training.exit_behind.turn,Turn — keep the exit behind you,मुड़ें — निकास को अपने पीछे रखें,ᱜᱷᱩᱨᱟᱹᱣᱢᱮ — ᱚᱰᱚᱜ ᱦᱚᱨ ᱛᱟᱭᱚᱢ ᱨᱮ ᱫᱚᱦᱚᱭᱢᱮ,true,live exit indicator: exit is not behind the worker (D-043)
+training.stop.button,Stop,रोकें,ᱵᱚᱸᱫᱢᱮ,true,button: end the drill early
+training.continue.button,Continue,आगे बढ़ें,ᱞᱟᱦᱟ ᱥᱮᱱᱚᱜᱢᱮ,true,button
+training.hold.button,Hold to spray,दबाकर रखें और छिड़कें,ᱥᱟᱵ ᱠᱟᱛᱮ ᱪᱷᱤᱴᱟᱹᱣᱢᱮ,true,press-and-hold button for aim_and_hold
+training.held.label,Sprayed {{held}} of {{total}} s,{{total}} में से {{held}} सेकंड छिड़का,{{total}} s ᱠᱷᱚᱱ {{held}} s ᱪᱷᱤᱴᱟᱹᱣ ᱮᱱᱟ,true,hold progress
+training.time_left.label,{{seconds}} s,{{seconds}} सेकंड,{{seconds}} s,true,step countdown
+training.camera.title,Camera needed,कैमरा चाहिए,ᱠᱮᱢᱮᱨᱟ ᱞᱟᱹᱠᱛᱤ,true,permission card title
+training.camera.body,The drill appears on your real floor through the camera.,कैमरे से अभ्यास आपके असली फ़र्श पर दिखेगा।,ᱠᱮᱢᱮᱨᱟ ᱛᱮ ᱴᱨᱮᱱᱤᱝ ᱟᱢᱟᱜ ᱥᱟᱹᱨᱤ ᱚᱛᱮ ᱨᱮ ᱧᱮᱞᱚᱜᱼᱟ᱾,true,permission card text
+training.camera.allow.button,Allow camera,कैमरा चालू करें,ᱠᱮᱢᱮᱨᱟ ᱦᱩᱠᱩᱢ ᱮᱢᱢᱮ,true,button
+training.camera.skip.button,Train without camera,बिना कैमरे के अभ्यास करें,ᱠᱮᱢᱮᱨᱟ ᱵᱮᱜᱚᱨ ᱴᱨᱮᱱᱤᱝ,true,button: tabletop mode
+training.tabletop.label,Virtual room: no camera,आभासी कमरा: कैमरा नहीं,ᱪᱤᱛᱟᱹᱨ ᱚᱲᱟᱜ: ᱠᱮᱢᱮᱨᱟ ᱵᱟᱹᱱᱩᱜ,true,mode banner
+training.hint.scan_marker,Scan the printed exit sign with the camera.,छपे हुए निकास (EXIT) चिह्न को कैमरे से स्कैन करें।,ᱪᱷᱟᱯᱟ ᱚᱰᱚᱜ ᱦᱚᱨ (EXIT) ᱪᱤᱱᱦᱟᱹ ᱠᱮᱢᱮᱨᱟ ᱛᱮ ᱥᱠᱮᱱᱢᱮ᱾,true,find_marker / move_to marker hint (camera)
+training.hint.tap_marker,Turn around and tap the exit sign.,पीछे मुड़ें और निकास चिह्न को छुएँ।,ᱜᱷᱩᱨᱟᱹᱣ ᱠᱟᱛᱮ ᱚᱰᱚᱜ ᱦᱚᱨ ᱪᱤᱱᱦᱟᱹ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾,true,find_marker / move_to marker hint (no camera)
+training.hint.waypoints,"Tap the yellow mark on the floor. If it is at the screen edge, turn that way.","फ़र्श पर पीले निशान को छुएँ। अगर वह स्क्रीन के किनारे पर है, तो उसी ओर मुड़ें।","ᱚᱛᱮ ᱨᱮᱱᱟᱜ ᱥᱟᱥᱟᱝ ᱪᱤᱱᱦᱟᱹ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾ ᱥᱠᱨᱤᱱ ᱫᱷᱟᱨᱮ ᱨᱮ ᱛᱟᱦᱮᱸᱱ ᱠᱷᱟᱱ, ᱚᱱᱟ ᱥᱮᱫ ᱜᱷᱩᱨᱟᱹᱣᱢᱮ᱾",true,move_to waypoint hint (any mark not yet reached takes a tap; D-033)
+training.hint.hold,Press and hold the button to spray.,छिड़कने के लिए बटन दबाकर रखें।,ᱪᱷᱤᱴᱟᱹᱣ ᱞᱟᱹᱜᱤᱫ ᱵᱟᱴᱚᱱ ᱴᱤᱯᱟᱹᱣ ᱠᱟᱛᱮ ᱥᱟᱵᱢᱮ᱾,true,aim_and_hold hint
+training.hint.target,Tap it.,इसे छुएँ।,ᱱᱚᱶᱟ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾,true,tap_target hint
+training.object.alarm_call_point,FIRE ALARM,फ़ायर अलार्म,FIRE ALARM,true,label on the alarm call point overlay
+training.object.exit_sign,EXIT,निकास,EXIT,true,label on the virtual exit sign (no-camera mode)
+training.detector.label,Gas {{reading}},गैस {{reading}},ᱜᱮᱥ {{reading}},true,detector reading on move_to with a detector
+training.object.entrance,ENTRANCE,प्रवेश द्वार,ᱵᱚᱞᱚᱜ ᱦᱚᱨ,true,label on the confined-area entrance overlay
+training.object.leak_source,GAS LEAK,गैस रिसाव,ᱜᱮᱥ ᱞᱤᱠ,true,label on the gas leak overlay
+training.done.button,Done,हो गया,ᱪᱟᱵᱟ,true,button: finish choose_many / checklist / mark_zone
+training.hint.choose_many,"Tap everything you need, then tap Done.","जो कुछ चाहिए, उन सबको छुएँ, फिर हो गया दबाएँ।","ᱡᱟᱦᱟᱸ ᱞᱟᱹᱠᱛᱤ, ᱥᱟᱱᱟᱢ ᱴᱤᱯᱟᱹᱣᱢᱮ, ᱛᱟᱭᱚᱢ ᱪᱟᱵᱟ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,choose_many hint
+training.hint.checklist,"Tap each item as you check it, then tap Done.","हर चीज़ जाँचते समय उसे छुएँ, फिर हो गया दबाएँ।","ᱢᱤᱫ ᱢᱤᱫ ᱡᱤᱱᱤᱥ ᱡᱟᱸᱪ ᱠᱟᱛᱮ ᱴᱤᱯᱟᱹᱣᱢᱮ, ᱛᱟᱭᱚᱢ ᱪᱟᱵᱟ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,checklist hint
+training.hint.mark_zone,Tap the floor to place cones. Tap a cone to remove it.,फ़र्श को छूकर कोन रखें। कोन हटाने के लिए उसे छुएँ।,ᱠᱳᱱ ᱫᱚᱦᱚ ᱞᱟᱹᱜᱤᱫ ᱚᱛᱮ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾ ᱠᱳᱱ ᱦᱟᱹᱛᱟᱹᱣ ᱞᱟᱹᱜᱤᱫ ᱚᱱᱟ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾,true,mark_zone hint
+training.cones.label,Cones: {{count}} (at least {{min}}),कोन: {{count}} (कम से कम {{min}}),ᱠᱳᱱ: {{count}} (ᱠᱚᱢ ᱥᱮ ᱠᱚᱢ {{min}}),true,{{count}} = cones placed; {{min}} = the step's minCones
+training.cone.remove,Remove cone,कोन हटाएँ,ᱠᱳᱱ ᱦᱟᱹᱛᱟᱹᱣᱢᱮ,true,accessibility label on a placed cone
+training.skip.button,Skip this step (counts as failed),यह चरण छोड़ें (असफल गिना जाएगा),ᱱᱚᱶᱟ ᱫᱷᱟᱯ ᱵᱟᱹᱜᱤᱭᱢᱮ (ᱯᱷᱮᱞ ᱞᱮᱠᱷᱟ ᱦᱩᱭᱩᱜᱼᱟ),true,shown after 30 s without progress in a step; the step is scored as failed (D-033)
+training.saving.label,Saving your result…,आपका परिणाम सेव हो रहा है…,ᱟᱢᱟᱜ ᱯᱷᱚᱞ ᱥᱮᱵ ᱦᱩᱭᱩᱜ ᱠᱟᱱᱟ…,true,shown while the attempt is saved
+training.reposition.button,Reposition,फिर से रखें,ᱟᱨᱦᱚᱸ ᱫᱚᱦᱚᱭᱢᱮ,true,"button: re-place a drifted overlay; recorded as anchor_repositioned, never scored (D-036)"
+training.reposition.cancel,Cancel,रद्द करें,ᱨᱩᱣᱟᱹᱲᱢᱮ,true,button: leave reposition without moving the overlay
+training.reposition.hint,Tap the floor where it should be.,जहाँ होना चाहिए वहाँ फ़र्श को छुएँ।,"ᱚᱠᱟᱨᱮ ᱛᱟᱦᱮᱸᱱ ᱞᱟᱹᱠᱛᱤ, ᱩᱱᱰᱮ ᱚᱛᱮ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,shown while repositioning (D-036)
+training.hint.anchor_marker,Or point the camera at the printed marker on the floor.,या कैमरे को फ़र्श पर रखे छपे मार्कर की ओर करें।,ᱥᱮ ᱚᱛᱮ ᱨᱮᱱᱟᱜ ᱪᱷᱟᱯᱟ ᱢᱟᱨᱠᱟᱨ ᱥᱮᱫ ᱠᱮᱢᱮᱨᱟ ᱫᱚᱦᱚᱭᱢᱮ᱾,true,place_on_plane hint when the scenario has an anchorMarker (D-036)
+training.extinguisher.pull,Swipe the yellow pin to the right to pull it out.,पीली पिन को दाईं ओर खींचकर बाहर निकालें।,ᱥᱟᱥᱟᱝ ᱯᱤᱱ ᱡᱚᱡᱚᱢ ᱥᱮᱫ ᱜᱷᱤᱥᱨᱟᱹᱣ ᱠᱟᱛᱮ ᱚᱨ ᱚᱰᱚᱠᱢᱮ᱾,true,operate_extinguisher: PASS Pull (D-038)
+training.extinguisher.aim,"Point the ring at the base of the fire, then press and hold the lever button.","रिंग को आग की जड़ पर रखें, फिर लीवर वाला बटन दबाकर रखें।","ᱨᱤᱝ ᱥᱮᱸᱜᱮᱞ ᱨᱮᱭᱟᱜ ᱞᱟᱛᱟᱨ ᱦᱟᱹᱴᱤᱧ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ, ᱛᱟᱭᱚᱢ lever ᱵᱟᱴᱚᱱ ᱴᱤᱯᱟᱹᱣ ᱠᱟᱛᱮ ᱥᱟᱵᱢᱮ᱾",true,operate_extinguisher: PASS Aim + Squeeze
+training.extinguisher.sweep,Sweep side to side across the base.,जड़ पर दाएँ-बाएँ घुमाएँ।,ᱞᱟᱛᱟᱨ ᱦᱟᱹᱴᱤᱧ ᱨᱮ ᱞᱮᱸᱜᱟ-ᱡᱚᱡᱚᱢ ᱜᱷᱩᱢᱟᱹᱣᱢᱮ᱾,true,operate_extinguisher: PASS Sweep (spraying the base without sweeping)
+training.extinguisher.too_high,Too high: aim lower at the base of the fire.,बहुत ऊपर: नीचे आग की जड़ पर निशाना लगाएँ।,ᱟᱹᱰᱤ ᱪᱮᱛᱟᱱ: ᱥᱮᱸᱜᱮᱞ ᱨᱮᱭᱟᱜ ᱞᱟᱛᱟᱨ ᱦᱟᱹᱴᱤᱧ ᱥᱮᱫ ᱞᱟᱛᱟᱨ ᱛᱮ ᱫᱚᱦᱚᱭᱢᱮ᱾,true,spraying the flame tops
+training.extinguisher.missed,Not on the fire: aim at the base.,आग पर नहीं: जड़ पर निशाना लगाएँ।,ᱥᱮᱸᱜᱮᱞ ᱨᱮ ᱵᱟᱝ: ᱞᱟᱛᱟᱨ ᱦᱟᱹᱴᱤᱧ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ᱾,true,spraying beside the fire
+training.extinguisher.locked,Pull the pin first.,पहले पिन खींचें।,ᱯᱟᱹᱦᱤᱞ ᱯᱤᱱ ᱚᱨ ᱚᱰᱚᱠᱢᱮ᱾,true,lever pressed with the pin still in
+training.extinguisher.pin_tap.button,Tap to pull the pin,पिन निकालने के लिए टैप करें,ᱯᱤᱱ ᱚᱨ ᱞᱟᱹᱜᱤᱫ ᱴᱤᱯᱟᱹᱣᱢᱮ,true,fallback shown if the pin is not swiped out within 8 s; recorded as pin_pulled{method: tap}
+training.extinguisher.squeeze.button,Squeeze lever (hold),लीवर दबाएँ (दबाकर रखें),lever ᱪᱟᱯᱟᱣᱢᱮ (ᱥᱟᱵ ᱛᱟᱦᱮᱸᱱᱢᱮ),true,press-and-hold discharge button
+training.extinguisher.fire.label,Fire: {{percent}}%,आग: {{percent}}%,ᱥᱮᱸᱜᱮᱞ: {{percent}}%,true,{{percent}} = fire size (100 = as it started)
+training.extinguisher.left.label,Extinguisher: {{seconds}} s left,अग्निशामक: {{seconds}} सेकंड बाकी,Extinguisher: {{seconds}} s ᱵᱟᱧᱪᱟᱣ,true,{{seconds}} = discharge time left
+training.extinguisher.pin.label,Safety pin: swipe to pull,सेफ़्टी पिन: खींचने के लिए स्वाइप करें,Safety pin: ᱚᱨ ᱞᱟᱹᱜᱤᱫ ᱜᱷᱤᱥᱨᱟᱹᱣᱢᱮ,true,accessibility label on the pin
+training.extinguisher.outcome.extinguished,The fire is out.,आग बुझ गई।,ᱥᱮᱸᱜᱮᱞ ᱵᱩᱡᱷᱟᱹᱣ ᱮᱱᱟ᱾,true,operate_extinguisher outcome
+training.extinguisher.outcome.out_of_control,The fire is out of control.,आग काबू से बाहर है।,ᱥᱮᱸᱜᱮᱞ ᱠᱚᱵᱡᱟ ᱠᱷᱚᱱ ᱵᱟᱦᱨᱮ ᱮᱱᱟ᱾,true,operate_extinguisher outcome
+training.extinguisher.outcome.empty,The extinguisher is empty and the fire is still burning.,अग्निशामक खाली हो गया और आग अभी भी जल रही है।,Extinguisher ᱠᱷᱟᱹᱞᱤ ᱮᱱᱟ ᱟᱨ ᱥᱮᱸᱜᱮᱞ ᱱᱤᱛᱚᱜ ᱦᱚᱸ ᱞᱚᱜ ᱠᱟᱱᱟ᱾,true,operate_extinguisher outcome
+training.extinguisher.outcome.wrong_agent,This extinguisher is not putting this fire out.,यह अग्निशामक इस आग को नहीं बुझा रहा है।,ᱱᱚᱶᱟ extinguisher ᱛᱮ ᱱᱚᱶᱟ ᱥᱮᱸᱜᱮᱞ ᱵᱟᱝ ᱵᱩᱡᱷᱟᱹᱣᱚᱜ ᱠᱟᱱᱟ᱾,true,"operate_extinguisher outcome: the chosen extinguisher is forbidden for this fire (scenario content, e.g. water on oil)"
+training.anchor.status.marker,MARKER LOCK,मार्कर लॉक,ᱢᱟᱨᱠᱟᱨ ᱞᱚᱠ,true,status: overlay pinned by the HAZARD marker in view (D-039)
+training.anchor.status.sensor,SENSOR,सेंसर,ᱥᱮᱱᱥᱚᱨ,true,"status: sensor anchoring (gyro filter), no marker in view"
+training.anchor.status.legacy,LEGACY,पुराना तरीका,ᱯᱩᱨᱟᱱᱟ ᱞᱮᱠᱟ,true,status: Settings chose the old anchoring
+training.anchor.gyro.yes,gyro ✓,जायरो ✓,ᱡᱟᱭᱨᱚ ✓,true,status: a gyroscope was found
+training.anchor.gyro.no,no gyro,जायरो नहीं,ᱡᱟᱭᱨᱚ ᱵᱟᱹᱱᱩᱜ,true,status: no gyroscope on this phone
+training.debug.mode,mode {{mode}} · {{gyro}},मोड {{mode}} · {{gyro}},ᱢᱳᱰ {{mode}} · {{gyro}},true,debug overlay (D-039)
+training.debug.fov,FOV {{across}}° × {{down}}° · {{source}} · lens {{lens}}°,FOV {{across}}° × {{down}}° · {{source}} · लेंस {{lens}}°,FOV {{across}}° × {{down}}° · {{source}} · ᱞᱮᱱᱥ {{lens}}°,true,"debug overlay: visible FOV across × down, its source, lens long-side FOV"
+training.debug.fov_source.calibrated,calibrated,कैलिब्रेट किया,ᱠᱮᱞᱤᱵᱽᱨᱮᱴ ᱟᱠᱟᱱᱟ,true,FOV measured on this phone
+training.debug.fov_source.default,default (not calibrated),डिफ़ॉल्ट (कैलिब्रेट नहीं),ᱢᱩᱞ (ᱠᱮᱞᱤᱵᱽᱨᱮᱴ ᱵᱟᱝ),true,"FOV assumed, not measured"
+training.debug.view,view {{w}}×{{h}} dp · f {{f}} px,व्यू {{w}}×{{h}} dp · f {{f}} px,ᱣᱭᱩ {{w}}×{{h}} dp · f {{f}} px,true,debug overlay: measured camera view size and focal length
+training.debug.filter,filter vs raw sensor {{deg}}°,फ़िल्टर बनाम कच्चा सेंसर {{deg}}°,ᱯᱷᱤᱞᱴᱟᱨ ᱟᱨ ᱠᱟᱸᱪᱟ ᱥᱮᱱᱥᱚᱨ {{deg}}°,true,debug overlay: disagreement between gyro filter and rotation vector
+training.debug.frame,sensor frame {{convention}} · gravity check {{deg}}°,सेंसर फ़्रेम {{convention}} · गुरुत्व जाँच {{deg}}°,ᱥᱮᱱᱥᱚᱨ ᱯᱷᱨᱮᱢ {{convention}} · ᱜᱨᱟᱣᱤᱴᱤ ᱡᱟᱸᱪ {{deg}}°,true,debug overlay: how the rotation quaternion is read and its gravity mismatch (D-039)
+training.debug.bias,gyro bias {{deg}}°/s,जायरो बायस {{deg}}°/s,ᱡᱟᱭᱨᱚ ᱵᱟᱭᱟᱥ {{deg}}°/s,true,debug overlay: estimated gyroscope bias
+training.debug.residual,marker residual {{deg}}°,मार्कर अंतर {{deg}}°,ᱢᱟᱨᱠᱟᱨ ᱯᱷᱟᱨᱟᱠ {{deg}}°,true,debug overlay: drift the last marker sighting corrected
+training.debug.pose,heading {{h}}° elev {{e}}° · {{speed}}°/s,दिशा {{h}}° ऊँचाई {{e}}° · {{speed}}°/s,ᱫᱤᱥᱟ {{h}}° ᱩᱪᱟᱹᱭ {{e}}° · {{speed}}°/s,true,debug overlay: camera direction and turn speed
+result.title,Your result,आपका परिणाम,ᱟᱢᱟᱜ ᱯᱷᱚᱞ,true,screen title
+result.score.label,Score {{score}}%,अंक {{score}}%,ᱱᱚᱢᱵᱚᱨ {{score}}%,true,{{score}} = score percent
+result.threshold.label,Pass mark {{threshold}}%,पास होने के लिए {{threshold}}%,ᱯᱟᱥ ᱱᱚᱢᱵᱚᱨ {{threshold}}%,true,{{threshold}} = scenario pass threshold
+result.critical.label,Critical step missed,ज़रूरी कदम छूट गया,ᱡᱚᱨᱩᱨᱤ ᱫᱷᱟᱯ ᱪᱷᱩᱴᱟᱹᱣ ᱮᱱᱟ,true,rule row tag for a failed critical rule
 result.points.label,{{earned}} / {{max}},{{earned}} / {{max}},{{earned}} / {{max}},false,rule row points
-result.rules.title,What you did,आपने क्या किया,आम चेद् बेनावकेदा,true,section title
-result.tap_to_hear.hint,Tap a row to hear it.,सुनने के लिए किसी पंक्ति को छुएँ।,आञजोम लागित् मित् लाइन टिपावमे।,true,hint under the rules title
-result.try_again.button,Try again,फिर से करें,आरहों कुरुमुटुयमे,true,button: new attempt with a new seed
-result.done.button,Done,हो गया,चाबाक्,true,button: back to the worker
-result.passed.audio,Well done. You passed.,बहुत अच्छा। आप पास हो गए।,आडी बेस। आम पास एनाम।,true,spoken when the result opens
-result.not_yet.audio,Not yet. Tap each red row to hear what to do better.,अभी नहीं। हर लाल पंक्ति को छूकर सुनें कि क्या बेहतर करना है।,"नितोःहों बाङ। मित् मित् आराःक लाइन टिपावमे आर आञजोममे, चेद् आरहों बेस ते बेनावा।",true,spoken when the result opens
-result.aborted.label,You stopped the drill early.,आपने अभ्यास बीच में रोक दिया।,आम ट्रेनिंग तालारे बोंदकेदा।,true,shown when the attempt was stopped
-demo_keys.banner,Demo keys: signed with test keys. Not valid outside this demo.,डेमो कुंजियाँ: परीक्षण कुंजियों से हस्ताक्षरित। इस डेमो के बाहर मान्य नहीं।,डेमो कुंजी: टेस्ट कुंजी ते साइन आकाना। नोवा डेमो बाहरे बाङ मान्य।,true,banner on certificate and verify screens while no real root key is committed (D-030)
-cert.title,Certificate,प्रमाणपत्र,सर्टिफिकेट,true,screen title
-cert.issue.button,Issue certificate,प्रमाणपत्र जारी करें,सर्टिफिकेट एममे,true,button
-cert.reissue.button,Issue a new certificate,नया प्रमाणपत्र जारी करें,नावा सर्टिफिकेट एममे,true,button
-cert.missing.label,Pass these modules first: {{modules}},पहले ये मॉड्यूल पास करें: {{modules}},पाहिल नोवा मॉड्यूलको पास लाकती: {{modules}},true,{{modules}} = module titles
-cert.not_approved.label,Device not approved yet. The certificate will be issued after the next sync.,डिवाइस अभी स्वीकृत नहीं है। अगली सिंक के बाद प्रमाणपत्र जारी होगा।,डिवाइस नितोःहों बाङ मानाव आकाना। तायोम सिंक खान सर्टिफिकेट एमोःआ।,true,docs/04 issuance step 2
-cert.untrusted.label,This app has no trusted root key. Certificates cannot be issued or checked.,इस ऐप में भरोसेमंद रूट कुंजी नहीं है। प्रमाणपत्र जारी या जाँचे नहीं जा सकते।,नोवा ऐप रे भोरसा रूट कुंजी बानुःआ। सर्टिफिकेट बाङ एमोःआ आर बाङ जांचावोःआ।,true,root_public_key.txt is garbled
-cert.show.hint,Show this QR code to the inspector.,यह QR कोड निरीक्षक को दिखाएँ।,नोवा QR कोड जांचाव होड़ (इंस्पेक्टर) के उदुःमे।,true,under the QR
-cert.name.label,Name,नाम,ञुतुम,true,detail label
-cert.site.label,Site,साइट,साइट,true,detail label
-cert.issued.label,Issued,जारी,एम माहा,true,detail label
-cert.expires.label,Valid until,मान्य तक,मान्य हाबिज,true,detail label
+result.rules.title,What you did,आपने क्या किया,ᱟᱢ ᱪᱮᱫ ᱪᱮᱫ ᱠᱮᱫᱟᱢ,true,section title
+result.tap_to_hear.hint,Tap a row to hear it.,सुनने के लिए किसी पंक्ति को छुएँ।,ᱟᱧᱡᱚᱢ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱫ ᱞᱟᱭᱤᱱ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾,true,hint under the rules title
+result.try_again.button,Try again,फिर से करें,ᱟᱨᱦᱚᱸ ᱠᱩᱨᱩᱢᱩᱴᱩᱭᱢᱮ,true,button: new attempt with a new seed
+result.done.button,Done,हो गया,ᱪᱟᱵᱟ,true,button: back to the worker
+result.passed.audio,Well done. You passed.,बहुत अच्छा। आप पास हो गए।,ᱟᱹᱰᱤ ᱵᱮᱥ᱾ ᱟᱢ ᱯᱟᱥ ᱮᱱᱟᱢ᱾,true,spoken when the result opens
+result.not_yet.audio,Not yet. Tap each red row to hear what to do better.,अभी नहीं। हर लाल पंक्ति को छूकर सुनें कि क्या बेहतर करना है।,"ᱱᱤᱛᱚᱜ ᱵᱟᱝ᱾ ᱪᱮᱫ ᱟᱨᱦᱚᱸ ᱵᱮᱥ ᱛᱮ ᱠᱟᱹᱢᱤ ᱞᱟᱹᱠᱛᱤ, ᱟᱧᱡᱚᱢ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱫ ᱢᱤᱫ ᱟᱨᱟᱜ ᱞᱟᱭᱤᱱ ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,spoken when the result opens
+result.aborted.label,You stopped the drill early.,आपने अभ्यास बीच में रोक दिया।,ᱟᱢ ᱴᱨᱮᱱᱤᱝ ᱛᱟᱞᱟᱨᱮ ᱵᱚᱸᱫ ᱠᱮᱫᱟᱢ᱾,true,shown when the attempt was stopped
+demo_keys.banner,Demo keys: signed with test keys. Not valid outside this demo.,डेमो कुंजियाँ: परीक्षण कुंजियों से हस्ताक्षरित। इस डेमो के बाहर मान्य नहीं।,ᱰᱮᱢᱚ ᱠᱩᱧᱡᱤ: ᱴᱮᱥᱴ ᱠᱩᱧᱡᱤ ᱛᱮ ᱥᱟᱭᱤᱱ ᱟᱠᱟᱱᱟ᱾ ᱱᱚᱶᱟ ᱰᱮᱢᱚ ᱵᱟᱦᱨᱮ ᱢᱟᱱᱭᱟ ᱵᱟᱝ᱾,true,banner on certificate and verify screens while no real root key is committed (D-030)
+cert.title,Certificate,प्रमाणपत्र,ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ,true,screen title
+cert.issue.button,Issue certificate,प्रमाणपत्र जारी करें,ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱮᱢᱢᱮ,true,button
+cert.reissue.button,Issue a new certificate,नया प्रमाणपत्र जारी करें,ᱱᱟᱶᱟ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱮᱢᱢᱮ,true,button
+cert.missing.label,Pass these modules first: {{modules}},पहले ये मॉड्यूल पास करें: {{modules}},ᱯᱟᱹᱦᱤᱞ ᱱᱚᱶᱟ ᱢᱳᱰᱭᱩᱞ ᱠᱚ ᱯᱟᱥ ᱞᱟᱹᱠᱛᱤ: {{modules}},true,{{modules}} = module titles
+cert.not_approved.label,Device not approved yet. The certificate will be issued after the next sync.,डिवाइस अभी स्वीकृत नहीं है। अगली सिंक के बाद प्रमाणपत्र जारी होगा।,ᱰᱤᱵᱟᱭᱤᱥ ᱱᱤᱛᱚᱜ ᱦᱟᱹᱵᱤᱡ ᱢᱟᱱᱟᱣ ᱵᱟᱝ ᱦᱩᱭ ᱟᱠᱟᱱᱟ᱾ ᱛᱟᱭᱚᱢ ᱥᱤᱸᱠ ᱠᱷᱟᱱ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱮᱢᱚᱜᱼᱟ᱾,true,docs/04 issuance step 2
+cert.untrusted.label,This app has no trusted root key. Certificates cannot be issued or checked.,इस ऐप में भरोसेमंद रूट कुंजी नहीं है। प्रमाणपत्र जारी या जाँचे नहीं जा सकते।,ᱱᱚᱶᱟ ᱮᱯ ᱨᱮ ᱵᱷᱚᱨᱥᱟ ᱨᱩᱴ ᱠᱩᱧᱡᱤ ᱵᱟᱹᱱᱩᱜᱼᱟ᱾ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱮᱢ ᱟᱨ ᱡᱟᱸᱪ ᱵᱟᱝ ᱦᱩᱭ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ᱾,true,root_public_key.txt is garbled
+cert.show.hint,Show this QR code to the inspector.,यह QR कोड निरीक्षक को दिखाएँ।,ᱱᱚᱶᱟ QR ᱠᱳᱰ ᱡᱟᱸᱪ ᱦᱚᱲ (inspector) ᱠᱮ ᱩᱫᱩᱜᱢᱮ᱾,true,under the QR
+cert.name.label,Name,नाम,ᱧᱩᱛᱩᱢ,true,detail label
+cert.site.label,Site,साइट,ᱥᱟᱭᱤᱴ,true,detail label
+cert.issued.label,Issued,जारी,ᱮᱢ ᱢᱟᱦᱟᱸ,true,detail label
+cert.expires.label,Valid until,मान्य तक,ᱢᱟᱱᱭᱟ ᱦᱟᱹᱵᱤᱡ,true,detail label
 cert.module.label,{{module}}: {{score}}%,{{module}}: {{score}}%,{{module}}: {{score}}%,false,{{module}} = title; {{score}} = score percent
-verify.status.valid,Valid,मान्य,थिक,true,docs/04 status (green)
-verify.status.expired,Expired,समय-सीमा समाप्त,ओकतो चाबाक् एना,true,docs/04 status (amber)
-verify.status.revoked,Revoked,रद्द,रद,true,docs/04 status (red)
-verify.status.invalid,Invalid,अमान्य,बाङ थिक,true,docs/04 status (red)
-verify.title,Verify certificate,प्रमाणपत्र जाँचें,सर्टिफिकेट जांचाव,true,screen title
-verify.scan.hint,Point the camera at the certificate QR code.,कैमरे को प्रमाणपत्र के QR कोड पर रखें।,कैमरा सर्टिफिकेट रेयाः QR कोड सेच् दोहोयमे।,true,scanner hint
-verify.camera.body,Allow the camera to scan certificate QR codes.,प्रमाणपत्र के QR कोड स्कैन करने के लिए कैमरा चालू करें।,सर्टिफिकेट रेयाः QR कोड स्कैन लागित् कैमरा अनुमति एममे।,true,permission text
-verify.camera.allow.button,Allow camera,कैमरा चालू करें,कैमरा अनुमति एममे,true,button
-verify.again.button,Scan another,दूसरा स्कैन करें,एटाः स्कैनमे,true,button
-verify.revocation.updated,Revocation list updated {{when}},रद्द-सूची अपडेट: {{when}},रद-लिस्ट अपडेट: {{when}},true,docs/04 freshness line; {{when}} = relative time
-verify.revocation.unknown,"Revocation status unknown (offline, no list)","रद्द होने की स्थिति पता नहीं (ऑफ़लाइन, कोई सूची नहीं)","रद रेयाः खोबोर बाङ बाडायोःआ (ऑफलाइन, लिस्ट बानुःआ)",true,docs/04 freshness line
-verify.reason.invalid_format,This is not a valid Suraksha Saathi certificate.,यह मान्य सुरक्षा साथी प्रमाणपत्र नहीं है।,नोवा थिक सुरक्षा साथी सर्टिफिकेट बाङ काना।,true,INVALID_FORMAT detail
-verify.reason.invalid_attestation,The device that issued it is not approved.,इसे जारी करने वाला डिवाइस स्वीकृत नहीं है।,नोवा एम ताहेंकान डिवाइस बाङ मानाव आकाना।,true,INVALID_ATTESTATION detail
-verify.reason.invalid_signature,The certificate was changed after it was signed.,हस्ताक्षर के बाद प्रमाणपत्र बदला गया है।,साइन तायोम सर्टिफिकेट बोदोल आकाना।,true,INVALID_SIGNATURE detail
-time.minutes_ago,{{count}} min ago,{{count}} मिनट पहले,{{count}} मिनिट लाहा,true,relative time
-time.hours_ago,{{count}} h ago,{{count}} घंटे पहले,{{count}} घंटा लाहा,true,relative time
-time.days_ago,{{count}} days ago,{{count}} दिन पहले,{{count}} माहा लाहा,true,relative time
-home.language.label,Language,भाषा,पारसी,true,language switcher label
-worker.language.label,Worker's language,कामगार की भाषा,कामी होड़ रेयाः पारसी,true,language switcher on the worker page (kiosk)
-lang.sat.pending,Santali text is a draft. A native speaker has not checked it yet.,संताली पाठ अभी मसौदा है। किसी संताली भाषी ने इसे अभी नहीं जाँचा है।,संताली ओल नितोः ड्राफ्ट काना। संताली पारसी होड़ नितोःहों बाङ जांचाव आकादा।,true,"shown whenever sat is chosen, until the native-speaker review (T-72) removes it"
-home.scan_card.button,Scan worker ID card,कामगार पहचान पत्र स्कैन करें,कामी होड़ चिन्हा कार्ड स्कैनमे,true,button on home: kiosk login (D-034)
-worker.card.button,ID card,पहचान पत्र,चिन्हा कार्ड,true,button on the worker page
-card.title,Worker ID card,कामगार पहचान पत्र,कामी होड़ चिन्हा कार्ड,true,screen title and printed card title
-card.code.value,Employee code: {{code}},कर्मचारी कोड: {{code}},कर्मचारी कोड: {{code}},true,line on the card; {{code}} = employee code
-card.site.value,Site: {{site}},साइट: {{site}},साइट: {{site}},true,line on the card; {{site}} = site code
-card.hint,Print this card for the worker. Scan it on the home screen to open their training.,यह कार्ड कामगार के लिए प्रिंट करें। उनका प्रशिक्षण खोलने के लिए होम स्क्रीन पर इसे स्कैन करें।,नोवा कार्ड कामी होड़ लागित् प्रिंटमे। ओनाः ट्रेनिंग झिज लागित् होम स्क्रीन रे स्कैनमे।,true,under the card preview
-card.print.button,Print ID card,पहचान पत्र प्रिंट करें,चिन्हा कार्ड प्रिंटमे,true,button: opens the print dialog (can also save a PDF)
-card.print.failed,Printing did not work. Try again.,प्रिंट नहीं हो पाया। फिर से कोशिश करें।,प्रिंट बाङ होयेना। आरहों कुरुमुटुयमे।,true,shown when the print dialog fails
-card.brand.name,Suraksha Saathi,Suraksha Saathi,,false,"wallet card brand lockup: the Latin name in every language, with card.brand.subtitle under it (D-046)"
-card.brand.subtitle,सुरक्षा साथी,सुरक्षा साथी,,false,wallet card brand lockup: the Devanagari name in every language (D-046)
-card.worker_id.label,Worker ID,कामगार आईडी,,true,label on the ID card; the value is the employee code or the start of the worker id
-card.language.label,Language,भाषा,,true,label on the ID card
-card.scan_login.label,Scan to log in,लॉग इन के लिए स्कैन करें,,true,under the QR on the ID card
-card.share.button,Share card,कार्ड शेयर करें,,true,button: opens the share sheet with the card as an image (ID and certificate cards)
-card.share.failed,The card could not be shared. Try again.,कार्ड शेयर नहीं हो पाया। फिर से कोशिश करें।,,true,shown when sharing fails or the phone cannot share
-cert.card.title,Safety training certificate,सुरक्षा प्रशिक्षण प्रमाणपत्र,,true,title on the certificate card
-cert.card.scan.label,Scan to verify,जाँच के लिए स्कैन करें,,true,under the QR on the certificate card
-worker.photo.add.button,Take ID card photo,पहचान पत्र के लिए फ़ोटो लें,,true,button on the worker page (no photo yet)
-worker.photo.change.button,Change ID card photo,पहचान पत्र की फ़ोटो बदलें,,true,button on the worker page (a photo exists)
-photo.title,ID card photo,पहचान पत्र की फ़ोटो,,true,screen title
-photo.camera.body,Allow the camera to take the worker's photo for the ID card.,पहचान पत्र के लिए कामगार की फ़ोटो लेने हेतु कैमरे की अनुमति दें।,,true,shown until camera permission is given
-photo.hint,Fit the worker's face and shoulders in the frame. The photo stays on this phone only.,कामगार का चेहरा और कंधे फ़्रेम में रखें। फ़ोटो सिर्फ़ इसी फ़ोन में रहती है।,,true,under the camera preview; D-046: photos are never synced
-photo.capture.button,Take photo,फ़ोटो लें,,true,button
-photo.flip.button,Switch camera,कैमरा बदलें,,true,button: front or back camera
-photo.use.button,Use this photo,यह फ़ोटो रखें,,true,button
-photo.retake.button,Take again,फिर से लें,,true,button
-photo.remove.button,Remove photo,फ़ोटो हटाएँ,,true,button: the card shows the placeholder again
-photo.failed,The photo could not be saved. Try again.,फ़ोटो सेव नहीं हो पाई। फिर से कोशिश करें।,,true,shown when taking or saving the photo fails
-scan.title,Scan ID card,पहचान पत्र स्कैन करें,चिन्हा कार्ड स्कैन,true,screen title
-scan.hint,Point the camera at the QR code on the worker's ID card.,कैमरे को कामगार के पहचान पत्र के QR कोड पर रखें।,कैमरा कामी होड़ रेयाः चिन्हा कार्ड रेन QR कोड सेच् दोहोयमे।,true,scanner hint
-scan.camera.body,Allow the camera to scan worker ID cards.,कामगार पहचान पत्र स्कैन करने के लिए कैमरा चालू करें।,चिन्हा कार्ड स्कैन लागित् कैमरा अनुमति एममे।,true,permission text
-scan.not_found,This card's worker is not enrolled on this device. Enrol them first.,इस कार्ड का कामगार इस डिवाइस पर जुड़ा नहीं है। पहले उन्हें जोड़ें।,नोवा कार्ड रेन कामी होड़ नोवा डिवाइस रे बाङ ओल आकाना। पाहिल ओलमे।,true,a worker card for someone not on this device (also spoken)
-scan.certificate,This is a certificate. Use Verify a certificate on the home screen.,यह प्रमाणपत्र है। होम स्क्रीन पर प्रमाणपत्र जाँचें का उपयोग करें।,नोवा सर्टिफिकेट काना। होम स्क्रीन रे सर्टिफिकेट जांचाव बेबहारमे।,true,a certificate QR scanned by mistake (also spoken)
-scan.not_card,This is not a worker ID card.,यह कामगार पहचान पत्र नहीं है।,नोवा कामी होड़ चिन्हा कार्ड बाङ काना।,true,any other QR (also spoken)
-scan.again.button,Scan again,फिर से स्कैन करें,आरहों स्कैनमे,true,button
-home.settings.button,Settings,सेटिंग्स,सेटिंग,true,button on home
-settings.title,Settings,सेटिंग्स,सेटिंग,true,screen title
-settings.device.title,This device,यह डिवाइस,नोवा डिवाइस,true,section title
-settings.site.value,Site: {{site}},साइट: {{site}},साइट: {{site}},true,{{site}} = site code
-settings.device_id.value,Device ID: {{id}},डिवाइस आईडी: {{id}},डिवाइस आईडी: {{id}},true,{{id}} = device UUID (for support)
-settings.status.unregistered,Not registered with the server yet,अभी सर्वर पर पंजीकृत नहीं है,नितोःहों सर्वर रे बाङ ओल आकाना,true,device status (docs/05)
-settings.status.pending,Waiting for approval by an admin,एडमिन की स्वीकृति का इंतज़ार है,एडमिन रेयाः मानाव लागित् तांगी काना,true,device status (docs/05)
-settings.status.approved,Approved by an admin,एडमिन ने स्वीकृत किया है,एडमिन मानाव आकादा,true,device status (docs/05)
-settings.attestation.until,Can issue certificates until {{date}},{{date}} तक प्रमाणपत्र जारी कर सकता है,{{date}} हाबिज सर्टिफिकेट एम दाड़ेयाःआ,true,{{date}} = attestation expiry
-settings.attestation.none,Cannot issue certificates yet,अभी प्रमाणपत्र जारी नहीं कर सकता,नितोःहों सर्टिफिकेट बाङ एम दाड़ेयाःआ,true,no usable attestation
-settings.sync.title,Sync,सिंक,सिंक,true,section title
-settings.last_sync.never,Last sync: never,पिछला सिंक: कभी नहीं,मुचाद् सिंक: जाहाँ ओकतोहों बाङ,true,sync_state.last_success_at is empty
-settings.last_sync.value,Last sync: {{date}},पिछला सिंक: {{date}},मुचाद् सिंक: {{date}},true,{{date}} = last successful sync
-settings.sync_now.button,Sync now,अभी सिंक करें,नितोः सिंकमे,true,"button (disabled until the sync client, T-57)"
-settings.sync.unavailable,Sync with the server is not available in this version yet.,सर्वर के साथ सिंक इस संस्करण में अभी उपलब्ध नहीं है।,सर्वर सांव सिंक नोवा भर्शन रे नितोःहों बानुःआ।,true,under the disabled Sync now button
-settings.about.title,About,जानकारी,खोबोर,true,section title
-settings.app_version.value,App version {{version}},ऐप संस्करण {{version}},ऐप भर्शन {{version}},true,{{version}} = app version
-settings.content_version.value,Training content {{version}},प्रशिक्षण सामग्री {{version}},ट्रेनिंग जिनिस {{version}},true,{{version}} = content/manifest.json contentVersion
-settings.narration.title,Spoken instructions,बोलकर निर्देश,,true,section title (D-041)
-settings.narration.body,"Each drill step is read aloud when it starts. Replay always reads it again, even when this is off.","अभ्यास का हर चरण शुरू होते ही बोलकर सुनाया जाता है। यह बंद होने पर भी 'फिर सुनें' दबाकर दोबारा सुन सकते हैं।",,true,explains the mute switch (D-041)
-settings.narration.on,On,चालू,,true,toggle option: steps read aloud automatically
-settings.narration.off,Off (mute),बंद (म्यूट),,true,toggle option: no automatic speech; Replay still speaks
-settings.anchoring.title,AR anchoring (if objects drift),AR एंकरिंग (अगर चीज़ें खिसकें),,true,section title (D-036)
-settings.anchoring.body,"Stabilised uses the gyroscope and the printed floor marker. If the fire jumps or slides badly on this phone, choose Old.","स्थिर (नया) जायरोस्कोप और फ़र्श पर रखे छपे मार्कर का उपयोग करता है। अगर इस फ़ोन पर आग उछलती है या बहुत खिसकती है, तो पुराना चुनें।",,true,explains the anchoring switch (D-036)
-settings.anchoring.stabilised,Stabilised (new),स्थिर (नया),,true,anchoring option: gyro filter + marker (D-036)
-settings.anchoring.legacy,Old (compass only),पुराना (केवल कम्पास),,true,anchoring option: the original maths (D-036)
-settings.anchoring.note,Takes effect when the next drill starts.,अगला अभ्यास शुरू होने पर लागू होगा।,,true,under the anchoring switch
-settings.anchoring.debug.label,Show the anchoring debug overlay during drills,अभ्यास के दौरान एंकरिंग डिबग जानकारी दिखाएँ,,true,debug overlay toggle (D-039)
-settings.anchoring.debug.off,Off,बंद,,true,toggle option
-settings.anchoring.debug.on,On,चालू,,true,toggle option
-calibrate.title,Camera calibration,कैमरा कैलिब्रेशन,,true,hidden screen: long-press Settings on Home (D-039)
-calibrate.tab.fov,Field of view,दृश्य क्षेत्र (FOV),,true,tab
-calibrate.tab.selftest,Rotation self-test,घुमाव स्व-परीक्षण,,true,tab
-calibrate.current,In use: lens {{lens}}° ({{source}}),उपयोग में: लेंस {{lens}}° ({{source}}),,true,the lens FOV training uses now
-calibrate.no_gyro,"No gyroscope: the turn is measured with the rotation sensor, which is less exact.","जायरोस्कोप नहीं है: घुमाव रोटेशन सेंसर से मापा जाएगा, जो कम सटीक है।",,true,shown on phones without a gyroscope
-calibrate.fov.aim,"Aim the centre ring at a small, sharp object (a switch, a door corner). Hold completely still for 3 seconds, then tap Mark.","बीच की रिंग को किसी छोटी, साफ़ दिखने वाली चीज़ (स्विच, दरवाज़े का कोना) पर रखें। 3 सेकंड बिल्कुल स्थिर रहें, फिर मार्क दबाएँ।",,true,"FOV step 1; the still hold lets the gyro bias be learnt"
-calibrate.fov.turn,"Turn slowly to the right, phone upright, until the same object touches the yellow line. Then tap Mark.","फ़ोन सीधा रखकर धीरे-धीरे दाईं ओर घूमें, जब तक वही चीज़ पीली रेखा को न छू ले। फिर मार्क दबाएँ।",,true,FOV step 2
-calibrate.fov.turned,Turned {{deg}}°,{{deg}}° घूमे,,true,live gyro angle
-calibrate.fov.result,Measured: {{across}}° across this screen (lens {{lens}}°).,मापा गया: इस स्क्रीन पर {{across}}° चौड़ाई (लेंस {{lens}}°)।,,true,FOV result
-calibrate.fov.error_before,"With the FOV in use ({{source}}), the overlay would have been {{deg}}° off at that line.","उपयोग में FOV ({{source}}) से, उस रेखा पर ओवरले {{deg}}° हटकर होता।",,true,how wrong the current FOV is
-calibrate.fov.samples,Measurements: {{count}}. Average lens FOV {{lens}}°.,माप: {{count}}। औसत लेंस FOV {{lens}}°।,,true,running average
-calibrate.fov.bad,"That measurement does not look right (turn too small, or the object was not on the line). Try again.",यह माप सही नहीं लगता (घुमाव बहुत कम था या चीज़ रेखा पर नहीं थी)। फिर से करें।,,true,implausible result
-calibrate.mark.button,Mark,मार्क,,true,button
-calibrate.again.button,Measure again,फिर से मापें,,true,button
-calibrate.save.button,Save {{lens}}° for training,प्रशिक्षण के लिए {{lens}}° सेव करें,,true,button: persist the averaged FOV
-calibrate.reset.button,Use the default FOV,डिफ़ॉल्ट FOV इस्तेमाल करें,,true,button: forget the calibration
-calibrate.selftest.aim,Aim the centre ring at a sharp object and tap Start.,बीच की रिंग को किसी साफ़ चीज़ पर रखें और शुरू करें दबाएँ।,,true,self-test step 1
-calibrate.selftest.away,Turn at least 90° away. Turned {{deg}}° (furthest {{max}}°).,कम से कम 90° दूर घूमें। {{deg}}° घूमे (सबसे दूर {{max}}°)।,,true,self-test step 2
-calibrate.selftest.back,Now aim the centre ring at the same object again and tap Done.,अब बीच की रिंग को फिर उसी चीज़ पर रखें और हो गया दबाएँ।,,true,self-test step 3
-calibrate.selftest.result,"Return error: {{filtered}}° with {{mode}} anchoring, {{raw}}° with the raw rotation sensor.","लौटने पर त्रुटि: {{mode}} एंकरिंग से {{filtered}}°, कच्चे रोटेशन सेंसर से {{raw}}°।",,true,self-test result (D-039)
-calibrate.start.button,Start,शुरू करें,,true,button
-calibrate.close.button,Close,बंद करें,,true,button
-worker.edit.button,Edit worker,कामगार की जानकारी बदलें,कामी होड़ बोदोलमे,true,button on the worker page
-edit.title,Edit worker,जानकारी बदलें,कामी होड़ बोदोल,true,screen title
-edit.save.button,Save changes,बदलाव सेव करें,बोदोल सेवमे,true,button
-edit.name.note,Certificates already issued keep the old name.,पहले से जारी प्रमाणपत्रों पर पुराना नाम ही रहेगा।,आगु एम आकान सर्टिफिकेट रे पुराना ञुतुम गे ताहेंआ।,true,on the edit form: issued certificates are signed and cannot change
-edit.delete.button,Delete worker,कामगार हटाएँ,कामी होड़ हातावमे,true,danger button on the edit screen
-edit.delete.title,Delete {{name}}?,{{name}} को हटाएँ?,{{name}} हातावमे?,true,confirmation dialog title; {{name}} = worker name
-edit.delete.body,They will disappear from the worker list and their ID card will stop working. Their training results and certificates are kept.,वे कामगार सूची से हट जाएँगे और उनका पहचान पत्र काम नहीं करेगा। उनके प्रशिक्षण परिणाम और प्रमाणपत्र बने रहेंगे।,उनी कामी होड़ लिस्ट खोन हातावोःआ आर ओनाः चिन्हा कार्ड बाङ कामियाः। ओनाः ट्रेनिंग फोल आर सर्टिफिकेट ताहेंआ।,true,"confirmation dialog text (soft delete, D-035)"
-edit.delete.confirm,Delete,हटाएँ,हातावमे,true,dialog button (destructive)
-edit.delete.cancel,Cancel,रद्द करें,"बाङ, रुवाड़मे",true,dialog button
-enrol.employee_code.too_long,Use up to 40 letters or digits.,40 अक्षर या अंक तक लिखें।,40 आखोर से अंक हाबिज ओलमे।,true,validation error
-enrol.language.required,Pick a language.,एक भाषा चुनें।,मित् पारसी बाछावमे।,true,validation error
-refresher.stage.label,Refresher · day {{day}},रिफ्रेशर · दिन {{day}},,true,"tag on a refresher run, result and attempt row (D-044); {{day}} = days after the first pass"
-refresher.due.badge,Refresher due (day {{day}}),रिफ्रेशर बाकी (दिन {{day}}),,true,badge under a module on the worker page (D-044)
-refresher.due.short,Refresher due,रिफ्रेशर बाकी,,true,badge on a worker in the Home list (D-044)
-refresher.start.button,Refresher: {{module}},रिफ्रेशर: {{module}},,true,"button: start the short refresher drill; {{module}} = scenario title, {{day}} available"
-refresher.next.label,"Next refresher: day {{day}}, on {{date}}","अगला रिफ्रेशर: दिन {{day}}, {{date}} को",,true,under a module on the worker page; {{date}} = YYYY-MM-DD
-settings.demo_clock.title,Demo clock (refreshers only),डेमो घड़ी (केवल रिफ्रेशर),,true,section title (D-044)
-settings.demo_clock.body,"For demos: moves the date refreshers fall due. Results, certificates and sync keep the real time.","डेमो के लिए: रिफ्रेशर की तारीख आगे करता है। परिणाम, प्रमाणपत्र और सिंक असली समय पर ही रहते हैं।",,true,explains the demo clock (D-044)
-settings.demo_clock.value,Clock moved forward: {{days}} days,घड़ी आगे की गई: {{days}} दिन,,true,current offset
-settings.demo_clock.plus,+{{days}} days,+{{days}} दिन,,true,button: move the refresher clock forward
-settings.demo_clock.reset,Back to real time,असली समय पर लौटें,,true,button: clear the offset
+verify.status.valid,Valid,मान्य,ᱴᱷᱤᱠ,true,docs/04 status (green)
+verify.status.expired,Expired,समय-सीमा समाप्त,ᱚᱠᱛᱚ ᱪᱟᱵᱟ ᱮᱱᱟ,true,docs/04 status (amber)
+verify.status.revoked,Revoked,रद्द,ᱨᱚᱫ,true,docs/04 status (red)
+verify.status.invalid,Invalid,अमान्य,ᱴᱷᱤᱠ ᱵᱟᱝ,true,docs/04 status (red)
+verify.title,Verify certificate,प्रमाणपत्र जाँचें,ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱡᱟᱸᱪ,true,screen title
+verify.scan.hint,Point the camera at the certificate QR code.,कैमरे को प्रमाणपत्र के QR कोड पर रखें।,ᱠᱮᱢᱮᱨᱟ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱨᱮᱭᱟᱜ QR ᱠᱳᱰ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ᱾,true,scanner hint
+verify.camera.body,Allow the camera to scan certificate QR codes.,प्रमाणपत्र के QR कोड स्कैन करने के लिए कैमरा चालू करें।,ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱨᱮᱭᱟᱜ QR ᱠᱳᱰ ᱥᱠᱮᱱ ᱞᱟᱹᱜᱤᱫ ᱠᱮᱢᱮᱨᱟ ᱦᱩᱠᱩᱢ ᱮᱢᱢᱮ᱾,true,permission text
+verify.camera.allow.button,Allow camera,कैमरा चालू करें,ᱠᱮᱢᱮᱨᱟ ᱦᱩᱠᱩᱢ ᱮᱢᱢᱮ,true,button
+verify.again.button,Scan another,दूसरा स्कैन करें,ᱮᱴᱟᱜ ᱥᱠᱮᱱᱢᱮ,true,button
+verify.revocation.updated,Revocation list updated {{when}},रद्द-सूची अपडेट: {{when}},ᱨᱚᱫ ᱞᱤᱥᱴ ᱱᱟᱶᱟ ᱮᱱᱟ: {{when}},true,docs/04 freshness line; {{when}} = relative time
+verify.revocation.unknown,"Revocation status unknown (offline, no list)","रद्द होने की स्थिति पता नहीं (ऑफ़लाइन, कोई सूची नहीं)","ᱨᱚᱫ ᱨᱮᱭᱟᱜ ᱠᱷᱚᱵᱚᱨ ᱵᱟᱝ ᱵᱟᱰᱟᱭᱚᱜᱼᱟ (ᱚᱯᱷᱞᱟᱭᱤᱱ, ᱞᱤᱥᱴ ᱵᱟᱹᱱᱩᱜ)",true,docs/04 freshness line
+verify.reason.invalid_format,This is not a valid Suraksha Saathi certificate.,यह मान्य सुरक्षा साथी प्रमाणपत्र नहीं है।,ᱱᱚᱶᱟ ᱴᱷᱤᱠ ᱥᱩᱨᱚᱠᱷᱟ ᱥᱟᱛᱷᱤ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱵᱟᱝ ᱠᱟᱱᱟ᱾,true,INVALID_FORMAT detail
+verify.reason.invalid_attestation,The device that issued it is not approved.,इसे जारी करने वाला डिवाइस स्वीकृत नहीं है।,ᱱᱚᱶᱟ ᱮᱢ ᱠᱟᱫ ᱰᱤᱵᱟᱭᱤᱥ ᱢᱟᱱᱟᱣ ᱵᱟᱝ ᱦᱩᱭ ᱟᱠᱟᱱᱟ᱾,true,INVALID_ATTESTATION detail
+verify.reason.invalid_signature,The certificate was changed after it was signed.,हस्ताक्षर के बाद प्रमाणपत्र बदला गया है।,ᱥᱟᱭᱤᱱ ᱛᱟᱭᱚᱢ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱵᱚᱫᱚᱞ ᱟᱠᱟᱱᱟ᱾,true,INVALID_SIGNATURE detail
+time.minutes_ago,{{count}} min ago,{{count}} मिनट पहले,{{count}} ᱢᱤᱱᱤᱴ ᱞᱟᱦᱟ,true,relative time
+time.hours_ago,{{count}} h ago,{{count}} घंटे पहले,{{count}} ᱜᱷᱚᱱᱴᱟ ᱞᱟᱦᱟ,true,relative time
+time.days_ago,{{count}} days ago,{{count}} दिन पहले,{{count}} ᱢᱟᱦᱟᱸ ᱞᱟᱦᱟ,true,relative time
+home.language.label,Language,भाषा,ᱯᱟᱹᱨᱥᱤ,true,language switcher label
+worker.language.label,Worker's language,कामगार की भाषा,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱨᱮᱭᱟᱜ ᱯᱟᱹᱨᱥᱤ,true,language switcher on the worker page (kiosk)
+home.sat_draft.note,Santali text is a draft under review by native speakers.,संताली पाठ अभी मसौदा है; संताली भाषी इसकी जाँच कर रहे हैं।,ᱥᱟᱱᱛᱟᱲᱤ ᱚᱞ ᱫᱚ ᱰᱨᱟᱯᱷᱴ ᱠᱟᱱᱟ; ᱥᱟᱱᱛᱟᱲᱤ ᱯᱟᱹᱨᱥᱤ ᱦᱚᱲ ᱡᱟᱸᱪ ᱮᱫᱟ ᱠᱚ᱾,true,"Home note while sat is selected, shown in Santali and English (D-047)"
+home.sat_draft.voice,"Android has no Santali voice, so instructions are spoken in Hindi. The Santali text stays on screen.","Android में संताली आवाज़ नहीं है, इसलिए निर्देश हिन्दी में बोले जाते हैं। संताली पाठ स्क्रीन पर रहता है।","Android ᱨᱮ ᱥᱟᱱᱛᱟᱲᱤ ᱟᱲᱟᱝ ᱵᱟᱹᱱᱩᱜᱼᱟ, ᱚᱱᱟᱛᱮ ᱦᱚᱨ ᱩᱫᱩᱜ ᱦᱤᱱᱫᱤ ᱛᱮ ᱟᱧᱡᱚᱢᱚᱜᱼᱟ᱾ ᱥᱟᱱᱛᱟᱲᱤ ᱚᱞ ᱥᱠᱨᱤᱱ ᱨᱮ ᱛᱟᱦᱮᱸᱱᱟ᱾",true,second line of the Home note: sat narration speaks the Hindi text (D-047)
+home.sat_draft.dismiss,Hide this note,यह सूचना छिपाएँ,ᱱᱚᱶᱟ ᱠᱷᱚᱵᱚᱨ ᱩᱠᱩᱢᱮ,true,accessibility label of the note's close button
+home.scan_card.button,Scan worker ID card,कामगार पहचान पत्र स्कैन करें,ᱠᱟᱹᱢᱤᱭᱟᱹ ID ᱠᱟᱰ ᱥᱠᱮᱱᱢᱮ,true,button on home: kiosk login (D-034)
+worker.card.button,ID card,पहचान पत्र,ID ᱠᱟᱰ,true,button on the worker page
+card.title,Worker ID card,कामगार पहचान पत्र,ᱠᱟᱹᱢᱤᱭᱟᱹ ID ᱠᱟᱰ,true,screen title and printed card title
+card.code.value,Employee code: {{code}},कर्मचारी कोड: {{code}},ᱠᱚᱨᱢᱚᱪᱟᱨᱤ ᱠᱳᱰ: {{code}},true,line on the card; {{code}} = employee code
+card.site.value,Site: {{site}},साइट: {{site}},ᱥᱟᱭᱤᱴ: {{site}},true,line on the card; {{site}} = site code
+card.hint,Print this card for the worker. Scan it on the home screen to open their training.,यह कार्ड कामगार के लिए प्रिंट करें। उनका प्रशिक्षण खोलने के लिए होम स्क्रीन पर इसे स्कैन करें।,ᱱᱚᱶᱟ ᱠᱟᱰ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱞᱟᱹᱜᱤᱫ ᱯᱨᱤᱱᱴᱢᱮ᱾ ᱩᱱᱤᱭᱟᱜ ᱴᱨᱮᱱᱤᱝ ᱡᱷᱤᱡ ᱞᱟᱹᱜᱤᱫ ᱦᱚᱢ ᱥᱠᱨᱤᱱ ᱨᱮ ᱥᱠᱮᱱᱢᱮ᱾,true,under the card preview
+card.print.button,Print ID card,पहचान पत्र प्रिंट करें,ID ᱠᱟᱰ ᱯᱨᱤᱱᱴᱢᱮ,true,button: opens the print dialog (can also save a PDF)
+card.print.failed,Printing did not work. Try again.,प्रिंट नहीं हो पाया। फिर से कोशिश करें।,ᱯᱨᱤᱱᱴ ᱵᱟᱝ ᱦᱩᱭ ᱮᱱᱟ᱾ ᱟᱨᱦᱚᱸ ᱠᱩᱨᱩᱢᱩᱴᱩᱭᱢᱮ᱾,true,shown when the print dialog fails
+card.brand.name,Suraksha Saathi,Suraksha Saathi,Suraksha Saathi,false,"wallet card brand lockup: the Latin name in every language, with card.brand.subtitle under it (D-046)"
+card.brand.subtitle,सुरक्षा साथी,सुरक्षा साथी,सुरक्षा साथी,false,wallet card brand lockup: the Devanagari name in every language (D-046)
+card.worker_id.label,Worker ID,कामगार आईडी,ᱠᱟᱹᱢᱤᱭᱟᱹ ID,true,label on the ID card; the value is the employee code or the start of the worker id
+card.language.label,Language,भाषा,ᱯᱟᱹᱨᱥᱤ,true,label on the ID card
+card.scan_login.label,Scan to log in,लॉग इन के लिए स्कैन करें,ᱵᱚᱞᱚᱜ ᱞᱟᱹᱜᱤᱫ ᱥᱠᱮᱱᱢᱮ,true,under the QR on the ID card
+card.share.button,Share card,कार्ड शेयर करें,ᱠᱟᱰ ᱦᱟᱹᱴᱤᱧᱢᱮ,true,button: opens the share sheet with the card as an image (ID and certificate cards)
+card.share.failed,The card could not be shared. Try again.,कार्ड शेयर नहीं हो पाया। फिर से कोशिश करें।,ᱠᱟᱰ ᱦᱟᱹᱴᱤᱧ ᱵᱟᱝ ᱦᱩᱭ ᱮᱱᱟ᱾ ᱟᱨᱦᱚᱸ ᱠᱩᱨᱩᱢᱩᱴᱩᱭᱢᱮ᱾,true,shown when sharing fails or the phone cannot share
+cert.card.title,Safety training certificate,सुरक्षा प्रशिक्षण प्रमाणपत्र,ᱥᱩᱨᱚᱠᱷᱟ ᱴᱨᱮᱱᱤᱝ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ,true,title on the certificate card
+cert.card.scan.label,Scan to verify,जाँच के लिए स्कैन करें,ᱡᱟᱸᱪ ᱞᱟᱹᱜᱤᱫ ᱥᱠᱮᱱᱢᱮ,true,under the QR on the certificate card
+worker.photo.add.button,Take ID card photo,पहचान पत्र के लिए फ़ोटो लें,ID ᱠᱟᱰ ᱯᱷᱚᱴᱚ ᱩᱛᱟᱹᱨᱢᱮ,true,button on the worker page (no photo yet)
+worker.photo.change.button,Change ID card photo,पहचान पत्र की फ़ोटो बदलें,ID ᱠᱟᱰ ᱯᱷᱚᱴᱚ ᱵᱚᱫᱚᱞᱢᱮ,true,button on the worker page (a photo exists)
+photo.title,ID card photo,पहचान पत्र की फ़ोटो,ID ᱠᱟᱰ ᱯᱷᱚᱴᱚ,true,screen title
+photo.camera.body,Allow the camera to take the worker's photo for the ID card.,पहचान पत्र के लिए कामगार की फ़ोटो लेने हेतु कैमरे की अनुमति दें।,ID ᱠᱟᱰ ᱞᱟᱹᱜᱤᱫ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱨᱮᱭᱟᱜ ᱯᱷᱚᱴᱚ ᱩᱛᱟᱹᱨ ᱞᱟᱹᱜᱤᱫ ᱠᱮᱢᱮᱨᱟ ᱦᱩᱠᱩᱢ ᱮᱢᱢᱮ᱾,true,shown until camera permission is given
+photo.hint,Fit the worker's face and shoulders in the frame. The photo stays on this phone only.,कामगार का चेहरा और कंधे फ़्रेम में रखें। फ़ोटो सिर्फ़ इसी फ़ोन में रहती है।,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱨᱮᱭᱟᱜ ᱢᱚᱪᱟ ᱟᱨ ᱠᱟᱸᱫᱷᱟ ᱯᱷᱨᱮᱢ ᱨᱮ ᱫᱚᱦᱚᱭᱢᱮ᱾ ᱯᱷᱚᱴᱚ ᱱᱚᱶᱟ ᱯᱷᱚᱱ ᱨᱮ ᱜᱮ ᱛᱟᱦᱮᱸᱱᱟ᱾,true,under the camera preview; D-046: photos are never synced
+photo.capture.button,Take photo,फ़ोटो लें,ᱯᱷᱚᱴᱚ ᱩᱛᱟᱹᱨᱢᱮ,true,button
+photo.flip.button,Switch camera,कैमरा बदलें,ᱠᱮᱢᱮᱨᱟ ᱵᱚᱫᱚᱞᱢᱮ,true,button: front or back camera
+photo.use.button,Use this photo,यह फ़ोटो रखें,ᱱᱚᱶᱟ ᱯᱷᱚᱴᱚ ᱵᱮᱵᱷᱟᱨᱢᱮ,true,button
+photo.retake.button,Take again,फिर से लें,ᱟᱨᱦᱚᱸ ᱩᱛᱟᱹᱨᱢᱮ,true,button
+photo.remove.button,Remove photo,फ़ोटो हटाएँ,ᱯᱷᱚᱴᱚ ᱦᱟᱹᱛᱟᱹᱣᱢᱮ,true,button: the card shows the placeholder again
+photo.failed,The photo could not be saved. Try again.,फ़ोटो सेव नहीं हो पाई। फिर से कोशिश करें।,ᱯᱷᱚᱴᱚ ᱥᱮᱵ ᱵᱟᱝ ᱦᱩᱭ ᱮᱱᱟ᱾ ᱟᱨᱦᱚᱸ ᱠᱩᱨᱩᱢᱩᱴᱩᱭᱢᱮ᱾,true,shown when taking or saving the photo fails
+scan.title,Scan ID card,पहचान पत्र स्कैन करें,ID ᱠᱟᱰ ᱥᱠᱮᱱ,true,screen title
+scan.hint,Point the camera at the QR code on the worker's ID card.,कैमरे को कामगार के पहचान पत्र के QR कोड पर रखें।,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱨᱮᱭᱟᱜ ID ᱠᱟᱰ ᱨᱮᱱᱟᱜ QR ᱠᱳᱰ ᱥᱮᱫ ᱠᱮᱢᱮᱨᱟ ᱫᱚᱦᱚᱭᱢᱮ᱾,true,scanner hint
+scan.camera.body,Allow the camera to scan worker ID cards.,कामगार पहचान पत्र स्कैन करने के लिए कैमरा चालू करें।,ID ᱠᱟᱰ ᱥᱠᱮᱱ ᱞᱟᱹᱜᱤᱫ ᱠᱮᱢᱮᱨᱟ ᱦᱩᱠᱩᱢ ᱮᱢᱢᱮ᱾,true,permission text
+scan.not_found,This card's worker is not enrolled on this device. Enrol them first.,इस कार्ड का कामगार इस डिवाइस पर जुड़ा नहीं है। पहले उन्हें जोड़ें।,ᱱᱚᱶᱟ ᱠᱟᱰ ᱨᱮᱱ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱱᱚᱶᱟ ᱰᱤᱵᱟᱭᱤᱥ ᱨᱮ ᱥᱮᱞᱮᱫ ᱵᱟᱝ ᱦᱩᱭ ᱟᱠᱟᱱᱟ᱾ ᱯᱟᱹᱦᱤᱞ ᱥᱮᱞᱮᱫᱢᱮ᱾,true,a worker card for someone not on this device (also spoken)
+scan.certificate,This is a certificate. Use Verify a certificate on the home screen.,यह प्रमाणपत्र है। होम स्क्रीन पर प्रमाणपत्र जाँचें का उपयोग करें।,"ᱱᱚᱶᱟ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱠᱟᱱᱟ᱾ ᱦᱚᱢ ᱥᱠᱨᱤᱱ ᱨᱮ ""ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱡᱟᱸᱪᱢᱮ"" ᱵᱮᱵᱷᱟᱨᱢᱮ᱾",true,a certificate QR scanned by mistake (also spoken)
+scan.not_card,This is not a worker ID card.,यह कामगार पहचान पत्र नहीं है।,ᱱᱚᱶᱟ ᱠᱟᱹᱢᱤᱭᱟᱹ ID ᱠᱟᱰ ᱵᱟᱝ ᱠᱟᱱᱟ᱾,true,any other QR (also spoken)
+scan.again.button,Scan again,फिर से स्कैन करें,ᱟᱨᱦᱚᱸ ᱥᱠᱮᱱᱢᱮ,true,button
+home.settings.button,Settings,सेटिंग्स,ᱥᱮᱴᱤᱝ,true,button on home
+settings.title,Settings,सेटिंग्स,ᱥᱮᱴᱤᱝ,true,screen title
+settings.device.title,This device,यह डिवाइस,ᱱᱚᱶᱟ ᱰᱤᱵᱟᱭᱤᱥ,true,section title
+settings.site.value,Site: {{site}},साइट: {{site}},ᱥᱟᱭᱤᱴ: {{site}},true,{{site}} = site code
+settings.device_id.value,Device ID: {{id}},डिवाइस आईडी: {{id}},ᱰᱤᱵᱟᱭᱤᱥ ID: {{id}},true,{{id}} = device UUID (for support)
+settings.status.unregistered,Not registered with the server yet,अभी सर्वर पर पंजीकृत नहीं है,ᱥᱟᱨᱵᱷᱟᱨ ᱨᱮ ᱱᱤᱛᱚᱜ ᱦᱟᱹᱵᱤᱡ ᱧᱩᱛᱩᱢ ᱵᱟᱝ ᱚᱞ ᱟᱠᱟᱱᱟ,true,device status (docs/05)
+settings.status.pending,Waiting for approval by an admin,एडमिन की स्वीकृति का इंतज़ार है,ᱮᱰᱢᱤᱱ ᱨᱮᱭᱟᱜ ᱢᱟᱱᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱛᱟᱹᱝᱜᱤ ᱠᱟᱱᱟ,true,device status (docs/05)
+settings.status.approved,Approved by an admin,एडमिन ने स्वीकृत किया है,ᱮᱰᱢᱤᱱ ᱢᱟᱱᱟᱣ ᱠᱮᱫᱟ,true,device status (docs/05)
+settings.attestation.until,Can issue certificates until {{date}},{{date}} तक प्रमाणपत्र जारी कर सकता है,{{date}} ᱦᱟᱹᱵᱤᱡ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱮᱢ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ,true,{{date}} = attestation expiry
+settings.attestation.none,Cannot issue certificates yet,अभी प्रमाणपत्र जारी नहीं कर सकता,ᱱᱤᱛᱚᱜ ᱦᱟᱹᱵᱤᱡ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱵᱟᱝ ᱮᱢ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ,true,no usable attestation
+settings.sync.title,Sync,सिंक,ᱥᱤᱸᱠ,true,section title
+settings.last_sync.never,Last sync: never,पिछला सिंक: कभी नहीं,ᱢᱩᱪᱟᱹᱫ ᱥᱤᱸᱠ: ᱡᱟᱦᱟᱸ ᱚᱠᱛᱚ ᱦᱚᱸ ᱵᱟᱝ,true,sync_state.last_success_at is empty
+settings.last_sync.value,Last sync: {{date}},पिछला सिंक: {{date}},ᱢᱩᱪᱟᱹᱫ ᱥᱤᱸᱠ: {{date}},true,{{date}} = last successful sync
+settings.sync_now.button,Sync now,अभी सिंक करें,ᱱᱤᱛᱚᱜ ᱥᱤᱸᱠᱢᱮ,true,"button (disabled until the sync client, T-57)"
+settings.sync.unavailable,Sync with the server is not available in this version yet.,सर्वर के साथ सिंक इस संस्करण में अभी उपलब्ध नहीं है।,ᱥᱟᱨᱵᱷᱟᱨ ᱥᱟᱶ ᱥᱤᱸᱠ ᱱᱚᱶᱟ ᱵᱷᱟᱨᱥᱚᱱ ᱨᱮ ᱱᱤᱛᱚᱜ ᱦᱟᱹᱵᱤᱡ ᱵᱟᱹᱱᱩᱜᱼᱟ᱾,true,under the disabled Sync now button
+settings.about.title,About,जानकारी,ᱵᱟᱵᱚᱛ,true,section title
+settings.app_version.value,App version {{version}},ऐप संस्करण {{version}},ᱮᱯ ᱵᱷᱟᱨᱥᱚᱱ {{version}},true,{{version}} = app version
+settings.content_version.value,Training content {{version}},प्रशिक्षण सामग्री {{version}},ᱴᱨᱮᱱᱤᱝ ᱡᱤᱱᱤᱥ {{version}},true,{{version}} = content/manifest.json contentVersion
+settings.narration.title,Spoken instructions,बोलकर निर्देश,ᱟᱲᱟᱝ ᱛᱮ ᱞᱟᱹᱭ,true,section title (D-041)
+settings.narration.body,"Each drill step is read aloud when it starts. Replay always reads it again, even when this is off.",अभ्यास का हर चरण शुरू होते ही बोलकर सुनाया जाता है। यह बंद होने पर भी 'फिर सुनें' दबाकर दोबारा सुन सकते हैं।,"ᱢᱤᱫ ᱢᱤᱫ ᱫᱷᱟᱯ ᱮᱦᱚᱵ ᱚᱠᱛᱚ ᱨᱮ ᱟᱲᱟᱝ ᱛᱮ ᱯᱟᱲᱦᱟᱣᱚᱜᱼᱟ᱾ ᱱᱚᱶᱟ ᱵᱚᱸᱫ ᱛᱟᱦᱮᱸᱱ ᱠᱷᱟᱱ ᱦᱚᱸ ""ᱟᱨᱦᱚᱸ ᱟᱧᱡᱚᱢ"" ᱥᱟᱵᱚᱱ ᱟᱨᱦᱚᱸ ᱯᱟᱲᱦᱟᱣᱟ᱾",true,explains the mute switch (D-041)
+settings.narration.on,On,चालू,ᱪᱟᱹᱞᱩ,true,toggle option: steps read aloud automatically
+settings.narration.off,Off (mute),बंद (म्यूट),ᱵᱚᱸᱫ (ᱪᱩᱯ),true,toggle option: no automatic speech; Replay still speaks
+settings.anchoring.title,AR anchoring (if objects drift),AR एंकरिंग (अगर चीज़ें खिसकें),AR anchoring (ᱡᱤᱱᱤᱥ ᱠᱚ ᱥᱟᱨᱠᱟᱣ ᱠᱷᱟᱱ),true,section title (D-036)
+settings.anchoring.body,"Stabilised uses the gyroscope and the printed floor marker. If the fire jumps or slides badly on this phone, choose Old.","स्थिर (नया) जायरोस्कोप और फ़र्श पर रखे छपे मार्कर का उपयोग करता है। अगर इस फ़ोन पर आग उछलती है या बहुत खिसकती है, तो पुराना चुनें।","ᱥᱛᱷᱤᱨ gyroscope ᱟᱨ ᱚᱛᱮ ᱨᱮᱱᱟᱜ ᱪᱷᱟᱯᱟ ᱢᱟᱨᱠᱟᱨ ᱵᱮᱵᱷᱟᱨᱟ᱾ ᱡᱩᱫᱤ ᱱᱚᱶᱟ ᱯᱷᱚᱱ ᱨᱮ ᱥᱮᱸᱜᱮᱞ ᱟᱹᱰᱤ ᱰᱩᱞᱩᱜ ᱥᱮ ᱥᱟᱨᱠᱟᱣᱚᱜ ᱠᱟᱱᱟ, ᱯᱩᱨᱟᱱᱟ ᱵᱟᱪᱷᱟᱣᱢᱮ᱾",true,explains the anchoring switch (D-036)
+settings.anchoring.stabilised,Stabilised (new),स्थिर (नया),ᱥᱛᱷᱤᱨ (ᱱᱟᱶᱟ),true,anchoring option: gyro filter + marker (D-036)
+settings.anchoring.legacy,Old (compass only),पुराना (केवल कम्पास),ᱯᱩᱨᱟᱱᱟ (ᱠᱚᱢᱯᱟᱥ ᱜᱮ),true,anchoring option: the original maths (D-036)
+settings.anchoring.note,Takes effect when the next drill starts.,अगला अभ्यास शुरू होने पर लागू होगा।,ᱛᱟᱭᱚᱢ ᱴᱨᱮᱱᱤᱝ ᱮᱦᱚᱵ ᱠᱷᱟᱱ ᱞᱟᱹᱜᱩ ᱦᱩᱭᱩᱜᱼᱟ᱾,true,under the anchoring switch
+settings.anchoring.debug.label,Show the anchoring debug overlay during drills,अभ्यास के दौरान एंकरिंग डिबग जानकारी दिखाएँ,ᱴᱨᱮᱱᱤᱝ ᱚᱠᱛᱚ ᱨᱮ anchoring debug ᱩᱫᱩᱜᱢᱮ,true,debug overlay toggle (D-039)
+settings.anchoring.debug.off,Off,बंद,ᱵᱚᱸᱫ,true,toggle option
+settings.anchoring.debug.on,On,चालू,ᱪᱟᱹᱞᱩ,true,toggle option
+calibrate.title,Camera calibration,कैमरा कैलिब्रेशन,ᱠᱮᱢᱮᱨᱟ ᱠᱮᱞᱤᱵᱽᱨᱮᱥᱚᱱ,true,hidden screen: long-press Settings on Home (D-039)
+calibrate.tab.fov,Field of view,दृश्य क्षेत्र (FOV),ᱧᱮᱞ ᱴᱷᱟᱶ (FOV),true,tab
+calibrate.tab.selftest,Rotation self-test,घुमाव स्व-परीक्षण,ᱜᱷᱩᱨᱟᱹᱣ ᱡᱟᱸᱪ,true,tab
+calibrate.current,In use: lens {{lens}}° ({{source}}),उपयोग में: लेंस {{lens}}° ({{source}}),ᱵᱮᱵᱷᱟᱨ ᱨᱮ: ᱞᱮᱱᱥ {{lens}}° ({{source}}),true,the lens FOV training uses now
+calibrate.no_gyro,"No gyroscope: the turn is measured with the rotation sensor, which is less exact.","जायरोस्कोप नहीं है: घुमाव रोटेशन सेंसर से मापा जाएगा, जो कम सटीक है।","Gyroscope ᱵᱟᱹᱱᱩᱜᱼᱟ: ᱜᱷᱩᱨᱟᱹᱣ rotation sensor ᱛᱮ ᱢᱟᱯᱚᱜᱼᱟ, ᱚᱱᱟ ᱠᱚᱢ ᱴᱷᱤᱠ᱾",true,shown on phones without a gyroscope
+calibrate.fov.aim,"Aim the centre ring at a small, sharp object (a switch, a door corner). Hold completely still for 3 seconds, then tap Mark.","बीच की रिंग को किसी छोटी, साफ़ दिखने वाली चीज़ (स्विच, दरवाज़े का कोना) पर रखें। 3 सेकंड बिल्कुल स्थिर रहें, फिर मार्क दबाएँ।","ᱛᱟᱞᱟ ᱨᱤᱝ ᱢᱤᱫ ᱦᱩᱰᱤᱧ, ᱯᱷᱟᱨᱪᱟ ᱡᱤᱱᱤᱥ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ (ᱥᱩᱭᱤᱪ, ᱫᱩᱣᱟᱹᱨ ᱠᱚᱱᱟ)᱾ 3 ᱥᱮᱠᱮᱸᱰ ᱯᱩᱨᱟᱹ ᱛᱷᱤᱨ ᱛᱟᱦᱮᱸᱱᱢᱮ, ᱛᱟᱭᱚᱢ ""ᱪᱤᱱᱦᱟᱹ"" ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,FOV step 1; the still hold lets the gyro bias be learnt
+calibrate.fov.turn,"Turn slowly to the right, phone upright, until the same object touches the yellow line. Then tap Mark.","फ़ोन सीधा रखकर धीरे-धीरे दाईं ओर घूमें, जब तक वही चीज़ पीली रेखा को न छू ले। फिर मार्क दबाएँ।","ᱯᱷᱚᱱ ᱛᱤᱝᱜᱩ ᱫᱚᱦᱚ ᱠᱟᱛᱮ ᱫᱷᱤᱨᱮ ᱫᱷᱤᱨᱮ ᱡᱚᱡᱚᱢ ᱥᱮᱫ ᱜᱷᱩᱨᱟᱹᱣᱢᱮ᱾ ᱚᱱᱟ ᱡᱤᱱᱤᱥ ᱥᱟᱥᱟᱝ ᱜᱟᱨ ᱨᱮ ᱥᱮᱴᱮᱨ ᱠᱷᱟᱱ ""ᱪᱤᱱᱦᱟᱹ"" ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,FOV step 2
+calibrate.fov.turned,Turned {{deg}}°,{{deg}}° घूमे,{{deg}}° ᱜᱷᱩᱨᱟᱹᱣ ᱮᱱᱟ,true,live gyro angle
+calibrate.fov.result,Measured: {{across}}° across this screen (lens {{lens}}°).,मापा गया: इस स्क्रीन पर {{across}}° चौड़ाई (लेंस {{lens}}°)।,ᱢᱟᱯ: ᱱᱚᱶᱟ ᱥᱠᱨᱤᱱ ᱨᱮ {{across}}° (ᱞᱮᱱᱥ {{lens}}°)᱾,true,FOV result
+calibrate.fov.error_before,"With the FOV in use ({{source}}), the overlay would have been {{deg}}° off at that line.","उपयोग में FOV ({{source}}) से, उस रेखा पर ओवरले {{deg}}° हटकर होता।","ᱵᱮᱵᱷᱟᱨ ᱨᱮ ᱢᱮᱱᱟᱜ FOV ({{source}}) ᱛᱮ, ᱚᱱᱟ ᱜᱟᱨ ᱨᱮ ᱪᱤᱛᱟᱹᱨ {{deg}}° ᱵᱷᱩᱞ ᱛᱟᱦᱮᱸᱱ ᱠᱟᱱᱟ᱾",true,how wrong the current FOV is
+calibrate.fov.samples,Measurements: {{count}}. Average lens FOV {{lens}}°.,माप: {{count}}। औसत लेंस FOV {{lens}}°।,ᱢᱟᱯ: {{count}}᱾ ᱞᱮᱱᱥ FOV ᱮᱣᱨᱮᱡ {{lens}}°᱾,true,running average
+calibrate.fov.bad,"That measurement does not look right (turn too small, or the object was not on the line). Try again.",यह माप सही नहीं लगता (घुमाव बहुत कम था या चीज़ रेखा पर नहीं थी)। फिर से करें।,"ᱱᱚᱶᱟ ᱢᱟᱯ ᱴᱷᱤᱠ ᱵᱟᱝ ᱧᱮᱞᱚᱜ ᱠᱟᱱᱟ (ᱜᱷᱩᱨᱟᱹᱣ ᱟᱹᱰᱤ ᱦᱩᱰᱤᱧ, ᱥᱮ ᱡᱤᱱᱤᱥ ᱜᱟᱨ ᱨᱮ ᱵᱟᱹᱱᱩᱜ ᱛᱟᱦᱮᱸᱱ ᱠᱟᱱᱟ)᱾ ᱟᱨᱦᱚᱸ ᱠᱩᱨᱩᱢᱩᱴᱩᱭᱢᱮ᱾",true,implausible result
+calibrate.mark.button,Mark,मार्क,ᱪᱤᱱᱦᱟᱹ,true,button
+calibrate.again.button,Measure again,फिर से मापें,ᱟᱨᱦᱚᱸ ᱢᱟᱯᱢᱮ,true,button
+calibrate.save.button,Save {{lens}}° for training,प्रशिक्षण के लिए {{lens}}° सेव करें,ᱴᱨᱮᱱᱤᱝ ᱞᱟᱹᱜᱤᱫ {{lens}}° ᱥᱮᱵᱢᱮ,true,button: persist the averaged FOV
+calibrate.reset.button,Use the default FOV,डिफ़ॉल्ट FOV इस्तेमाल करें,ᱢᱩᱞ FOV ᱵᱮᱵᱷᱟᱨᱢᱮ,true,button: forget the calibration
+calibrate.selftest.aim,Aim the centre ring at a sharp object and tap Start.,बीच की रिंग को किसी साफ़ चीज़ पर रखें और शुरू करें दबाएँ।,"ᱛᱟᱞᱟ ᱨᱤᱝ ᱢᱤᱫ ᱯᱷᱟᱨᱪᱟ ᱡᱤᱱᱤᱥ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ ᱟᱨ ""ᱮᱦᱚᱵ"" ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,self-test step 1
+calibrate.selftest.away,Turn at least 90° away. Turned {{deg}}° (furthest {{max}}°).,कम से कम 90° दूर घूमें। {{deg}}° घूमे (सबसे दूर {{max}}°)।,ᱠᱚᱢ ᱥᱮ ᱠᱚᱢ 90° ᱮᱴᱟᱜ ᱥᱮᱫ ᱜᱷᱩᱨᱟᱹᱣᱢᱮ᱾ {{deg}}° ᱜᱷᱩᱨᱟᱹᱣ ᱮᱱᱟ (ᱡᱟᱹᱥᱛᱤ {{max}}°)᱾,true,self-test step 2
+calibrate.selftest.back,Now aim the centre ring at the same object again and tap Done.,अब बीच की रिंग को फिर उसी चीज़ पर रखें और हो गया दबाएँ।,"ᱱᱤᱛᱚᱜ ᱛᱟᱞᱟ ᱨᱤᱝ ᱟᱨᱦᱚᱸ ᱚᱱᱟ ᱡᱤᱱᱤᱥ ᱥᱮᱫ ᱫᱚᱦᱚᱭᱢᱮ ᱟᱨ ""ᱪᱟᱵᱟ"" ᱴᱤᱯᱟᱹᱣᱢᱮ᱾",true,self-test step 3
+calibrate.selftest.result,"Return error: {{filtered}}° with {{mode}} anchoring, {{raw}}° with the raw rotation sensor.","लौटने पर त्रुटि: {{mode}} एंकरिंग से {{filtered}}°, कच्चे रोटेशन सेंसर से {{raw}}°।","ᱨᱩᱣᱟᱹᱲ ᱵᱷᱩᱞ: {{mode}} anchoring ᱛᱮ {{filtered}}°, raw rotation sensor ᱛᱮ {{raw}}°᱾",true,self-test result (D-039)
+calibrate.start.button,Start,शुरू करें,ᱮᱦᱚᱵ,true,button
+calibrate.close.button,Close,बंद करें,ᱵᱚᱸᱫᱢᱮ,true,button
+worker.edit.button,Edit worker,कामगार की जानकारी बदलें,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱵᱚᱫᱚᱞᱢᱮ,true,button on the worker page
+edit.title,Edit worker,जानकारी बदलें,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱵᱚᱫᱚᱞ,true,screen title
+edit.save.button,Save changes,बदलाव सेव करें,ᱵᱚᱫᱚᱞ ᱥᱮᱵᱢᱮ,true,button
+edit.name.note,Certificates already issued keep the old name.,पहले से जारी प्रमाणपत्रों पर पुराना नाम ही रहेगा।,ᱞᱟᱦᱟ ᱨᱮ ᱮᱢ ᱟᱠᱟᱱ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱨᱮ ᱯᱩᱨᱟᱱᱟ ᱧᱩᱛᱩᱢ ᱜᱮ ᱛᱟᱦᱮᱸᱱᱟ᱾,true,on the edit form: issued certificates are signed and cannot change
+edit.delete.button,Delete worker,कामगार हटाएँ,ᱠᱟᱹᱢᱤᱭᱟᱹ ᱢᱮᱴᱟᱣᱢᱮ,true,danger button on the edit screen
+edit.delete.title,Delete {{name}}?,{{name}} को हटाएँ?,{{name}} ᱢᱮᱴᱟᱣᱟᱢ ᱥᱮ?,true,confirmation dialog title; {{name}} = worker name
+edit.delete.body,They will disappear from the worker list and their ID card will stop working. Their training results and certificates are kept.,वे कामगार सूची से हट जाएँगे और उनका पहचान पत्र काम नहीं करेगा। उनके प्रशिक्षण परिणाम और प्रमाणपत्र बने रहेंगे।,ᱩᱱᱤ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱞᱤᱥᱴ ᱠᱷᱚᱱ ᱟᱫᱚᱜᱼᱟ ᱟᱨ ᱩᱱᱤᱭᱟᱜ ID ᱠᱟᱰ ᱵᱟᱝ ᱠᱟᱹᱢᱤᱭᱟ᱾ ᱩᱱᱤᱭᱟᱜ ᱴᱨᱮᱱᱤᱝ ᱯᱷᱚᱞ ᱟᱨ ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱛᱟᱦᱮᱸᱱᱟ᱾,true,"confirmation dialog text (soft delete, D-035)"
+edit.delete.confirm,Delete,हटाएँ,ᱢᱮᱴᱟᱣᱢᱮ,true,dialog button (destructive)
+edit.delete.cancel,Cancel,रद्द करें,"ᱵᱟᱝ, ᱨᱩᱣᱟᱹᱲᱢᱮ",true,dialog button
+enrol.employee_code.too_long,Use up to 40 letters or digits.,40 अक्षर या अंक तक लिखें।,40 ᱦᱟᱹᱵᱤᱡ ᱟᱠᱷᱚᱨ ᱥᱮ ᱮᱞ ᱚᱞᱢᱮ᱾,true,validation error
+enrol.language.required,Pick a language.,एक भाषा चुनें।,ᱢᱤᱫ ᱯᱟᱹᱨᱥᱤ ᱵᱟᱪᱷᱟᱣᱢᱮ᱾,true,validation error
+refresher.stage.label,Refresher · day {{day}},रिफ्रेशर · दिन {{day}},ᱫᱚᱦᱲᱟ ᱴᱨᱮᱱᱤᱝ · ᱢᱟᱦᱟᱸ {{day}},true,"tag on a refresher run, result and attempt row (D-044); {{day}} = days after the first pass"
+refresher.due.badge,Refresher due (day {{day}}),रिफ्रेशर बाकी (दिन {{day}}),ᱫᱚᱦᱲᱟ ᱴᱨᱮᱱᱤᱝ ᱚᱠᱛᱚ (ᱢᱟᱦᱟᱸ {{day}}),true,badge under a module on the worker page (D-044)
+refresher.due.short,Refresher due,रिफ्रेशर बाकी,ᱫᱚᱦᱲᱟ ᱴᱨᱮᱱᱤᱝ ᱚᱠᱛᱚ,true,badge on a worker in the Home list (D-044)
+refresher.start.button,Refresher: {{module}},रिफ्रेशर: {{module}},ᱫᱚᱦᱲᱟ: {{module}},true,"button: start the short refresher drill; {{module}} = scenario title, {{day}} available"
+refresher.next.label,"Next refresher: day {{day}}, on {{date}}","अगला रिफ्रेशर: दिन {{day}}, {{date}} को","ᱛᱟᱭᱚᱢ ᱫᱚᱦᱲᱟ: ᱢᱟᱦᱟᱸ {{day}}, {{date}} ᱨᱮ",true,under a module on the worker page; {{date}} = YYYY-MM-DD
+settings.demo_clock.title,Demo clock (refreshers only),डेमो घड़ी (केवल रिफ्रेशर),ᱰᱮᱢᱚ ᱜᱷᱚᱲᱤ (ᱫᱚᱦᱲᱟ ᱞᱟᱹᱜᱤᱫ ᱜᱮ),true,section title (D-044)
+settings.demo_clock.body,"For demos: moves the date refreshers fall due. Results, certificates and sync keep the real time.","डेमो के लिए: रिफ्रेशर की तारीख आगे करता है। परिणाम, प्रमाणपत्र और सिंक असली समय पर ही रहते हैं।","ᱰᱮᱢᱚ ᱞᱟᱹᱜᱤᱫ: ᱫᱚᱦᱲᱟ ᱴᱨᱮᱱᱤᱝ ᱨᱮᱭᱟᱜ ᱢᱟᱦᱟᱸ ᱞᱟᱦᱟ ᱛᱮ ᱥᱟᱨᱠᱟᱣᱟ᱾ ᱯᱷᱚᱞ, ᱥᱚᱨᱴᱤᱯᱷᱤᱠᱮᱴ ᱟᱨ ᱥᱤᱸᱠ ᱥᱟᱹᱨᱤ ᱚᱠᱛᱚ ᱜᱮ ᱵᱮᱵᱷᱟᱨᱟ᱾",true,explains the demo clock (D-044)
+settings.demo_clock.value,Clock moved forward: {{days}} days,घड़ी आगे की गई: {{days}} दिन,ᱜᱷᱚᱲᱤ ᱞᱟᱦᱟ ᱛᱮ ᱥᱟᱨᱠᱟᱣ ᱮᱱᱟ: {{days}} ᱢᱟᱦᱟᱸ,true,current offset
+settings.demo_clock.plus,+{{days}} days,+{{days}} दिन,+{{days}} ᱢᱟᱦᱟᱸ,true,button: move the refresher clock forward
+settings.demo_clock.reset,Back to real time,असली समय पर लौटें,ᱥᱟᱹᱨᱤ ᱚᱠᱛᱚ ᱛᱮ ᱨᱩᱣᱟᱹᱲᱢᱮ,true,button: clear the offset

@@ -22,7 +22,7 @@ Unity, and what we traded away: `docs/DECISIONS.md` D-027.
 - `react-native-view-shot` + `expo-sharing`: "Share card" for the wallet-size ID and certificate cards
   (`ui/WalletCard.tsx`, `cards/shareCard.ts`, D-046); `expo-file-system`: worker ID photos, on the phone only
 - `react-native-gesture-handler`: the extinguisher pin drag (root wrapped in `GestureHandlerRootView`, D-045)
-- `i18next` + `react-i18next`: `en`, `hi`, `sat`; `expo-font` (Noto Sans Devanagari + Noto Sans);
+- `i18next` + `react-i18next`: `en`, `hi`, `sat`; `expo-font` (Noto Sans Devanagari for en/hi, Noto Sans Ol Chiki for sat, D-047);
   `expo-audio` for narration; `expo-speech` TTS until T-73. Automatic speech goes through
   `autoSpeakKey` (muted by Settings → Spoken instructions, D-041), speech the worker asks for through `speakKey`
 - Vitest for `src/core`, and for `src/db` with the real schema and SQL on Node's `node:sqlite` behind the
@@ -66,8 +66,8 @@ files); never hand-edit it.
 - Everything the worker does works in airplane mode. `/content` is bundled at build time (Metro
   `watchFolders`); no runtime downloads. Network is only for sync.
 - All user-facing text through i18next keys; missing `sat` falls back to `hi`, never a raw key.
-- Render text with `Text` / `TextInput` from `@/ui/Text` (bundled Noto Sans Devanagari, D-032), never
-  react-native's own, so Hindi and Santali render the same on every phone.
+- Render text with `Text` / `TextInput` from `@/ui/Text` (bundled Noto Sans Devanagari, or Noto Sans Ol Chiki for
+  text containing Ol Chiki; D-032, D-047), never react-native's own, so Hindi and Santali render the same on every phone.
 - Timestamps: monotonic clock (`performance.now()`) for event `t`, UTC unix seconds for records.
 - No work on the JS thread per camera frame; sensor and animation work on the UI thread
   (Reanimated worklets). Target: 30 fps on a 4 GB Snapdragon 6-series phone.
@@ -116,7 +116,8 @@ rotate-90°-and-return error.
 - Dev on a phone: `npx expo start` (Expo Go or a dev build)
 - Printable exit markers: `npm run markers`
 - Fire animation: `npm run fire` (rewrites `assets/fire.json`)
-- Strings: `npm run l10n:build` (CSV -> JSON), `npm run l10n:report` (missing keys/audio per locale)
+- Strings: `npm run l10n:build` (CSV -> JSON), `npm run l10n:report` (missing keys/audio per locale);
+  Santali review: `npm run l10n:export-review` -> speaker fills `content/strings/santali-review.csv` -> `npm run l10n:import-review`
 - APK: `eas build -p android --profile preview` (human: needs an expo.dev login). Run
   `git lfs pull` first: EAS uploads the working tree, and LFS pointers would ship as broken assets.
 

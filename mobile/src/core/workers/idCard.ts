@@ -78,7 +78,7 @@ export function idCardSheetHtml(cards: readonly CardFace[], labels: { heading: s
     .join('');
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
 @page { size: A4; margin: 10mm; }
-body { margin: 0; font-family: 'Noto Sans Devanagari', 'Noto Sans', sans-serif; color: #111; }
+body { margin: 0; font-family: 'Noto Sans Devanagari', 'Noto Sans Ol Chiki', 'Noto Sans', sans-serif; color: #111; }
 .sheet { display: grid; grid-template-columns: repeat(2, 85.6mm); gap: 6mm; }
 .card { width: 85.6mm; height: 54mm; box-sizing: border-box; padding: 3mm; border: 0.3mm dashed #888;
   border-radius: 3mm; display: flex; gap: 3mm; align-items: center; break-inside: avoid; }

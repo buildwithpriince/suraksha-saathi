@@ -67,12 +67,34 @@ Per-rule `passed`: for a critical rule, false only on a critical failure; for an
 ```json
 {
   "attemptId": "uuidv7", "scenarioId": "FIRE_01", "scenarioVersion": 1, "variant": "oil", "seed": 123456,
-  "mode": "ar", "startedAt": 1789000000, "durationSec": 212.4,
+  "mode": "ar", "kind": "training", "startedAt": 1789000000, "durationSec": 212.4,
   "scorePercent": 86, "passed": true, "criticalFailures": [],
   "rules": [ { "ruleId": "R_ALARM_BEFORE_FIGHT", "earned": 10, "max": 10, "critical": true, "passed": true, "feedbackKey": "fire01.rule.alarm_before_fight" } ],
   "eventsSha256": "hex of SHA-256 over UTF-8 JSON of the events array as stored"
 }
 ```
+
+`kind` (D-044): `"training"` (the full module) or `"refresher"`; absent means `"training"` (attempts
+stored before D-044). A refresher also carries `"refresher": {"dueDay": 7}`, the stage it was for, and
+only a refresher carries it. Neither field takes part in scoring.
+
+## Refresher drills (D-044)
+A refresher is a shortened run of a module the worker has passed, due `dueDays` after their first
+passing `training` attempt for it (`content/refresher.json`, `{"dueDays":[7,30]}`). It is scored by
+the same `Evaluate`, on a scenario derived from the file (`mobile/src/core/refresher/derive.ts`):
+- Steps kept, in file order: every step a **critical** rule is tied to (its `step`, `before`, `after`;
+  for `no_forbidden`, each step with an option carrying its `tag`), every `place_on_plane` step, and
+  the steps those need (a step's `agentFrom`; for an `exitBehind`, the `find_marker` of its marker).
+- Rules kept: every rule (critical or not) whose tied steps are all kept; the rest are dropped from
+  earned and max, like variant-scoped rules.
+- Everything else (id, version, variants, threshold) is the file's. Dropped steps produce no events.
+FIRE_01: place_fire, raise_alarm, pick_extinguisher, extinguish, escalation; rules R_ALARM_BEFORE_FIGHT,
+R_ALARM_FAST, R_RIGHT_EXTINGUISHER, R_AIM_BASE, R_EVACUATE_DECISION (max 60).
+GAS_01: place_area, ppe, ignition_trap, self_rescuer (major), enter_or_retreat; rules R_PPE, R_NO_IGNITION,
+R_SELF_RESCUER (major), R_RETREAT_DECISION.
+Stage N is due once `anchor + N days` has passed and no **passing** refresher for stage N or a later
+stage exists; if several are due, the latest is offered. A refresher never counts as a module pass
+for certificate issuance (docs/04 step 1).
 
 ## Result screen requirements
 - Big PASS / NOT YET, score, and a list of rules sorted: failed criticals first, then lost points.
@@ -81,7 +103,8 @@ Per-rule `passed`: for a critical rule, false only on a critical failure; for an
   `choiceFeedback` whose step was answered (not skipped): full points -> `choiceFeedback.correct`;
   otherwise `choiceFeedback.options[first choice]`; either falls back to `feedbackKey` if absent. So
   the feedback answers what was picked: praise, or that pick's specific mistake (D-042).
-- "Try again" starts a new attempt with a new seed (possibly a different variant).
+- "Try again" starts a new attempt with a new seed (possibly a different variant); after a refresher,
+  the same refresher stage.
 
 ## Required unit tests (`mobile/src/core/assessment`, run with `npm test`)
 1. Perfect FIRE_01 `ordinary` run -> 100, passed
@@ -100,3 +123,5 @@ Per-rule `passed`: for a critical rule, false only on a critical failure; for an
 14. FIRE_01 PASS (D-038): pin, base, sweeps -> R_AIM_BASE full; static aim or pin missing / after
     spraying -> half; flame tops only or under `minOnTargetSec` -> 0
 15. `anchor_repositioned`, `discharge_started`, `discharge_stopped` anywhere -> result unchanged
+16. Refresher (D-044): derived steps and rules for both modules as listed above; a perfect FIRE_01
+    refresher -> 100 over max 60; water on oil -> still a critical failure (`core/refresher/refresher.test.ts`)

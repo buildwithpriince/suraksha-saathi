@@ -34,6 +34,7 @@ export default function ResultScreen() {
       <Stack.Screen options={{ title: t('result.title'), headerBackVisible: false }} />
       <Card>
         <Title>{t(scenario.titleKey)}</Title>
+        {result.refresher !== undefined ? <Badge label={t('refresher.stage.label', { day: result.refresher.dueDay })} tone="amber" /> : null}
         <View style={[styles.verdict, { backgroundColor: result.passed ? colors.greenBg : colors.redBg }]}>
           <Text style={[styles.verdictText, { color: result.passed ? colors.green : colors.red }]}>
             {t(result.passed ? 'attempt.pass.label' : 'attempt.not_yet.label')}
@@ -55,7 +56,15 @@ export default function ResultScreen() {
       <Button
         label={t('result.try_again.button')}
         onPress={() =>
-          router.replace({ pathname: '/train/[scenarioId]', params: { scenarioId: result.scenarioId, workerId: attempt.workerId } })
+          router.replace({
+            pathname: '/train/[scenarioId]',
+            // A refresher is tried again as the same refresher (D-044)
+            params: {
+              scenarioId: result.scenarioId,
+              workerId: attempt.workerId,
+              ...(result.refresher === undefined ? {} : { refresher: String(result.refresher.dueDay) }),
+            },
+          })
         }
       />
       <Button kind="secondary" label={t('result.done.button')} onPress={() => router.replace({ pathname: '/worker/[id]', params: { id: attempt.workerId } })} />

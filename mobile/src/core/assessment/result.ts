@@ -3,7 +3,7 @@ import { sha256 } from '@noble/hashes/sha2.js';
 import type { Scenario } from '../scenarios/types';
 import { encodeUtf8 } from '../utf8';
 import { evaluate } from './engine';
-import type { AttemptEvent, AttemptMode, AttemptResult } from './types';
+import type { AttemptEvent, AttemptKind, AttemptMode, AttemptResult, RefresherInfo } from './types';
 
 export interface FinishedAttempt {
   attemptId: string;
@@ -14,6 +14,9 @@ export interface FinishedAttempt {
   startedAt: number; // unix seconds
   durationSec: number;
   events: AttemptEvent[]; // as recorded, in append order
+  /** Default `training`. A refresher's `scenario` is the derived one (`core/refresher/derive.ts`). */
+  kind?: AttemptKind;
+  refresher?: RefresherInfo;
 }
 
 /**
@@ -21,6 +24,8 @@ export interface FinishedAttempt {
  * (attempts.events_json): `eventsSha256` covers those bytes, not a re-serialization.
  */
 export function buildAttemptResult(a: FinishedAttempt): { result: AttemptResult; eventsJson: string } {
+  const kind = a.kind ?? 'training';
+  if ((kind === 'refresher') !== (a.refresher !== undefined)) throw new Error('a refresher attempt needs its stage, and only a refresher has one');
   const evaluation = evaluate(a.scenario, a.variant, a.events);
   const eventsJson = JSON.stringify(a.events);
   const result: AttemptResult = {
@@ -30,6 +35,8 @@ export function buildAttemptResult(a: FinishedAttempt): { result: AttemptResult;
     variant: a.variant,
     seed: a.seed,
     mode: a.mode,
+    kind,
+    ...(a.refresher === undefined ? {} : { refresher: { dueDay: a.refresher.dueDay } }),
     startedAt: a.startedAt,
     durationSec: Math.round(a.durationSec * 100) / 100,
     scorePercent: evaluation.scorePercent,

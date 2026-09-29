@@ -9,6 +9,7 @@ import { lastSyncAt, nowSeconds, outboxCount } from '@/db/database';
 import { getDevice } from '@/db/device';
 import { TRUST } from '@/device/trust';
 import { isAutoSpeechMuted, setAutoSpeechMuted } from '@/i18n/speech';
+import { getDemoClockOffsetDays, setDemoClockOffsetDays } from '@/refresher/refreshers';
 import { formatDate } from '@/ui/CertificateDetails';
 import { DemoKeysBanner } from '@/ui/DemoKeysBanner';
 import { getAnchoringMode, getDebugOverlay, setAnchoringMode, setDebugOverlay, type AnchoringMode } from '@/training/anchoringSetting';
@@ -24,6 +25,7 @@ export default function SettingsScreen() {
   const [anchoring, setAnchoring] = useState<AnchoringMode>(getAnchoringMode);
   const [debugOverlay, setDebugOverlayState] = useState(getDebugOverlay);
   const [muted, setMuted] = useState(isAutoSpeechMuted);
+  const [clockOffset, setClockOffset] = useState(getDemoClockOffsetDays);
 
   useFocusEffect(
     useCallback(() => {
@@ -99,6 +101,33 @@ export default function SettingsScreen() {
           }}
         />
         <Body muted>{t('settings.anchoring.note')}</Body>
+      </Card>
+
+      {/* D-044: demo only. Moves when refreshers fall due, nothing else */}
+      <Card>
+        <Title>{t('settings.demo_clock.title')}</Title>
+        <Body>{t('settings.demo_clock.body')}</Body>
+        <Body>{t('settings.demo_clock.value', { days: clockOffset })}</Body>
+        {[1, 7, 30].map((days) => (
+          <Button
+            key={days}
+            kind="secondary"
+            label={t('settings.demo_clock.plus', { days })}
+            onPress={() => {
+              setDemoClockOffsetDays(clockOffset + days);
+              setClockOffset(getDemoClockOffsetDays());
+            }}
+          />
+        ))}
+        <Button
+          kind="secondary"
+          label={t('settings.demo_clock.reset')}
+          disabled={clockOffset === 0}
+          onPress={() => {
+            setDemoClockOffsetDays(0);
+            setClockOffset(0);
+          }}
+        />
       </Card>
 
       <Card>

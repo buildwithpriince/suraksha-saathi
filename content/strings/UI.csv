@@ -217,3 +217,13 @@ edit.delete.confirm,Delete,हटाएँ,हातावमे,true,dialog but
 edit.delete.cancel,Cancel,रद्द करें,"बाङ, रुवाड़मे",true,dialog button
 enrol.employee_code.too_long,Use up to 40 letters or digits.,40 अक्षर या अंक तक लिखें।,40 आखोर से अंक हाबिज ओलमे।,true,validation error
 enrol.language.required,Pick a language.,एक भाषा चुनें।,मित् पारसी बाछावमे।,true,validation error
+refresher.stage.label,Refresher · day {{day}},रिफ्रेशर · दिन {{day}},,true,"tag on a refresher run, result and attempt row (D-044); {{day}} = days after the first pass"
+refresher.due.badge,Refresher due (day {{day}}),रिफ्रेशर बाकी (दिन {{day}}),,true,badge under a module on the worker page (D-044)
+refresher.due.short,Refresher due,रिफ्रेशर बाकी,,true,badge on a worker in the Home list (D-044)
+refresher.start.button,Refresher: {{module}},रिफ्रेशर: {{module}},,true,"button: start the short refresher drill; {{module}} = scenario title, {{day}} available"
+refresher.next.label,"Next refresher: day {{day}}, on {{date}}","अगला रिफ्रेशर: दिन {{day}}, {{date}} को",,true,under a module on the worker page; {{date}} = YYYY-MM-DD
+settings.demo_clock.title,Demo clock (refreshers only),डेमो घड़ी (केवल रिफ्रेशर),,true,section title (D-044)
+settings.demo_clock.body,"For demos: moves the date refreshers fall due. Results, certificates and sync keep the real time.","डेमो के लिए: रिफ्रेशर की तारीख आगे करता है। परिणाम, प्रमाणपत्र और सिंक असली समय पर ही रहते हैं।",,true,explains the demo clock (D-044)
+settings.demo_clock.value,Clock moved forward: {{days}} days,घड़ी आगे की गई: {{days}} दिन,,true,current offset
+settings.demo_clock.plus,+{{days}} days,+{{days}} दिन,,true,button: move the refresher clock forward
+settings.demo_clock.reset,Back to real time,असली समय पर लौटें,,true,button: clear the offset

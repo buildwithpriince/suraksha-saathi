@@ -50,6 +50,14 @@ export interface Evaluation {
 
 export type AttemptMode = 'ar' | 'tabletop';
 
+/** `training`: the full module. `refresher`: the shortened run of its critical steps (D-044). */
+export type AttemptKind = 'training' | 'refresher';
+
+/** Which refresher stage an attempt was: days after the first pass (`content/refresher.json`). */
+export interface RefresherInfo {
+  dueDay: number;
+}
+
 /** docs/03 "Result" JSON, stored in attempts.result_json and synced as-is. */
 export interface AttemptResult {
   attemptId: string;
@@ -58,6 +66,10 @@ export interface AttemptResult {
   variant: string;
   seed: number;
   mode: AttemptMode;
+  /** Absent in attempts stored before D-044, which were all `training`. */
+  kind?: AttemptKind;
+  /** Present exactly when `kind` is `refresher`. */
+  refresher?: RefresherInfo;
   startedAt: number;
   durationSec: number;
   scorePercent: number;

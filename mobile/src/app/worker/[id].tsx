@@ -1,12 +1,15 @@
 import { Stack, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { getScenario, playableScenarios } from '@/content/scenarios';
+import type { AttemptResult } from '@/core/assessment/types';
 import { listAttempts, type AttemptRecord } from '@/db/attempts';
 import { getWorker, setPreferredLang } from '@/db/workers';
 import { isLocale, setLocale } from '@/i18n';
+import { workerRefreshers, type ModuleRefresher } from '@/refresher/refreshers';
+import { formatDate } from '@/ui/CertificateDetails';
 import { LanguageSwitcher } from '@/ui/LanguageSwitcher';
 import { Badge, Body, Button, Card, Screen, Title } from '@/ui/components';
 import { Text } from '@/ui/Text';
@@ -17,7 +20,8 @@ export default function WorkerScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [worker, setWorker] = useState(() => getWorker(id));
-  const [attempts, setAttempts] = useState<AttemptRecord[]>([]);
+  const [attempts, setAttempts] = useState<AttemptRecord<AttemptResult>[]>([]);
+  const [refreshers, setRefreshers] = useState<ModuleRefresher[]>([]);
 
   // docs/07: the kiosk switches to the worker's preferred language when they are picked
   useEffect(() => {
@@ -26,9 +30,10 @@ export default function WorkerScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      // Reload on return, so an edit shows (D-035)
+      // Reload on return, so an edit shows (D-035) and a finished refresher clears its badge (D-044)
       setWorker(getWorker(id));
-      setAttempts(listAttempts(id));
+      setAttempts(listAttempts<AttemptResult>(id));
+      setRefreshers(workerRefreshers(id));
     }, [id]),
   );
 
@@ -39,13 +44,34 @@ export default function WorkerScreen() {
       <Stack.Screen options={{ title: worker.displayName }} />
       <Card>
         <Title>{t('worker.modules.title')}</Title>
-        {playableScenarios().map((s) => (
-          <Button
-            key={s.id}
-            label={t('worker.train.button', { module: t(s.titleKey) })}
-            onPress={() => router.push({ pathname: '/train/[scenarioId]', params: { scenarioId: s.id, workerId: worker.id } })}
-          />
-        ))}
+        {playableScenarios().map((s) => {
+          const r = refreshers.find((m) => m.scenarioId === s.id);
+          return (
+            <View key={s.id} style={styles.module}>
+              <Button
+                label={t('worker.train.button', { module: t(s.titleKey) })}
+                onPress={() => router.push({ pathname: '/train/[scenarioId]', params: { scenarioId: s.id, workerId: worker.id } })}
+              />
+              {r?.due ? (
+                <>
+                  <Badge label={t('refresher.due.badge', { day: r.due.dueDay })} tone="amber" />
+                  <Button
+                    kind="secondary"
+                    label={t('refresher.start.button', { module: t(s.titleKey), day: r.due.dueDay })}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/train/[scenarioId]',
+                        params: { scenarioId: s.id, workerId: worker.id, refresher: String(r.due!.dueDay) },
+                      })
+                    }
+                  />
+                </>
+              ) : r?.next ? (
+                <Body muted>{t('refresher.next.label', { day: r.next.dueDay, date: formatDate(r.next.dueAt) })}</Body>
+              ) : null}
+            </View>
+          );
+        })}
         <LanguageSwitcher label={t('worker.language.label')} onChange={(l) => setPreferredLang(worker.id, l)} />
         <Button
           kind="secondary"
@@ -73,7 +99,12 @@ export default function WorkerScreen() {
             onPress={() => router.push({ pathname: '/result/[attemptId]', params: { attemptId: a.id } })}
             style={styles.row}
           >
-            <Text style={styles.rowTitle}>{t(getScenario(a.result.scenarioId)?.titleKey ?? a.result.scenarioId)}</Text>
+            <View style={styles.rowMain}>
+              <Text style={styles.rowTitle}>{t(getScenario(a.result.scenarioId)?.titleKey ?? a.result.scenarioId)}</Text>
+              {a.result.refresher !== undefined ? (
+                <Text style={styles.rowKind}>{t('refresher.stage.label', { day: a.result.refresher.dueDay })}</Text>
+              ) : null}
+            </View>
             <Text style={styles.rowMeta}>{t('attempt.score.label', { score: a.result.scorePercent })}</Text>
             <Badge
               label={t(a.result.passed ? 'attempt.pass.label' : 'attempt.not_yet.label')}
@@ -95,6 +126,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  rowTitle: { flex: 1, fontSize: 17, color: colors.text, fontWeight: '600' },
+  rowMain: { flex: 1 },
+  rowTitle: { fontSize: 17, color: colors.text, fontWeight: '600' },
+  rowKind: { fontSize: 15, color: colors.amber, fontWeight: '600' },
+  module: { gap: space.s },
   rowMeta: { fontSize: 17, color: colors.muted },
 });

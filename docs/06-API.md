@@ -43,6 +43,9 @@ Res 200: `{"accepted":["uuid"],"rejected":[{"id":"uuid","code":"missing_worker",
 Max 50 items, max body 2 MB.
 Worker `deletedAt` (D-035): null, or unix seconds of the soft delete (then equal to `updatedAt`). Until T-65 the
 backend ignores it (unknown fields are dropped), so a deleted worker stays visible on the dashboard.
+Attempt `result.kind` (D-044): `"training"` (default when absent) or `"refresher"`, with `result.refresher`
+= `{"dueDay": n}` for a refresher (docs/03). The server rechecks a refresher against the derived rule set
+(T-37); until then it keeps the field in `result_json` and flags refreshers for the rules they leave out.
 Rejection codes: `missing_worker` (retryable) · `conflict_immutable` · `invalid_payload` · `unknown_scenario` ·
 `invalid_certificate` (none of the last four are retryable). Ids are echoed exactly as sent. Whole-request
 errors: 422 `validation_error` (envelope), 413 `payload_too_large`. Rules: docs/05 "Sync ingest rules".

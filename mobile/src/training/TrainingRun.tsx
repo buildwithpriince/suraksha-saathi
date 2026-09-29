@@ -7,7 +7,7 @@ import { useDerivedValue, useSharedValue, withTiming, type SharedValue } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { buildAttemptResult } from '@/core/assessment/result';
-import type { AttemptMode } from '@/core/assessment/types';
+import type { AttemptMode, RefresherInfo } from '@/core/assessment/types';
 import { isBehind, unproject, vectorToDirection, type Direction } from '@/core/orientation';
 import { CAMERA_LONG_SIDE_FOV_DEG, FIRE_SIZE_DEG, LABEL_BOX_PX, PREVIEW_HFOV_DEG, focalLengthPx, pxPerDegAt, type Band } from '@/core/player/layout';
 import {
@@ -18,6 +18,7 @@ import {
   type ExtinguisherConfig,
   type ExtinguisherState,
 } from '@/core/player/extinguisher';
+import { exitIndicatorMinAngle } from '@/core/player/exitIndicator';
 import { MARKER_LOCK_FRESH_SEC, applySighting, sightingFrom } from '@/core/player/marker';
 import { directionErrorDeg } from '@/core/calibration';
 import { PREFABS, VIRTUAL_MARKER_OFFSET, offsetFrom, zoneAt, type Offset, type Prefab } from '@/core/player/prefabs';
@@ -71,8 +72,21 @@ function startAttempt(scenario: Scenario): Attempt {
   return { session, attemptId: newId(), seed, startedAt: nowSeconds() };
 }
 
-/** Plays one attempt of any scenario over the camera feed (`ar`) or a plain virtual room (`tabletop`). */
-export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; workerId: string; mode: AttemptMode }) {
+/**
+ * Plays one attempt of any scenario over the camera feed (`ar`) or a plain virtual room (`tabletop`).
+ * A refresher (D-044) passes the derived scenario and its stage; it plays and scores the same way.
+ */
+export function TrainingRun({
+  scenario,
+  workerId,
+  mode,
+  refresher,
+}: {
+  scenario: Scenario;
+  workerId: string;
+  mode: AttemptMode;
+  refresher?: RefresherInfo;
+}) {
   const { t } = useTranslation();
   const router = useRouter();
   const windowSize = useWindowDimensions();
@@ -336,6 +350,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
       startedAt,
       durationSec: session.now(),
       events: session.events,
+      ...(refresher === undefined ? {} : { kind: 'refresher' as const, refresher }),
     });
     saveAttempt(workerId, result, session.events, eventsJson);
     router.replace({ pathname: '/result/[attemptId]', params: { attemptId } });
@@ -554,14 +569,9 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
     }),
     [width, cardBottom, panelTop],
   );
-  // D-043: "keep the exit behind you" is shown live on the step that scores it (a move_to with
-  // exitBehind) and on an operate_extinguisher step right after it, where the worker keeps facing the fire
-  const exitMinAngle = ((): number | null => {
-    if (cur === null) return null;
-    const own = cur.params.exitBehind as { minAngleDeg: number } | undefined;
-    const before = scenario.steps[cur.index - 1]?.params.exitBehind as { minAngleDeg: number } | undefined;
-    return (own ?? (interaction === 'operate_extinguisher' ? before : undefined))?.minAngleDeg ?? null;
-  })();
+  // D-043: "keep the exit behind you" is shown live on the step that scores it and on the extinguish
+  // step right after it; hidden when the run never scanned the exit (a refresher, D-044)
+  const exitMinAngle = cur === null ? null : exitIndicatorMinAngle(scenario.steps, cur.index);
   useEffect(() => {
     if (exitMinAngle === null) return;
     const check = () => {
@@ -743,6 +753,7 @@ export function TrainingRun({ scenario, workerId, mode }: { scenario: Scenario; 
         {cur !== null ? (
           <View style={styles.card} onLayout={(e) => setCardBottom(e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
             {mode === 'tabletop' ? <Text style={styles.mode}>{t('training.tabletop.label')}</Text> : null}
+            {refresher !== undefined ? <Text style={styles.mode}>{t('refresher.stage.label', { day: refresher.dueDay })}</Text> : null}
             <Text style={styles.instruction}>{t(cur.step.instructionKey)}</Text>
             {hint !== null ? <Text style={styles.hint}>{hint}</Text> : null}
             {exitShown !== null ? (
